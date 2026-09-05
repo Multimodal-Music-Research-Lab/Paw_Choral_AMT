@@ -1,0 +1,121 @@
+wandb:
+  enable: false
+  project: "202510_hpt_transcription"
+  name: "${model.arch}-${model.mode}-${feature.audio_feature}-sr${feature.sample_rate}-fps${feature.frames_per_second}"
+
+tensorboard:
+  enable: true
+  dir: "${exp.workspace}/tensorboard"
+
+choral:
+  enable: false
+  num_voices: 4
+  voice_names: ["S", "A", "T", "B"]
+  voice_assignment_method: "part_name"   # target-label assignment: part_name | range_prior | ordered_continuity | range_masked_continuity
+  assignment_module: "heads"   # model-side assignment: heads | va2_cnn | va2_convlstm
+  voice_interaction_module: "none"   # none | self_attn
+  voice_interaction_dim: 256
+  voice_interaction_heads: 4
+  voice_interaction_layers: 1
+  voice_interaction_dropout: 0.1
+  append_assignment_to_name: true
+  voice_assignment_range_mins: [60, 55, 48, 40]
+  voice_assignment_range_maxs: [88, 79, 72, 67]
+  voice_assignment_range_margin: 2.0
+  voice_assignment_mask_penalty: 8.0
+  assignment_temperature: 1.0
+  assignment_hidden_channels: 64
+  assignment_rnn_hidden_size: 128
+  voice_assignment_part_penalty: 2.0
+  voice_assignment_continuity_weight: 0.35
+  voice_assignment_overlap_penalty: 4.0
+  use_presence_head: true
+  use_per_voice_thresholds: false
+  voice_frame_thresholds: [0.3, 0.3, 0.3, 0.3]
+  voice_onset_thresholds: [0.3, 0.3, 0.3, 0.3]
+  voice_offset_thresholds: [0.3, 0.3, 0.3, 0.3]
+  voice_frame_loss_weight: 1.0
+  voice_onset_loss_weight: 1.0
+  voice_offset_loss_weight: 1.0
+  union_frame_loss_weight: 0.5
+  union_onset_loss_weight: 0.5
+  union_offset_loss_weight: 0.5
+  presence_loss_weight: 0.2
+  assignment_range_loss_weight: 0.05
+  assignment_entropy_loss_weight: 0.01
+
+exp:
+  workspace: "./workspaces"
+  name_suffix: ""
+  resume_iteration: 0
+  total_iteration: 200_000
+  save_iteration: 5_000
+  eval_iteration: 5_000
+  learning_rate: 1e-4
+  optim: "adam"
+  decay: true
+  reduce_iteration: 10_000
+  loss_type: "auto"
+  random_seed: 86
+  mini_data: false
+  cuda: true
+  debug: false
+  num_workers: 8
+  batch_size: 8
+  run_infer: "single"
+  ckpt_iteration: ""
+
+feature:
+  audio_feature: "logmel"
+  classes_num: 88
+  segment_seconds: 10.0
+  hop_seconds: 1.0
+  sample_rate: 16000
+  fft_size: 2048
+  frames_per_second: 100
+  use_augmentation: false
+  augmentor: null
+  begin_note: 21
+  velocity_scale: 128
+  max_note_shift: 0
+
+dataset:
+  train_set: "maestro"
+  test_set: "smd"
+  # Override these repository-relative paths from the CLI when needed, e.g.
+  # dataset.youchorale_dir=/absolute/path/to/YouChorale.
+  eval_split: "validation"  # validation | test
+  cantoria_dir: "./data/CantoriaDataset_v1.0.0"
+  cantoria_f0_source: "crepe"   # crepe | pyin
+  cantoria_min_confidence: 0.35
+  cantoria_min_note_duration: 0.08
+  smd_dir: "./datasets/SMD"
+  csd_dir: "./data/ChoralSingingDataset"
+  youchorale_dir: "./data/YouChorale"
+  youchorale_pro_dir: "./data/YouChorale-Pro"
+  maestro_dir: "./datasets/maestro-v3.0.0"
+  maps_dir: "./datasets/MAPS"
+
+model:
+  arch: "hpt"
+  mode: "frame_onset" # "frame_onset_offset"
+  type: null
+  name: "auto"
+
+post:
+  post_processor_type: "onsets_frames" # regression
+  frame_threshold: 0.3
+  onset_threshold: 0.3
+  offset_threshold: 0.3
+  pedal_offset_threshold: 0.2
+  default_velocity: 80
+
+score:
+  evaluate_frame: true
+  evaluate_note: true
+  evaluate_pedal: false
+  onset_tolerance: 0.05
+  offset_ratio: 0.2
+  offset_min_tolerance: 0.05
+  pedal_offset_ratio: 0.2
+  pedal_offset_min_tolerance: 0.05

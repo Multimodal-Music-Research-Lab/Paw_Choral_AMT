@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# Research data and generated artifacts
+data/
+datasets/
+workspaces/
+checkpoints/*
+!checkpoints/README.md
+runs/
+logs/
+wandb/
+tensorboard/
+outputs/
+probs/
+visualizations/
+*.h5
+*.hdf5
+*.pkl
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

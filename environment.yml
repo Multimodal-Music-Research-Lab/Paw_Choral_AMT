@@ -1,0 +1,10 @@
+name: pawct
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - libsndfile
+  - ffmpeg
+  - pip:
+      - -r requirements.txt

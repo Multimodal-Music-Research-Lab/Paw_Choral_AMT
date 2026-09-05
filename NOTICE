@@ -1,0 +1,11 @@
+PawCT research code
+Copyright 2026 Hanyu Meng and contributors
+
+Portions of the acoustic transcription implementation are adapted from
+ByteDance's "High-resolution Piano Transcription with Pedals" repository:
+https://github.com/bytedance/piano_transcription
+
+That upstream project identifies its license as Apache License 2.0. See
+THIRD_PARTY.md for source and revision details. Dataset recordings,
+annotations, trained checkpoints, and generated media are not covered by the
+source-code license unless their accompanying files explicitly say otherwise.

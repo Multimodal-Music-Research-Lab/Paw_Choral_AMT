@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="PawCT: part-aware SATB transcription from mixed choral audio.">
+    <title>PawCT · Part-Aware Choral Transcription</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="hero">
+      <nav class="nav shell" aria-label="Primary">
+        <a class="wordmark" href="#top" aria-label="PawCT home">
+          <span class="mark" aria-hidden="true">P</span>
+          <span>PawCT</span>
+        </a>
+        <div class="nav-links">
+          <a href="#method">Method</a>
+          <a href="#results">Results</a>
+          <a href="#viewer">Viewer</a>
+          <a href="https://github.com/Multimodal-Music-Research-Lab/ICASSP2027_Paw_Choral_AMT">Code</a>
+        </div>
+      </nav>
+
+      <div class="hero-grid shell" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="pulse"></span> Audited research snapshot</p>
+          <h1>Hear the choir.<br><em>Read every part.</em></h1>
+          <p class="lede">PawCT turns one mixed choral recording into note-level soprano, alto, tenor, and bass tracks—jointly, from the acoustic evidence.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#viewer">Explore a result</a>
+            <a class="button secondary" href="https://github.com/Multimodal-Music-Research-Lab/ICASSP2027_Paw_Choral_AMT#readme">Read the release notes</a>
+          </div>
+          <p class="caption">Companion page for “Toward Part-Aware Choral Transcription with Singing Voice Assignment.”</p>
+        </div>
+
+        <div class="score-card" aria-label="Stylized SATB score">
+          <div class="staff-label">S</div><div class="staff soprano"><i style="--x:8%;--w:19%"></i><i style="--x:35%;--w:27%"></i><i style="--x:70%;--w:17%"></i></div>
+          <div class="staff-label">A</div><div class="staff alto"><i style="--x:3%;--w:25%"></i><i style="--x:39%;--w:18%"></i><i style="--x:66%;--w:26%"></i></div>
+          <div class="staff-label">T</div><div class="staff tenor"><i style="--x:12%;--w:12%"></i><i style="--x:31%;--w:30%"></i><i style="--x:73%;--w:20%"></i></div>
+          <div class="staff-label">B</div><div class="staff bass"><i style="--x:0%;--w:21%"></i><i style="--x:28%;--w:24%"></i><i style="--x:60%;--w:35%"></i></div>
+          <div class="score-footer"><span>mixture</span><b>→</b><span class="voice-dot s"></span><span class="voice-dot a"></span><span class="voice-dot t"></span><span class="voice-dot b"></span></div>
+        </div>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="section shell stats" aria-label="Headline results">
+        <article><span class="stat-value">0.382</span><span class="stat-label">PagCT note F1<br>@ 50 ms</span></article>
+        <article><span class="stat-value">0.225</span><span class="stat-label">PawCT-OC mean<br>SATB note F1</span></article>
+        <article><span class="stat-value">+0.050</span><span class="stat-label">absolute gain over<br>Post-VA</span></article>
+        <article><span class="stat-value">58.90%</span><span class="stat-label">reported note<br>retention ratio</span></article>
+        <p class="status-note">Manuscript-reported values. They have not yet been regenerated from this repository snapshot.</p>
+      </section>
+
+      <section class="section method" id="method">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow">One task, three views</p>
+            <h2>Assignment belongs beside transcription.</h2>
+            <p>PagCT finds the notes. Post-VA labels them afterward. PawCT learns both together, while the mixture can still resolve ambiguous crossings and soft choral onsets.</p>
+          </div>
+
+          <div class="method-grid">
+            <article class="method-card">
+              <span class="method-number">01</span>
+              <h3>PagCT</h3>
+              <p>Mixed audio becomes one merged stream of onset, frame, and offset probabilities.</p>
+              <div class="mini-flow"><span>audio</span><b>CRNN</b><span class="global">notes</span></div>
+            </article>
+            <article class="method-card featured">
+              <span class="method-number">02</span>
+              <h3>PawCT</h3>
+              <p>A shared encoder feeds four voice heads; presence gating and union supervision keep part detail anchored to global note content.</p>
+              <div class="mini-flow"><span>audio</span><b>shared CRNN</b><span class="satb">S · A · T · B</span></div>
+            </article>
+            <article class="method-card">
+              <span class="method-number">03</span>
+              <h3>Post-VA</h3>
+              <p>A BiLSTM classifies PagCT's predicted notes after the acoustic stage has already finished.</p>
+              <div class="mini-flow"><span>notes</span><b>BiLSTM</b><span class="satb">S · A · T · B</span></div>
+            </article>
+          </div>
+
+          <div class="architecture" aria-label="PawCT architecture flow">
+            <div class="arch-node input"><small>input</small><strong>Mixed choir</strong><span>16 kHz waveform</span></div>
+            <span class="arrow" aria-hidden="true">→</span>
+            <div class="arch-node"><small>shared</small><strong>CRNN encoder</strong><span>log-Mel · CNN · BiGRU</span></div>
+            <span class="arrow" aria-hidden="true">→</span>
+            <div class="heads">
+              <div class="head s">Soprano head</div>
+              <div class="head a">Alto head</div>
+              <div class="head t">Tenor head</div>
+              <div class="head b">Bass head</div>
+            </div>
+            <span class="arrow" aria-hidden="true">→</span>
+            <div class="arch-node output"><small>outputs</small><strong>SATB + union</strong><span>presence-gated notes</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section shell" id="results">
+        <div class="split-heading">
+          <div>
+            <p class="eyebrow">Reported comparison</p>
+            <h2>Union supervision changes the outcome.</h2>
+          </div>
+          <div class="segmented" role="group" aria-label="Choose metric">
+            <button class="metric-toggle active" type="button" data-metric="note" aria-pressed="true">Note F1</button>
+            <button class="metric-toggle" type="button" data-metric="frame" aria-pressed="false">Frame F1</button>
+          </div>
+        </div>
+
+        <div class="bars" id="result-bars" aria-live="polite"></div>
+        <p class="fineprint">Average across S/A/T/B on the manuscript's YouChorale test split. Note F1 uses a 50 ms onset tolerance. Values are reported, not rerun.</p>
+      </section>
+
+      <section class="section viewer-section" id="viewer">
+        <div class="shell">
+          <div class="section-heading light">
+            <p class="eyebrow">Qualitative viewer</p>
+            <h2>One passage, four readings.</h2>
+            <p>Choose a system to inspect its quadrant of the manuscript visualization. Colors denote SATB parts; PagCT remains green because it is part-agnostic.</p>
+          </div>
+
+          <div class="viewer-controls" role="group" aria-label="Select a transcription view">
+            <button type="button" class="view-toggle active" data-panel="gt" aria-pressed="true">Ground truth</button>
+            <button type="button" class="view-toggle" data-panel="paw" aria-pressed="false">PawCT</button>
+            <button type="button" class="view-toggle" data-panel="pag" aria-pressed="false">PagCT</button>
+            <button type="button" class="view-toggle" data-panel="post" aria-pressed="false">PagCT + Post-VA</button>
+          </div>
+
+          <figure class="viewer" data-panel="gt">
+            <div class="crop" role="img" aria-label="Ground-truth piano roll for Exsultate Deo">
+              <img src="assets/exsultate-deo-four-panel.png" alt="Four-panel transcription comparison; the selected quadrant is enlarged below." width="3240" height="1152">
+            </div>
+            <figcaption>
+              <div><span class="viewer-kicker" id="viewer-kind">Reference</span><strong id="viewer-title">Ground truth SATB</strong></div>
+              <p id="viewer-copy">The annotated voice trajectories provide the comparison target.</p>
+              <span class="viewer-metric" id="viewer-metric">Exsultate Deo · 10–100 s</span>
+            </figcaption>
+          </figure>
+
+          <div class="legend" aria-label="Voice colors">
+            <span><i class="s"></i>Soprano</span><span><i class="a"></i>Alto</span><span><i class="t"></i>Tenor</span><span><i class="b"></i>Bass</span><span><i class="g"></i>Part-agnostic</span>
+          </div>
+
+          <aside class="rights-note">
+            <strong>Why there is no audio player yet</strong>
+            <p>This v1 page does not redistribute YouChorale audio, source MIDI, annotations, or checkpoints because their public redistribution terms have not been verified. A listening edition should use only per-file rights-cleared assets.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section shell release">
+        <div>
+          <p class="eyebrow">Release posture</p>
+          <h2>Useful now. Reproducible after the missing evidence is frozen.</h2>
+        </div>
+        <ul class="checklist">
+          <li class="done">Core PawCT, PagCT, Post-VA source mapped to the paper</li>
+          <li class="done">Internal paths removed; artifacts and datasets excluded</li>
+          <li class="done">Validation-first threshold workflow guarded in code</li>
+          <li>Exact paper checkpoints, configs, and split hashes</li>
+          <li>One-command Table 1/2 reproduction</li>
+          <li>Rights-cleared audio-to-SATB listening examples</li>
+        </ul>
+        <div class="release-actions">
+          <a class="button primary" href="https://github.com/Multimodal-Music-Research-Lab/ICASSP2027_Paw_Choral_AMT/blob/main/docs/REPRODUCIBILITY.md">Open the audit</a>
+          <a class="button secondary dark" href="https://github.com/Multimodal-Music-Research-Lab/ICASSP2027_Paw_Choral_AMT/blob/main/docs/CODE_WALKTHROUGH.md">Follow the code</a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell footer-inner">
+        <span>PawCT · Multimodal Music Research Lab</span>
+        <span>Static, analytics-free, and dependency-free.</span>
+      </div>
+    </footer>
+
+    <noscript><p class="noscript">JavaScript is only used for the result and figure toggles; all research information remains available in the repository documentation.</p></noscript>
+    <script src="app.js"></script>
+  </body>
+</html>

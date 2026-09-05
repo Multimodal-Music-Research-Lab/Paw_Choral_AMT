@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "assets": [
+    {
+      "path": "exsultate-deo-four-panel.png",
+      "sha256": "46747902ae576b79ca3ec25e50cf2e2955aec66892a2ef2c8643012ce133dbc5",
+      "kind": "author-generated qualitative visualization",
+      "source_work": "Exsultate Deo",
+      "recording_id": "jd2_r4PK5dc",
+      "contents": "Ground truth, PawCT, PagCT, and PagCT + Post-VA piano rolls from the manuscript example",
+      "rights_note": "The visualization is included for research-code provenance. No source audio, annotation file, or MIDI is redistributed. Reconfirm publication rights before enabling a public Pages deployment."
+    }
+  ]
+}
