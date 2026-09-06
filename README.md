@@ -329,6 +329,11 @@ and legacy PyTorch checkpoints can execute code while loading. Generated
 artifacts are ignored by default; a future checkpoint release must include its
 exact config, source commit, dataset/split manifest, and SHA-256 checksum.
 
+## Maintainer
+
+Research code and release maintenance: [Hanyu Meng](https://github.com/Hanyu-Meng),
+Multimodal Music Research Lab.
+
 ## License and attribution
 
 Source code is released under Apache License 2.0. Portions are adapted from
