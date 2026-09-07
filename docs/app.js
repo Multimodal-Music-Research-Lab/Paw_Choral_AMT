@@ -1,16 +1,16 @@
 const resultData = [
-  { label: "PawCT w/o union", note: 0.190, frame: 0.379, color: "#8c948e" },
-  { label: "PawCT", note: 0.217, frame: 0.458, color: "#d84d5a" },
-  { label: "PawCT-RP", note: 0.209, frame: 0.510, color: "#efa63f" },
-  { label: "PawCT-OC", note: 0.225, frame: 0.503, color: "#098896" },
-  { label: "PagCT + Post-VA", note: 0.175, frame: 0.489, color: "#326b99" },
+  { label: "PawCT w/o union", note: 0.190, color: "#8c948e" },
+  { label: "PawCT", note: 0.217, color: "#d84d5a" },
+  { label: "PawCT-RP", note: 0.209, color: "#efa63f" },
+  { label: "PawCT-OC", note: 0.225, color: "#098896" },
+  { label: "PagCT + Post-VA", note: 0.175, color: "#326b99" },
 ];
 
 const resultBars = document.querySelector("#result-bars");
 const metricButtons = [...document.querySelectorAll(".metric-toggle")];
 
 function renderBars(metric) {
-  const scaleMax = metric === "note" ? 0.25 : 0.55;
+  const scaleMax = 0.25;
   resultBars.replaceChildren(...resultData.map((row) => {
     const wrapper = document.createElement("div");
     wrapper.className = "bar-row";

@@ -7,8 +7,9 @@
 - Qualitative figure SHA-256:
   `46747902ae576b79ca3ec25e50cf2e2955aec66892a2ef2c8643012ce133dbc5`.
 - Static syntax audit: all imported Python files parsed/compiled.
-- Local dependency-backed test run: 35 passed, with one expected `mir_eval`
-  resampling warning; no failures.
+- Initial local dependency-backed release test: 35 passed, with one expected
+  `mir_eval` resampling warning. The actively maintained suite is larger; use
+  the current CI/test command rather than this historical count.
 - Excluded from import: approximately 119 GB of HDF5 data, probabilities,
   checkpoints, logs, caches, and generated visualizations.
 

@@ -73,7 +73,7 @@
             <article class="method-card featured">
               <span class="method-number">02</span>
               <h3>PawCT</h3>
-              <p>A shared encoder feeds four voice heads; presence gating and union supervision keep part detail anchored to global note content.</p>
+              <p>A shared encoder feeds four voice heads; an auxiliary presence task and union supervision keep part detail anchored to global note content.</p>
               <div class="mini-flow"><span>audio</span><b>shared CRNN</b><span class="satb">S · A · T · B</span></div>
             </article>
             <article class="method-card">
@@ -96,7 +96,7 @@
               <div class="head b">Bass head</div>
             </div>
             <span class="arrow" aria-hidden="true">→</span>
-            <div class="arch-node output"><small>outputs</small><strong>SATB + union</strong><span>presence-gated notes</span></div>
+            <div class="arch-node output"><small>outputs</small><strong>SATB + union</strong><span>four note streams</span></div>
           </div>
         </div>
       </section>
@@ -107,14 +107,10 @@
             <p class="eyebrow">Reported comparison</p>
             <h2>Union supervision changes the outcome.</h2>
           </div>
-          <div class="segmented" role="group" aria-label="Choose metric">
-            <button class="metric-toggle active" type="button" data-metric="note" aria-pressed="true">Note F1</button>
-            <button class="metric-toggle" type="button" data-metric="frame" aria-pressed="false">Frame F1</button>
-          </div>
         </div>
 
         <div class="bars" id="result-bars" aria-live="polite"></div>
-        <p class="fineprint">Average across S/A/T/B on the manuscript's YouChorale test split. Note F1 uses a 50 ms onset tolerance. Values are reported, not rerun.</p>
+        <p class="fineprint">Average across S/A/T/B on the manuscript's YouChorale test split. Note F1 uses a 50 ms onset tolerance. Values are reported, not rerun. Historical RP/OC frame values are not displayed because the audit found that they used method-specific pseudo-references and are not directly comparable.</p>
       </section>
 
       <section class="section viewer-section" id="viewer">

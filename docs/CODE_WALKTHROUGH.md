@@ -19,21 +19,27 @@ the validation split. Paper experiments require explicit overrides.
 `src/data_generator.py` converts supported datasets to one HDF5 file per
 recording. Each file stores the waveform, MIDI events/times, split, and basic
 metadata. `Sampler` creates overlapping 10-second examples at a configurable
-hop size; `BasePianoDataset` turns a sampled segment into audio plus merged
-frame/onset/offset targets.
+hop size, including short recordings and an explicit tail-aligned window;
+`BasePianoDataset` uses the same clamped start time for audio and labels. On
+choral datasets, `ChoralUnionDataset` replaces packed merged-MIDI targets with
+a canonical projection of the complete `note.pkl` intervals. PagCT and PawCT
+therefore share the same global truth for overlapping same-pitch voices and
+notes crossing segment boundaries. Only same-frame, same-pitch attacks merge;
+50/100 ms evaluation tolerances never redefine the reference.
 
 For PawCT, `ChoralSATBDataset` additionally reads a per-recording `note/*.pkl`
 annotation. Part labels such as S1/S2 or A1/A2 are collapsed to S/A/T/B before
 constructing arrays with shape `[time, 4, 88]`.
 
-Three target-assignment modes are central to the manuscript:
+Three target-assignment modes are central to the manuscript. The current RP/OC
+implementations anchor every trusted S/A/T/B label and operate only on unknown
+or ambiguous labels:
 
 - `part_name`: preserve the annotation's named SATB part.
-- `range_prior`: assign each event using typical SATB ranges plus a mismatch
-  cost.
-- `ordered_continuity`: solve each onset group in descending pitch order and
-  add melody-continuity and overlap costs; groups larger than four fall back
-  to independent assignment.
+- `range_prior`: assign an ambiguous event using typical SATB ranges.
+- `ordered_continuity`: add gap-aware melody-continuity and overlap costs while
+  preserving annotated divisi. Explicit `legacy_*` modes reproduce the former
+  all-note relabeling for diagnostics.
 
 Missing SATB labels now raise an error. Online note shifting is also blocked
 for choral training because the audited implementation shifts audio/global
@@ -47,7 +53,7 @@ frames/s), and 229 log-Mel bins.
 
 ## 4. PagCT
 
-`src/models.py::FlexibleHPT` is the part-agnostic system. It predicts merged
+`src/models.py::PagCT` is the part-agnostic system. It predicts merged
 onset, offset, and frame probabilities and refines the frame stream using event
 cues. Its decoded output is a single note-event stream without SATB labels.
 
@@ -57,14 +63,15 @@ so these two classes are not parameter-matched merely by changing their heads.
 
 ## 5. PawCT
 
-`src/models.py::FlexibleHPTChoralStream` contains the part-aware model:
+`src/models.py::PawCT` contains the part-aware model:
 
 1. A shared CRNN maps the mixture to a 512-dimensional sequence.
 2. Four onset, frame-seed, and offset heads predict S/A/T/B activity.
 3. A BiGRU refines the voice-wise frame predictions using detached onset and
    offset cues.
-4. A segment-level presence head predicts active parts and softly gates each
-   voice output.
+4. A segment-level presence head predicts active parts as an auxiliary task.
+   New configs do not multiply note probabilities by this clip-level estimate;
+   the historical gate remains available for ablation/checkpoint compatibility.
 5. A max over voices forms merged `frame_output`, `onset_output`, and
    `offset_output` tensors.
 
@@ -78,8 +85,13 @@ voice frame/onset/offset predictions, their merged union, and part presence.
 The union terms encourage the four heads, collectively, to preserve global
 note content.
 
-The code also retains optional assignment regularizers for experimental VA2
-modules. Those modules are not part of the reported PawCT-OC system.
+The loss also provides opt-in positive-class weighting plus range and temporal
+continuity penalties for the normal PawCT heads. OC operates on consecutive
+annotated onset events rather than every held frame, follows the annotated
+interval instead of favouring zero motion, and exponentially down-weights
+pairs separated by a long silent gap measured from the frame target. Separate assignment
+regularizers for experimental VA2 modules are retained but were not part of
+the reported PawCT-OC system.
 
 The target processor creates precise onset/offset regression rolls, but the
 located choral loss supervises binary onset/offset rolls. The regression-style
@@ -90,16 +102,21 @@ supervises onset/offset regression.
 ## 7. Training loop
 
 `src/main_iter.py` builds the selected model/datasets, runs Adam or AdamW,
-periodically evaluates segment metrics, and saves checkpoints. It logs to
-TensorBoard and optionally Weights & Biases.
+periodically evaluates deterministic validation segments, and saves versioned
+checkpoints. New checkpoints include the resolved config and model/target
+metadata; loading rejects unexplained state-dict keys or a changed pitch/audio
+frontend identity. Model initialization, loader workers, the logical sampler,
+and Python/NumPy/Torch RNG state are recorded for audited continuation. It logs
+to TensorBoard and optionally Weights & Biases.
 
-The current loop runs for `exp.total_iteration` and saves periodically. It does
-not yet implement the manuscript's stated early stopping by validation loss or
-best-validation-loss checkpoint selection.
+The loop runs for at most `exp.total_iteration`, saves numbered checkpoints,
+and writes `best.pth` using a declared deterministic validation metric. Optional
+patience-based stopping is available. This is not identical to the manuscript's
+stated validation-loss rule unless that exact metric is implemented and selected.
 
 ## 8. Decoding and inference
 
-`src/inference.py::PianoTranscriber` frames a complete waveform, performs
+`src/inference.py::ChoralAMTTranscriber` frames a complete waveform, performs
 overlap inference, stitches the segments, and calls the selected post-
 processor in `src/utilities.py`. The post-processors find onset/offset peaks,
 pair them with frame activity, and return note events.
@@ -110,7 +127,7 @@ Dataset inference writes probability/target bundles to split-isolated paths:
 workspaces/probs/<dataset>/<validation-or-test>/<model>/<checkpoint>/
 ```
 
-`PianoTranscriber.transcribe()` currently decodes the merged union channel.
+`ChoralAMTTranscriber.transcribe()` currently decodes the merged union channel.
 The paper visualization code contains voice-wise decoding, but a supported
 audio-to-four-track SATB MIDI command still needs to promote that logic into
 the public inference API.
@@ -136,7 +153,9 @@ available for ground-truth notes are zero-filled in some predicted-note paths.
 `src/calculate_scores.py` measures merged frame and note transcription.
 `src/calculate_choral_scores.py` decodes and scores S/A/T/B independently,
 including 50 ms and 100 ms onset metrics, onset+offset metrics, frame metrics,
-and part presence.
+and part presence. SATB voice and union references are rebuilt from the same
+immutable source annotations, never from RP/OC training-target rolls or packed
+pseudo-references stored with probabilities.
 
 `src/search_best_thresholds.py` performs a threshold grid search. The release
 version defaults to validation, stores validation and test probabilities

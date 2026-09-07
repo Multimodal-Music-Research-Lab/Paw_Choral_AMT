@@ -6,13 +6,20 @@ the manuscript's tables have been rerun.
 
 ## Present
 
-- [x] PawCT shared encoder, SATB heads, presence gate, and max union output.
-- [x] Part-name, range-prior, and ordered-continuity target assignment.
+- [x] PawCT shared encoder, SATB heads, auxiliary presence head, and max union output.
+- [x] Anchored part-name, range-prior, and divisi-aware ordered-continuity targets.
 - [x] Per-voice, union, and presence losses.
 - [x] PagCT and note-level BiLSTM Post-VA implementations.
 - [x] Merged and SATB evaluation at 50/100 ms onset tolerance.
 - [x] Manuscript Figure 3 generation path and matching example identifier.
 - [x] Validation/test probability separation and validation-default threshold search.
+- [x] Immutable part-name SATB frame references across RP/OC variants.
+- [x] One frame-quantized `note.pkl` union projector shared by choral PagCT and
+  PawCT training, inference, and scoring, independent of metric tolerance.
+- [x] Strict state-dict audit and resolved-config metadata in new checkpoints.
+- [x] Seeded model/data-loader initialization plus checkpointed Python, NumPy,
+  Torch, dataset, augmentation, and logical sampler state for audited resume.
+- [x] Decoder tests for frame-zero onsets, explicit offsets, and held notes.
 - [x] Public paths, declared dependencies, upstream attribution, and release scan.
 - [x] Data-free PawCT forward/union/loss-backward smoke test.
 
@@ -68,6 +75,23 @@ rounded away.
    release includes a guard, but historical threshold files need provenance.
 6. **Claim wording:** without paired confidence intervals or multiple seeds,
    avoid “significantly.”
+7. **Historical frame reference:** located RP/OC probability files stored their
+   own pseudo-target rolls, which were used for frame F1 while note F1 used
+   original part labels. Historical frame rows are not directly comparable and
+   must be regenerated with the immutable evaluator.
+8. **Artifact integrity:** formal scoring checks the packed split manifest,
+   current checkpoint filename/SHA-256/actual iteration, inference-run ID, and
+   per-recording HDF5 and SATB-reference hashes stored in every probability
+   file. Missing recordings, changed references, stale recordings, and partial
+   reruns that mix two versions of `best.pth` fail closed. The explicit
+   `exp.require_probability_provenance=false` escape hatch is for labelled
+   historical diagnostics only.
+9. **Historical global target:** the packed merged-MIDI parser could overwrite
+   overlapping same-pitch notes from different voices, miss long notes after a
+   finite event backtrack, and over-mask segment-boundary labels. Corrected
+   runs use complete `note.pkl` intervals and all-observed global masks. This is
+   a training/reference change, so historical checkpoints—including the
+   manuscript's 0.225 OC row—must not be reported as corrected results.
 
 ## Required release bundle per model
 
@@ -84,3 +108,7 @@ checkpoints/<model>/
 
 If a legacy `.pth` is published, document that it must be treated as trusted
 code-bearing input and report missing/unexpected state-dict keys at load time.
+Checkpoints created before the canonical `note.pkl` union projector also lack
+verifiable data-target semantics. Keep
+`exp.allow_legacy_canonical_union_semantics=false` for formal experiments; the
+opt-in exists only for explicitly labelled historical diagnostics.
