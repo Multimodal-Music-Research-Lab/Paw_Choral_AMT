@@ -60,6 +60,13 @@ class BuildYouChoraleCompositionSplitTest(unittest.TestCase):
         )
         self.assertEqual(split_builder.normalize_group_field('A-B'), 'a b')
 
+    def test_sequence_hash_matches_the_repository_recording_id_convention(self):
+        expected = hashlib.sha256(b'alpha\nbeta\n').hexdigest()
+        self.assertEqual(
+            split_builder._sequence_sha256(['beta', 'alpha']),
+            expected,
+        )
+
     def test_reports_official_overlap_and_builds_disjoint_artifacts(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

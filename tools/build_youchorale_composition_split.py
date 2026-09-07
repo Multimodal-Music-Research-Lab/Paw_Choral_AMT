@@ -80,12 +80,7 @@ def _sha256_bytes(payload: bytes) -> str:
 
 
 def _sequence_sha256(values: Iterable[str]) -> str:
-    canonical_values = sorted(values)
-    payload = json.dumps(
-        canonical_values,
-        ensure_ascii=False,
-        separators=(',', ':'),
-    ).encode('utf-8')
+    payload = ''.join(f'{value}\n' for value in sorted(values)).encode('utf-8')
     return _sha256_bytes(payload)
 
 
@@ -459,7 +454,8 @@ def build_composition_split(
                 'exact case-sensitive stem equality; file contents are not read'
             ),
             'hash_semantics': (
-                'SHA256 of a compact UTF-8 JSON array of sorted, exact stems'
+                'SHA256 of sorted, exact stems encoded as UTF-8, one per line '
+                'with a trailing newline'
             ),
             'packed_stems': len(packed_stems),
             'packed_stems_sha256': _sequence_sha256(packed_stems),
@@ -557,7 +553,8 @@ def build_composition_split(
         'unicode_database_version': unicodedata.unidata_version,
         'normalization': group_map['normalization'],
         'sequence_hash_semantics': (
-            'SHA256 of a compact UTF-8 JSON array after lexicographic sorting'
+            'SHA256 of values after lexicographic sorting, encoded as UTF-8 '
+            'one per line with a trailing newline'
         ),
         'metadata': {
             'rows': len(metadata),
