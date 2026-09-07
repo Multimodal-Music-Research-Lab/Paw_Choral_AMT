@@ -36,6 +36,7 @@ class BuildOverridesTest(unittest.TestCase):
             "target_assignment": "part_name",
             "voice_assignment_method": None,
             "youchorale_dir": "",
+            "youchorale_split_dir": "",
             "youchorale_pro_dir": "",
         }
         defaults.update(kwargs)
@@ -60,6 +61,18 @@ class BuildOverridesTest(unittest.TestCase):
 
         self.assertIn(
             "dataset.youchorale_dir=../NoteTranscription/dataset/test/YouChorale",
+            overrides,
+        )
+
+    def test_build_overrides_includes_external_youchorale_split(self):
+        args = self.make_args(
+            youchorale_split_dir="../repro/splits/composition_disjoint_v1"
+        )
+
+        overrides = search_best_thresholds.build_overrides(args)
+
+        self.assertIn(
+            "dataset.youchorale_split_dir=../repro/splits/composition_disjoint_v1",
             overrides,
         )
 

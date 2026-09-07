@@ -54,6 +54,21 @@ class ChoralPriorLossTest(unittest.TestCase):
         self.assertEqual(float(voice_range_prior_loss(in_range, self.cfg)), 0.0)
         self.assertGreater(float(voice_range_prior_loss(out_of_range, self.cfg)), 0.0)
 
+    def test_range_prior_gives_confident_violations_stronger_logit_gradients(self):
+        logits = torch.full((1, 1, 4, 88), -20.0, requires_grad=True)
+        with torch.no_grad():
+            # Both notes are below the soprano range. A 99% violation should
+            # receive more correction than a 50% violation, not less.
+            logits[0, 0, 0, 40 - 21] = 0.0
+            logits[0, 0, 0, 41 - 21] = torch.logit(torch.tensor(0.99))
+
+        loss = voice_range_prior_loss(torch.sigmoid(logits), self.cfg)
+        loss.backward()
+
+        moderate_gradient = abs(float(logits.grad[0, 0, 0, 40 - 21]))
+        confident_gradient = abs(float(logits.grad[0, 0, 0, 41 - 21]))
+        self.assertGreater(confident_gradient, moderate_gradient)
+
     def test_range_prior_never_penalizes_a_trusted_out_of_range_positive(self):
         output = torch.zeros((1, 1, 4, 88))
         output[0, 0, 0, 40 - 21] = 1.0
@@ -64,6 +79,23 @@ class ChoralPriorLossTest(unittest.TestCase):
             float(voice_range_prior_loss(output, self.cfg, target=target, mask=mask)),
             0.0,
         )
+
+    def test_range_prior_has_no_gradient_on_a_trusted_out_of_range_positive(self):
+        output = torch.zeros((1, 1, 4, 88), requires_grad=True)
+        target = torch.zeros_like(output)
+        with torch.no_grad():
+            output[0, 0, 0, 40 - 21] = 0.9
+            target[0, 0, 0, 40 - 21] = 1.0
+
+        loss = voice_range_prior_loss(
+            output,
+            self.cfg,
+            target=target,
+            mask=torch.ones_like(output),
+        )
+        loss.backward()
+
+        self.assertEqual(float(output.grad[0, 0, 0, 40 - 21]), 0.0)
 
     def test_range_prior_respects_supervision_mask(self):
         output = torch.zeros((1, 1, 4, 88))
@@ -104,6 +136,25 @@ class ChoralPriorLossTest(unittest.TestCase):
             float(voice_continuity_prior_loss(flattened_prediction, target)),
             0.0,
         )
+
+    def test_continuity_prior_treats_multi_pitch_onset_as_a_trajectory_break(self):
+        target = torch.zeros((1, 3, 1, 88))
+        target[0, 0, 0, 20] = 1.0
+        target[0, 1, 0, 10] = 1.0
+        target[0, 1, 0, 30] = 1.0
+        target[0, 2, 0, 50] = 1.0
+
+        # If the divisi frame were reduced to its centroid (20), the final
+        # flattened prediction would incur a large, misleading OC penalty.
+        prediction = torch.zeros_like(target, requires_grad=True)
+        with torch.no_grad():
+            prediction[0, :, 0, 20] = 1.0
+
+        loss = voice_continuity_prior_loss(prediction, target)
+        loss.backward()
+
+        self.assertEqual(float(loss), 0.0)
+        self.assertTrue(torch.equal(prediction.grad, torch.zeros_like(prediction.grad)))
 
     def test_continuity_prior_ignores_masked_frames_and_gradients(self):
         output = torch.zeros((1, 2, 1, 4), requires_grad=True)

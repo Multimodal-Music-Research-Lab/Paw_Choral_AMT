@@ -122,6 +122,61 @@ def _load_split_file(dataset_dir: Path, split: str):
     return None, []
 
 
+def _load_recording_manifest(recording_manifest: Path):
+    recording_manifest = Path(recording_manifest)
+    if not recording_manifest.is_file():
+        raise FileNotFoundError(
+            f'Recording manifest does not exist: {recording_manifest}'
+        )
+
+    payload = recording_manifest.read_bytes()
+    try:
+        values = json.loads(payload.decode('utf-8'))
+    except UnicodeDecodeError as error:
+        raise ValueError(
+            f'{recording_manifest} must be UTF-8 encoded'
+        ) from error
+    except json.JSONDecodeError as error:
+        raise ValueError(
+            f'{recording_manifest} is not valid JSON: {error.msg}'
+        ) from error
+
+    if not isinstance(values, list):
+        raise ValueError(
+            f'{recording_manifest} must contain a JSON list of recording IDs'
+        )
+    if not values:
+        raise ValueError(f'{recording_manifest} must not be empty')
+
+    recording_ids = []
+    for index, value in enumerate(values):
+        if not isinstance(value, str) or not value:
+            raise ValueError(
+                f'{recording_manifest} item {index} is a missing or non-string ID'
+            )
+        if value != value.strip():
+            raise ValueError(
+                f'{recording_manifest} item {index} has surrounding whitespace'
+            )
+        recording_ids.append(value)
+
+    duplicates = sorted(
+        recording_id
+        for recording_id, count in Counter(recording_ids).items()
+        if count > 1
+    )
+    if duplicates:
+        raise ValueError(
+            f'{recording_manifest} contains duplicate recording IDs: {duplicates}'
+        )
+
+    return sorted(recording_ids), {
+        'filename': recording_manifest.name,
+        'sha256': hashlib.sha256(payload).hexdigest(),
+        'recordings': len(recording_ids),
+    }
+
+
 def _load_packed_recording_ids(packed_hdf5_dir: Path):
     packed_hdf5_dir = Path(packed_hdf5_dir)
     if not packed_hdf5_dir.is_dir():
@@ -155,41 +210,56 @@ def load_selected_recordings(
     split: str,
     *,
     packed_hdf5_dir: Path | None = None,
+    recording_manifest: Path | None = None,
 ):
-    selected_splits = tuple(SPLIT_FILES) if split == 'all' else (split,)
-    split_files = {}
-    memberships = defaultdict(list)
-    missing_splits = []
-
-    for split_name in selected_splits:
-        filename, recording_ids = _load_split_file(dataset_dir, split_name)
-        if filename is None:
-            missing_splits.append(split_name)
-            continue
-        split_files[split_name] = filename
-        for recording_id in recording_ids:
-            memberships[recording_id].append(split_name)
-
-    if split != 'all' and missing_splits:
-        candidates = ', '.join(SPLIT_FILES[split])
-        raise FileNotFoundError(
-            f'Missing split file for {split!r} in {dataset_dir}; expected {candidates}'
+    explicit_manifest = None
+    if recording_manifest is not None:
+        manifest_recording_ids, explicit_manifest = _load_recording_manifest(
+            recording_manifest
         )
-    if not memberships:
-        raise ValueError(f'No recording IDs found for split={split!r} in {dataset_dir}')
+        split_files = {}
+        missing_splits = []
+        duplicate_memberships = {}
+    else:
+        selected_splits = tuple(SPLIT_FILES) if split == 'all' else (split,)
+        split_files = {}
+        memberships = defaultdict(list)
+        missing_splits = []
 
-    duplicate_memberships = {
-        recording_id: sorted(split_names)
-        for recording_id, split_names in memberships.items()
-        if len(split_names) > 1
-    }
-    manifest_recording_ids = sorted(memberships)
+        for split_name in selected_splits:
+            filename, recording_ids = _load_split_file(dataset_dir, split_name)
+            if filename is None:
+                missing_splits.append(split_name)
+                continue
+            split_files[split_name] = filename
+            for recording_id in recording_ids:
+                memberships[recording_id].append(split_name)
+
+        if split != 'all' and missing_splits:
+            candidates = ', '.join(SPLIT_FILES[split])
+            raise FileNotFoundError(
+                f'Missing split file for {split!r} in {dataset_dir}; expected {candidates}'
+            )
+        if not memberships:
+            raise ValueError(
+                f'No recording IDs found for split={split!r} in {dataset_dir}'
+            )
+
+        duplicate_memberships = {
+            recording_id: sorted(split_names)
+            for recording_id, split_names in memberships.items()
+            if len(split_names) > 1
+        }
+        manifest_recording_ids = sorted(memberships)
+
     result = {
         'recording_ids': manifest_recording_ids,
         'split_files': dict(sorted(split_files.items())),
         'missing_splits': sorted(missing_splits),
         'duplicate_memberships': dict(sorted(duplicate_memberships.items())),
     }
+    if explicit_manifest is not None:
+        result['recording_manifest'] = explicit_manifest
     if packed_hdf5_dir is None:
         return result
 
@@ -339,6 +409,7 @@ def audit_dataset(
     classes_num: int = 88,
     frames_per_second: float = 100.0,
     packed_hdf5_dir=None,
+    recording_manifest=None,
 ):
     dataset_dir = Path(dataset_dir)
     if classes_num <= 0:
@@ -355,6 +426,7 @@ def audit_dataset(
         dataset_dir,
         split,
         packed_hdf5_dir=packed_hdf5_dir,
+        recording_manifest=recording_manifest,
     )
     recording_ids = selection['recording_ids']
     cfg_by_method = {
@@ -457,6 +529,8 @@ def audit_dataset(
     }
     if 'packed_coverage' in selection:
         dataset_result['packed_coverage'] = selection['packed_coverage']
+    if 'recording_manifest' in selection:
+        dataset_result['recording_manifest'] = selection['recording_manifest']
 
     result = {
         'schema_version': 1,
@@ -544,6 +618,15 @@ def parse_args(argv=None):
             'manifest coverage; source annotations remain read-only.'
         ),
     )
+    parser.add_argument(
+        '--recording-manifest',
+        default='',
+        help=(
+            'Optional explicit JSON list of recording IDs. When set, this '
+            'strict frozen manifest replaces dataset-dir split discovery; '
+            '--split remains the label recorded in the audit.'
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -556,6 +639,7 @@ def main(argv=None):
         classes_num=args.classes_num,
         frames_per_second=args.frames_per_second,
         packed_hdf5_dir=args.packed_hdf5_dir or None,
+        recording_manifest=args.recording_manifest or None,
     )
     rendered = json.dumps(result, indent=2, sort_keys=True)
     print(rendered)

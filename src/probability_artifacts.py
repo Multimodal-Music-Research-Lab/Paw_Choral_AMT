@@ -24,8 +24,11 @@ from checkpointing import (
     checkpoint_target_semantics,
 )
 from choral_targets import resolve_target_assignment
+from split_manifests import (
+    configured_split_manifest_identity,
+    select_split_hdf5_paths,
+)
 from utilities import (
-    decode_hdf5_attr,
     get_dataset_hdf5s_dir,
     get_filename,
     get_model_name,
@@ -135,12 +138,13 @@ def expected_split_hdf5_by_stem(cfg, eval_split=None):
 
     _, hdf5_paths = traverse_folder(hdf5s_dir)
     selected = {}
-    for hdf5_path in sorted(hdf5_paths):
-        with h5py.File(hdf5_path, "r") as hf:
-            if "split" not in hf.attrs:
-                raise KeyError(f"Packed evaluation file has no split attribute: {hdf5_path}")
-            if str(decode_hdf5_attr(hf.attrs["split"])) != split:
-                continue
+    selected_paths = select_split_hdf5_paths(
+        cfg,
+        str(cfg.dataset.test_set),
+        hdf5_paths,
+        split,
+    )
+    for hdf5_path in selected_paths:
         stem = get_filename(hdf5_path)
         if stem in selected:
             raise RuntimeError(
@@ -242,6 +246,10 @@ class ProbabilityArtifactValidator:
             raise FileNotFoundError(f"Missing probs dir: {self.probs_dir}")
 
         self.hdf5_by_stem = expected_split_hdf5_by_stem(cfg, self.eval_split)
+        self.expected_split_manifest_identity = configured_split_manifest_identity(
+            cfg,
+            str(cfg.dataset.test_set),
+        )
         self.probability_names = tuple(
             sorted(name for name in os.listdir(self.probs_dir) if name.endswith(".pkl"))
         )
@@ -529,6 +537,21 @@ class ProbabilityArtifactValidator:
                     f"Probability provenance mismatch for {key} in {prob_path}: "
                     f"expected {expected_value!r}, found {provenance.get(key)!r}"
                 )
+
+        expected_split_manifest = getattr(
+            self,
+            "expected_split_manifest_identity",
+            configured_split_manifest_identity(
+                self.cfg,
+                str(self.cfg.dataset.test_set),
+            ),
+        )
+        if provenance.get("split_manifest") != expected_split_manifest:
+            raise RuntimeError(
+                f"Probability split-manifest mismatch in {prob_path}: expected "
+                f"{expected_split_manifest!r}, found "
+                f"{provenance.get('split_manifest')!r}"
+            )
 
         expected_union = self.expected_data_target_semantics.get(
             "canonical_union"

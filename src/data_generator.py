@@ -25,6 +25,10 @@ except Exception:
 
 from canonical_union import build_canonical_union_rolls
 from choral_targets import ChoralTargetBuilder, require_complete_satb_reference
+from split_manifests import (
+    configured_split_manifest_identity,
+    select_split_hdf5_paths,
+)
 from utilities import (
     TargetProcessor,
     build_target_masks,
@@ -1063,15 +1067,28 @@ class Sampler:
             self.choral_note_dir = _get_choral_note_dir(cfg, self.dataset_type)
 
         _, hdf5_paths = traverse_folder(self.hdf5s_dir)
+        self.split_manifest_identity = configured_split_manifest_identity(
+            cfg,
+            self.dataset_type,
+        )
+        if self.split_manifest_identity is not None:
+            hdf5_paths = select_split_hdf5_paths(
+                cfg,
+                self.dataset_type,
+                hdf5_paths,
+                split,
+            )
         self.segment_list = []
         self.hdf5_content_manifest = []
         file_counter = 0
 
         for hdf5_path in hdf5_paths:
             with h5py.File(hdf5_path, 'r') as hf:
-                if decode_hdf5_attr(hf.attrs['split']) != split:
+                if (
+                    self.split_manifest_identity is None
+                    and decode_hdf5_attr(hf.attrs['split']) != split
+                ):
                     continue
-
                 audio_name = os.path.basename(hdf5_path)
                 if self.dataset_type == 'maestro':
                     file_id = [decode_hdf5_attr(hf.attrs['year']), audio_name]
@@ -1131,6 +1148,11 @@ class Sampler:
             {
                 'segments': self.segment_list,
                 'hdf5_content_manifest': self.hdf5_content_manifest,
+                'split_manifest_identity': getattr(
+                    self,
+                    'split_manifest_identity',
+                    None,
+                ),
             },
             ensure_ascii=True,
             allow_nan=False,

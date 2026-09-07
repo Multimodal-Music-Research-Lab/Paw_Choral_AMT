@@ -22,6 +22,13 @@ authoritative target/range audit for runs using that 434-recording pack and
 documents its incomplete train/validation coverage. It remains descriptive,
 not a model result.
 
+The frozen
+[`available-audio-434` composition-disjoint v1 split](splits/youchorale_available_audio_434_composition_disjoint_v1/README.md)
+contains the exact group map and train/validation/test manifests for the
+stronger generalization protocol. It has 242 normalized composition groups and
+zero work overlap between its three splits. It is a protocol artifact, not a
+model result.
+
 Future corrected model measurements must live in a separately named locked
 result bundle with source, configuration, checkpoint, split, and artifact
 hashes. They must never overwrite either the historical `expected/` values or

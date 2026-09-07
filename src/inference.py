@@ -38,6 +38,11 @@ from probability_artifacts import (
     resolve_inference_checkpoint_path,
     sha256_file,
 )
+from split_manifests import (
+    configured_split_manifest_identity,
+    select_split_hdf5_paths as select_configured_split_hdf5_paths,
+    validate_checkpoint_split_manifest,
+)
 from utilities import (
     build_target_masks,
     forward,
@@ -66,8 +71,28 @@ def build_post_processor(cfg):
     raise ValueError(f'Unsupported post.post_processor_type: {post_type}')
 
 
-def select_split_hdf5_paths(hdf5_paths, eval_split: str) -> list[str]:
-    """Return deterministic packed examples belonging to one evaluation split."""
+def select_split_hdf5_paths(
+    hdf5_paths,
+    eval_split: str,
+    *,
+    cfg=None,
+    dataset_name=None,
+) -> list[str]:
+    """Return deterministic packed examples belonging to one evaluation split.
+
+    ``cfg`` and ``dataset_name`` activate the shared external-manifest path.
+    Keeping both optional preserves this helper's legacy unit-test API.
+    """
+
+    if cfg is not None:
+        if dataset_name is None:
+            raise ValueError("dataset_name is required when cfg is provided")
+        return select_configured_split_hdf5_paths(
+            cfg,
+            dataset_name,
+            hdf5_paths,
+            eval_split,
+        )
 
     selected = []
     for hdf5_path in sorted(hdf5_paths):
@@ -241,6 +266,10 @@ def build_inference_provenance(cfg, transcriber, evaluation_reference_assignment
         'dataset_name': str(cfg.dataset.test_set),
         'model_name': get_model_name(cfg),
         'evaluation_split': str(getattr(cfg.dataset, 'eval_split', 'validation')),
+        'split_manifest': configured_split_manifest_identity(
+            cfg,
+            str(cfg.dataset.test_set),
+        ),
         'evaluation_reference_assignment': evaluation_reference_assignment,
         'inference_run_id': uuid.uuid4().hex,
         'checkpoint_identity': deepcopy(transcriber.checkpoint_identity),
@@ -420,6 +449,11 @@ class ChoralAMTTranscriber:
         del checkpoint_snapshot
         reject_missing_checkpoint_parameters(self.model, load_report)
         validate_checkpoint_behavior(cfg, checkpoint)
+        validate_checkpoint_split_manifest(
+            cfg,
+            str(cfg.dataset.test_set),
+            checkpoint,
+        )
         self.checkpoint_load_report = load_report
         checkpoint_iteration = checkpoint.get('iteration')
         if isinstance(checkpoint_iteration, torch.Tensor) and checkpoint_iteration.numel() == 1:
@@ -539,7 +573,12 @@ def infer(cfg):
             f'No SATB note-directory mapping for dataset={cfg.dataset.test_set}'
         )
     _, hdf5_paths = traverse_folder(hdf5s_dir)
-    hdf5_paths = select_split_hdf5_paths(hdf5_paths, eval_split)
+    hdf5_paths = select_split_hdf5_paths(
+        hdf5_paths,
+        eval_split,
+        cfg=cfg,
+        dataset_name=str(cfg.dataset.test_set),
+    )
     if not hdf5_paths:
         raise RuntimeError(
             f'No packed recordings found for split={eval_split} in {hdf5s_dir}'

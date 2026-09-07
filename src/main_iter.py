@@ -50,6 +50,7 @@ from data_generator import (
 from evaluate import SegmentEvaluator
 from losses import get_loss_func, resolve_loss_type
 from models import build_model
+from split_manifests import configured_split_identities
 from utilities import create_folder, create_logging, get_model_name, get_task_spec, move_data_to_device
 
 
@@ -239,6 +240,18 @@ def build_training_semantics_signature(cfg) -> dict:
                 )
             ),
             'test_set': str(get('dataset', 'test_set', default='smd')),
+            'split_manifests': configured_split_identities(
+                resolved,
+                [
+                    get('dataset', 'train_set', default='maestro'),
+                    get(
+                        'exp',
+                        'selection_dataset',
+                        default=get('dataset', 'test_set', default='smd'),
+                    ),
+                    get('dataset', 'test_set', default='smd'),
+                ],
+            ),
             'cantoria_f0_source': str(
                 get('dataset', 'cantoria_f0_source', default='crepe')
             ).strip().lower(),

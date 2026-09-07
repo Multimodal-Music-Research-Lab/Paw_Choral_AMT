@@ -251,6 +251,91 @@ class AuditChoralTargetsTest(unittest.TestCase):
             self.assertEqual(json.loads(stdout.getvalue()), expected)
             self.assertEqual(json.loads(output_path.read_text()), expected)
 
+    def test_explicit_recording_manifest_is_strict_auditable_and_cli_forwarded(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            manifest_path = root / 'frozen' / 'train.json'
+            manifest_path.parent.mkdir()
+            manifest_payload = b'[\n  "song_valid",\n  "song_a"\n]\n'
+            manifest_path.write_bytes(manifest_payload)
+            # The explicit manifest must replace, rather than merge with, the
+            # dataset's official split file.
+            (dataset_dir / 'train.json').unlink()
+
+            expected = audit_choral_targets.audit_dataset(
+                dataset_dir,
+                'train',
+                recording_manifest=manifest_path,
+            )
+
+            self.assertEqual(expected['dataset']['recordings'], 2)
+            self.assertEqual(expected['dataset']['split_files'], {})
+            self.assertEqual(expected['notes']['total'], 8)
+            self.assertEqual(
+                expected['dataset']['recording_ids_sha256'],
+                audit_choral_targets._recording_id_hash(['song_a', 'song_valid']),
+            )
+            self.assertEqual(
+                expected['dataset']['recording_manifest'],
+                {
+                    'filename': 'train.json',
+                    'recordings': 2,
+                    'sha256': hashlib.sha256(manifest_payload).hexdigest(),
+                },
+            )
+
+            output_path = root / 'explicit-audit.json'
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                return_code = audit_choral_targets.main([
+                    '--dataset-dir',
+                    str(dataset_dir),
+                    '--split',
+                    'train',
+                    '--recording-manifest',
+                    str(manifest_path),
+                    '--output-json',
+                    str(output_path),
+                ])
+
+            self.assertEqual(return_code, 0)
+            self.assertEqual(json.loads(stdout.getvalue()), expected)
+            self.assertEqual(json.loads(output_path.read_text()), expected)
+
+    def test_explicit_recording_manifest_rejects_invalid_or_ambiguous_input(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            manifest_path = root / 'manifest.json'
+
+            with self.assertRaises(FileNotFoundError):
+                audit_choral_targets.audit_dataset(
+                    dataset_dir,
+                    'train',
+                    recording_manifest=manifest_path,
+                )
+
+            invalid_cases = (
+                (b'{"recording": "song_a"}', 'JSON list'),
+                (b'[]', 'must not be empty'),
+                (b'[1]', 'missing or non-string'),
+                (b'[""]', 'missing or non-string'),
+                (b'[" song_a"]', 'surrounding whitespace'),
+                (b'["song_a", "song_a"]', 'duplicate recording IDs'),
+                (b'{broken', 'not valid JSON'),
+                (b'\xff', 'UTF-8 encoded'),
+            )
+            for payload, message in invalid_cases:
+                with self.subTest(payload=payload):
+                    manifest_path.write_bytes(payload)
+                    with self.assertRaisesRegex(ValueError, message):
+                        audit_choral_targets.audit_dataset(
+                            dataset_dir,
+                            'train',
+                            recording_manifest=manifest_path,
+                        )
+
     def test_assignment_statistics_keep_original_note_denominator(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             dataset_dir = Path(temp_dir) / 'DuplicateAttackChoral'

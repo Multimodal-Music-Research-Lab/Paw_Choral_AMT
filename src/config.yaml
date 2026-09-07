@@ -145,6 +145,10 @@ dataset:
   smd_dir: "./datasets/SMD"
   csd_dir: "./data/ChoralSingingDataset"
   youchorale_dir: "./data/YouChorale"
+  # Optional train/valid/test JSON directory. When set, its three disjoint
+  # manifests must cover the packed YouChorale stems exactly and override the
+  # historical split attributes stored inside those HDF5 files.
+  youchorale_split_dir: null
   youchorale_pro_dir: "./data/YouChorale-Pro"
   maestro_dir: "./datasets/maestro-v3.0.0"
   maps_dir: "./datasets/MAPS"

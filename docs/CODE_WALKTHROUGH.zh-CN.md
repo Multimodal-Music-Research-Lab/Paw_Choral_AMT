@@ -15,14 +15,20 @@
 论文中的三个标注策略也在这里。新版 RP/OC 默认锁定可信的 S/A/T/B、S1/S2 等标签，只推断未知或明确歧义的标签：
 
 1. `part_name`：直接相信原始声部名。
-2. `range_prior`（RP）：参考典型 SATB 音域分配歧义音符，也可作为 voice head 的软音域正则。
-3. `ordered_continuity`（OC）：使用随时间间隔衰减的旋律连续性和重叠代价，同时保留 divisi。新版软 OC loss 连接同一声部相邻的标注 onset 事件（即使中间有休止），比较“预测音高运动”和“标注音高运动”；它按事件归一化并衰减过远的连接，不会再被大量持续帧稀释，也不会把正确的旋律跳进拉平。`legacy_*` 模式只用于复现旧的全量重标行为。
+2. `range_prior`（RP）：参考典型 SATB 音域分配歧义音符，也可作为 voice head 的软音域正则。软 RP 使用“越界位置应为负类”的 BCE，因此越自信的错误越会得到强纠正，同时所有可信正标签都从该惩罚中排除。
+3. `ordered_continuity`（OC）：使用随时间间隔衰减的旋律连续性和重叠代价，同时保留 divisi。新版软 OC loss 只连接同一声部相邻、单音且无歧义的标注 onset 事件（即使中间有休止），比较“预测音高运动”和“标注音高运动”；同帧多音/divisi 仍由原始 BCE 完整监督，但会切断轨迹链，避免取出一个并不存在的平均音高。它按事件归一化并衰减过远的连接，不会再被大量持续帧稀释，也不会把正确的旋律跳进拉平。`legacy_*` 模式只用于复现旧的全量重标行为。
 
 真实数据审计还发现，现有声学 HDF5 不是 452 首完整 manifest：train
 为 376/392，validation 为 28/30，test 为 30/30。因此用这批数据训练时
 必须明确写成 `available-audio-434` 协议并冻结 ID hash；RP 应使用实际
 376 首 train 的 p01/p99 音域 S 60–79、A 55–74、T 50–70、B 41–62，
 而不能混用包含缺失音频标注的统计。
+
+如果设置 `dataset.youchorale_split_dir`，训练、推理、阈值搜索和评分会
+统一读取外部冻结的 train/valid/test manifests，而不是继续相信 HDF5 内
+旧的 split 属性。代码会检查三份列表两两不重叠、合并后刚好覆盖全部
+HDF5 stem，并把与本机路径无关的 manifest identity 写入 checkpoint 和
+probability provenance；不同 split 的 checkpoint 不能混用。
 
 ## PawCT 为什么需要 union loss
 
@@ -44,3 +50,8 @@
 - 目前正式 `ChoralAMTTranscriber` 只输出合并 union；四轨 SATB 解码逻辑仍在可视化代码里，尚需抽成稳定 CLI。
 
 因此，最准确的定位是：**核心论文实现和作图代码已经找对并整理出来，但论文数值的冻结复现包还没有完成。**
+
+另外，`tools/evaluate_label_masking.py` 是一个 CPU-only 的训练标签诊断：
+它用固定的 10/25/50% 嵌套遮蔽检查 RP/OC 能否恢复被藏起的声部标签，
+并用同一批 note ID 做循环音域负对照。这里得到的是 prior validity，
+不是声学转录分数。

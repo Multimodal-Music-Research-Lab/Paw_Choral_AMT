@@ -23,9 +23,10 @@ from choral_targets import resolve_target_assignment
 
 CHECKPOINT_SCHEMA_VERSION = 2
 MODEL_INPUT_IDENTITY_SCHEMA_VERSION = 2
-# Version 3 replaces the frame-adjacent target-relative OC loss with an
-# onset-event trajectory objective and true silent-gap decay.
-PRIOR_LOSS_SEMANTICS_VERSION = 3
+# Version 4 uses negative-label BCE for effective RP gradients and excludes
+# ambiguous multi-pitch onset frames from OC trajectory pairs. Version 3 had
+# the event-level OC objective and true silent-gap decay but neither hardening.
+PRIOR_LOSS_SEMANTICS_VERSION = 4
 
 
 class CheckpointFormatError(ValueError):

@@ -138,8 +138,19 @@ def voice_range_prior_loss(
         penalty_mask = penalty_mask * (1.0 - target.to(output.dtype))
     if mask is not None:
         penalty_mask = penalty_mask * mask.to(output.dtype)
+    # A linear probability penalty has a counterproductive gradient through a
+    # sigmoid: d p / d logit = p(1-p), so the strongest range violations
+    # receive almost no corrective signal as p approaches one.  Negative-label
+    # BCE instead gives d loss / d logit = p and therefore focuses the prior on
+    # confident unsupported notes while retaining a proper probabilistic loss.
+    compute_dtype = torch.float64 if output.dtype == torch.float64 else torch.float32
+    probability = output.to(compute_dtype)
+    eps = torch.finfo(compute_dtype).eps
+    probability = torch.clamp(probability, min=0.0, max=1.0 - eps)
+    matrix = -torch.log1p(-probability)
+    penalty_mask = penalty_mask.to(matrix.dtype)
     denom = torch.clamp(penalty_mask.sum(), min=1.0)
-    return torch.sum(output * penalty_mask) / denom
+    return torch.sum(matrix * penalty_mask) / denom
 
 
 def voice_continuity_prior_loss(
@@ -213,7 +224,15 @@ def voice_continuity_prior_loss(
     ).sum(dim=-1) / target_mass
 
     fully_supervised = torch.all(effective_mask > 0, dim=-1)
-    event_active = (target_events.to(output.dtype).sum(dim=-1) > 0) & fully_supervised
+    target_event_count = (target_events.to(output.dtype) > 0).sum(dim=-1)
+    event_present = (target_event_count > 0) & fully_supervised
+    # A multi-pitch onset within one voice has no unique melodic successor or
+    # predecessor.  Its centroid can even be a pitch that was never annotated.
+    # Keep every positive in the supervised BCE, but use only single-pitch
+    # onset frames in this trajectory prior.  All onset frames still enter the
+    # event chain below so an ambiguous divisi frame forms a barrier rather
+    # than being silently skipped and linking melodies across it.
+    event_unambiguous = (target_event_count == 1) & fully_supervised
     weighted_loss = _zero_loss(output)
     pair_count = output.new_zeros((), dtype=torch.float32)
 
@@ -228,7 +247,7 @@ def voice_continuity_prior_loss(
         ) & activity_fully_supervised
     else:
         activity_fully_supervised = fully_supervised
-        activity_active = event_active
+        activity_active = event_present
 
     time_indices = torch.arange(
         output.shape[1],
@@ -243,7 +262,7 @@ def voice_continuity_prior_loss(
     # The shifted cumulative maximum identifies the previous onset for every
     # current event without a CUDA-synchronising nonzero/Python loop.
     event_locations = torch.where(
-        event_active,
+        event_present,
         time_indices,
         torch.full_like(time_indices, -1),
     )
@@ -253,6 +272,11 @@ def voice_continuity_prior_loss(
         latest_event[:, :-1, :],
     ), dim=1)
     previous_event_safe = torch.clamp(previous_event, min=0)
+    previous_event_unambiguous = torch.gather(
+        event_unambiguous,
+        dim=1,
+        index=previous_event_safe,
+    )
 
     previous_output_center = torch.gather(
         output_center,
@@ -292,8 +316,9 @@ def voice_continuity_prior_loss(
     )
     invalid_through_current = invalid_prefix[:, 1:, :]
     pair_valid = (
-        event_active
+        event_unambiguous
         & (previous_event >= 0)
+        & previous_event_unambiguous
         & ((invalid_through_current - invalid_before_previous) == 0)
     )
     pair_valid_float = pair_valid.to(torch.float32)

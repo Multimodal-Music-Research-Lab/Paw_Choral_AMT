@@ -1,0 +1,4363 @@
+{
+  "assignment": {
+    "cuts": "floor(0.8 * groups), floor(0.9 * groups)",
+    "group_key": "compact UTF-8 JSON array [normalized_composer,normalized_title]",
+    "rank": "SHA256(UTF-8(salt + group_key)) ascending",
+    "salt": "pawct-icassp2027-v1"
+  },
+  "groups": [
+    {
+      "group_key": "[\"philips\",\"surgens jesus\"]",
+      "normalized_composer": "philips",
+      "normalized_title": "surgens jesus",
+      "rank_sha256": "02c46518994a149d636390f7a9610da6c9228e7e5c8a7b62040b7dea83bf34fc",
+      "recording_ids": [
+        "mHGBkvXDmII",
+        "y1-O2qu_u8Y"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"kodaly\",\"esti dal\"]",
+      "normalized_composer": "kodaly",
+      "normalized_title": "esti dal",
+      "rank_sha256": "034d7ab192f287da67c6801f3a2b2e795b27375f3b5b808f21223eb63a1a78b5",
+      "recording_ids": [
+        "U5BcK35G6hE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"palestrina\",\"fuit homo\"]",
+      "normalized_composer": "palestrina",
+      "normalized_title": "fuit homo",
+      "rank_sha256": "035562bdd368781d475e9c54b7158d01baee169d9ef69d4e5da1a0f230476614",
+      "recording_ids": [
+        "kmJvK57OhuI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"arkhangelsky\",\"pomyshlyayu den strashnyi\"]",
+      "normalized_composer": "arkhangelsky",
+      "normalized_title": "pomyshlyayu den strashnyi",
+      "rank_sha256": "035e09a89904215dc8e14756552afc437023f928e922511255978369d374a3cd",
+      "recording_ids": [
+        "G4eVpdxtHng"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"sweelinck\",\"psaumme 55 exauce o mon dieu\"]",
+      "normalized_composer": "sweelinck",
+      "normalized_title": "psaumme 55 exauce o mon dieu",
+      "rank_sha256": "04fb7feb03913a22f4fa9dc90bdda47fa5156491a21a8d3ee00e53283fdafc51",
+      "recording_ids": [
+        "W9B0gn0EVGw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"barber\",\"agnus dei\"]",
+      "normalized_composer": "barber",
+      "normalized_title": "agnus dei",
+      "rank_sha256": "073aa38e11b9248180306d2bfc18f06b01e1a0b438baa952607169c7384c0bfa",
+      "recording_ids": [
+        "AiuC_CaObbI",
+        "fRL447oDId4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"credo\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "credo",
+      "rank_sha256": "07fc85aae1fc35a942a27f5f3b27621d6584b37990a46f2cd9ad1f2e7ffd2ffc",
+      "recording_ids": [
+        "fxy6ejUaf3w"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"willan\",\"the three kings\"]",
+      "normalized_composer": "willan",
+      "normalized_title": "the three kings",
+      "rank_sha256": "08d70106f6b8a5864719c2cae1848bb220939844c577e063f63ff784923e92dc",
+      "recording_ids": [
+        "uTa_9GP8HjQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"jagdlied\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "jagdlied",
+      "rank_sha256": "0a3653a8aaff71c93ec1622aec534f5a925f6723d24ea361aaf41b898b5bc122",
+      "recording_ids": [
+        "qdbHOHXH7QI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"taneev\",\"ghosts\"]",
+      "normalized_composer": "taneev",
+      "normalized_title": "ghosts",
+      "rank_sha256": "0c19d3c502a9f2fafd5abfa56d5ee5ba2a76d2db79ba788f9060684f6d781a7c",
+      "recording_ids": [
+        "y3TDnZ1mqqM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"schutz\",\"oculi omnium\"]",
+      "normalized_composer": "schutz",
+      "normalized_title": "oculi omnium",
+      "rank_sha256": "1096742e568a6f6141e4644186663a8c91f65162e30950a59c12dac306d38e60",
+      "recording_ids": [
+        "acWWNh6Fs-w"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"o magnum mysterium\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "o magnum mysterium",
+      "rank_sha256": "1151fa4d207ae33d4fc73e32f6922d383130ac1e78cd3650e1432b0b3f722c49",
+      "recording_ids": [
+        "9xPh-fXYAc4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"farmer\",\"lord s prayer\"]",
+      "normalized_composer": "farmer",
+      "normalized_title": "lord s prayer",
+      "rank_sha256": "11955baa33885a7f5a8dde551572632fc66019753295d02a526e17add7d6cf31",
+      "recording_ids": [
+        "OHXS3ONMNaQ",
+        "UzjKzRw4FSQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bruckner\",\"5 virga jesse\"]",
+      "normalized_composer": "bruckner",
+      "normalized_title": "5 virga jesse",
+      "rank_sha256": "130cd6c3e39d0e7591b4107ba7b0b180f0718a59904b68c8ca3bee76d705664b",
+      "recording_ids": [
+        "2jDLZUFchFk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"ravel\",\"nicolette\"]",
+      "normalized_composer": "ravel",
+      "normalized_title": "nicolette",
+      "rank_sha256": "142190e0a27565343603965e247123ada616306bb829d4a947b3ba4ee787c7c3",
+      "recording_ids": [
+        "76OarJEoCz4",
+        "gtztvb0TNDg",
+        "yqyOVcAJcm0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"kyrie eleison\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "kyrie eleison",
+      "rank_sha256": "1465700398ac34946e3b93d7521550a4b55de723e4cb9111278885e098d6b058",
+      "recording_ids": [
+        "Zlyuve19wMg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"elgar\",\"o happy eyes\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "o happy eyes",
+      "rank_sha256": "156e9ff474dcbcfb1a258fc70e5d42d8dbcdf40f3fde0cab8e296c516166d572",
+      "recording_ids": [
+        "NBy4Em72qig"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"handl gallus\",\"pater noster\"]",
+      "normalized_composer": "handl gallus",
+      "normalized_title": "pater noster",
+      "rank_sha256": "1742798fd5235b4abf82165fdd1b7ae11e2dc180e744a8733af3a2cf9e27be36",
+      "recording_ids": [
+        "IF-OXYfu6dU",
+        "XUZs5bERSiA"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"my soul there is a country\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "my soul there is a country",
+      "rank_sha256": "18af004d323e9fbe6c19e072efaaf117f03ab4602f6e8b2d7ca4e9a45f28344f",
+      "recording_ids": [
+        "V-cJ-_HKMMs",
+        "cwjtd_ajoU0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"schumann\",\"der rekrut\"]",
+      "normalized_composer": "schumann",
+      "normalized_title": "der rekrut",
+      "rank_sha256": "18e456413f97c6b5b578390017a6e0e8bb4be7d6cfa69277bfb9d4a7b4292f7f",
+      "recording_ids": [
+        "08C-hIpsmfo",
+        "Bel9Ure2PZA",
+        "vEuroi-49rw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lauridsen\",\"o magnum mysterium\"]",
+      "normalized_composer": "lauridsen",
+      "normalized_title": "o magnum mysterium",
+      "rank_sha256": "1920c41a90d28f3cd8f83b2e893284805f96a875033cbec79f68bf303aeef40f",
+      "recording_ids": [
+        "GJrXhjt7Gwo",
+        "nn5ken3RJBo"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"schumann\",\"bankelsanger willie\"]",
+      "normalized_composer": "schumann",
+      "normalized_title": "bankelsanger willie",
+      "rank_sha256": "19def58d850686630bd7b970886980396b8d8701323bfb05434c4e8a1268bc0e",
+      "recording_ids": [
+        "jTrEQJxvnSo",
+        "kweT3nYf18Y"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"willan\",\"hodie christus natus est\"]",
+      "normalized_composer": "willan",
+      "normalized_title": "hodie christus natus est",
+      "rank_sha256": "1aac8cbf67700067602c869e8241239697487c606efaf14eefb32724bb3f15ef",
+      "recording_ids": [
+        "ZfjTyfF84AA",
+        "wbk69Ps39rM",
+        "yYZEzeBBP68"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"margoton va t a l iau\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "margoton va t a l iau",
+      "rank_sha256": "1c1ac8ffd90538a2bb1706f95d8c3c27830b8521994199ce9f0c3c7231ce6cb2",
+      "recording_ids": [
+        "_7eI4ZrD9PE",
+        "sIUnHJCbCck"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rheinberger\",\"salve regina\"]",
+      "normalized_composer": "rheinberger",
+      "normalized_title": "salve regina",
+      "rank_sha256": "1d2f716e2297b42f856aa60d6667213a226926965a44166545937fc47c5273a3",
+      "recording_ids": [
+        "vtR5mchwZjU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rutter\",\"dashing away with the smoothing iron\"]",
+      "normalized_composer": "rutter",
+      "normalized_title": "dashing away with the smoothing iron",
+      "rank_sha256": "1d695d856b7802d75e4880d4a6a5091f28f2118d9d852524e48be1688b2e64b7",
+      "recording_ids": [
+        "ZEwo6jLInnM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"stravinsky\",\"ave maria\"]",
+      "normalized_composer": "stravinsky",
+      "normalized_title": "ave maria",
+      "rank_sha256": "20df546aca552c3a52ca5395d97f37d55a9207e156febdb7fbccf474a8297b42",
+      "recording_ids": [
+        "Luh-UlFvxEk",
+        "aJW7Sc-NykQ",
+        "tQd0apVsBZU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"casals\",\"o vos omnes\"]",
+      "normalized_composer": "casals",
+      "normalized_title": "o vos omnes",
+      "rank_sha256": "211baa0c038376c02b91e188fd577f890d0b766b125eb7ec5cc28fe5ac5cbbcc",
+      "recording_ids": [
+        "RlcAqb-h98A",
+        "WfZ3ZuQ5g64",
+        "svlVv07VOU8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"taneev\",\"sphinx\"]",
+      "normalized_composer": "taneev",
+      "normalized_title": "sphinx",
+      "rank_sha256": "218b6570ee8a69ba61aa54a1ce7192fbfd75401bcdfa50bc0b869f7254abe349",
+      "recording_ids": [
+        "RSFtiMfFgTQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tchaikovsky\",\"milost mira\"]",
+      "normalized_composer": "tchaikovsky",
+      "normalized_title": "milost mira",
+      "rank_sha256": "22bf9468158d4ab201de48a9214b378a997b4fbefbb66840e1e607741f5411e1",
+      "recording_ids": [
+        "1s2AqmfN318",
+        "NbkqD88Fs04"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"canteloube\",\"la baylere\"]",
+      "normalized_composer": "canteloube",
+      "normalized_title": "la baylere",
+      "rank_sha256": "2353faaa0517c6be379339a374413481f50fe07beb9f6b409737068c498f9ecc",
+      "recording_ids": [
+        "S6T-JNJ8u88"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"passaquet\",\"la troupe\"]",
+      "normalized_composer": "passaquet",
+      "normalized_title": "la troupe",
+      "rank_sha256": "241a8d9888a594750ede58183b5f03d000e242e9d9a0519eee747f43c5a10101",
+      "recording_ids": [
+        "jZZmPRgH0Dg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"letztes glück\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "letztes glück",
+      "rank_sha256": "245a8e1aac9eeef0c526ec21289151e4d7ee80af710a835c57eaba4812c6392a",
+      "recording_ids": [
+        "jVxiKKy68Ag",
+        "mxyasPFCSNQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bruckner\",\"2 locus iste\"]",
+      "normalized_composer": "bruckner",
+      "normalized_title": "2 locus iste",
+      "rank_sha256": "25dbb047f9c009b3942188d9c20c9ba35fd9d03a4a3ed10dd3f94d090c42e197",
+      "recording_ids": [
+        "XQRYwe4KDDQ",
+        "udZCjXbwkzk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"psalm 43\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "psalm 43",
+      "rank_sha256": "280fae65f7ef78ee801a1f7dba798267aeaa9d5d7b08df2cb31ae13217530486",
+      "recording_ids": [
+        "JuHT7jtPdBg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"kodaly\",\"ave maria\"]",
+      "normalized_composer": "kodaly",
+      "normalized_title": "ave maria",
+      "rank_sha256": "28be98a5ac6ccd8581c922b7dc85ada85ad7e57dadaee7c16ea9e8d28e9ee5d4",
+      "recording_ids": [
+        "FevpQN1BzX4",
+        "PmLacAB9aTs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"sepulto domino\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "sepulto domino",
+      "rank_sha256": "29197fee24d39f8e6b43924367a23ea0ac5eaf76315b195d832664f50a23195e",
+      "recording_ids": [
+        "k2PsUA-lU90"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"wassail\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "wassail",
+      "rank_sha256": "2b38afde95c85d3a5e8036b8dc4c4ee02395928927459b422152fe64f34362dd",
+      "recording_ids": [
+        "05Bzbz-RXiA"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"glinka\",\"the cherubic hymn\"]",
+      "normalized_composer": "glinka",
+      "normalized_title": "the cherubic hymn",
+      "rank_sha256": "2d39fe45d6f9a0ebb890d574cc58cba89bde95af5a7a0d0170364e6e512ca9cf",
+      "recording_ids": [
+        "ByOOAyPZkpo",
+        "c49J814p-ag"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"schumann clara\",\"abendfeier in venedig\"]",
+      "normalized_composer": "schumann clara",
+      "normalized_title": "abendfeier in venedig",
+      "rank_sha256": "3069fb963b03721680175786414261880f151e146ae8980ef1832c94a79ab01e",
+      "recording_ids": [
+        "bHkAzrRpNoA",
+        "fCeprtH2084"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"delius\",\"to be sung of a summer night on the water\"]",
+      "normalized_composer": "delius",
+      "normalized_title": "to be sung of a summer night on the water",
+      "rank_sha256": "30ba7320a91731c739a374bc54e9ea18ea4299624c895adfc7e0888d90af3e47",
+      "recording_ids": [
+        "UIRrdvTyuTc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"barber\",\"mary hynes\"]",
+      "normalized_composer": "barber",
+      "normalized_title": "mary hynes",
+      "rank_sha256": "314b7d1b088373192259ce59ad938bc78e088825ee568b7b260ded1ce65dbc58",
+      "recording_ids": [
+        "QvX51Bt8SoU",
+        "q5j0SBIi2oc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"es geht ein wehen\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "es geht ein wehen",
+      "rank_sha256": "319300648d478502cfd0030d138956bc6c116cd62d960d93e14f097fdf059f6a",
+      "recording_ids": [
+        "MnGtjy5RUjg",
+        "RRkfwa6q4TE",
+        "fuf9hFo2F-Y"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"part\",\"magnificat\"]",
+      "normalized_composer": "part",
+      "normalized_title": "magnificat",
+      "rank_sha256": "33e022ffa146b9fa9786c6dffa58bddec70993bceacfbde027adcf5a93ff72c7",
+      "recording_ids": [
+        "1qml9uO0GLg",
+        "b4NY3iXMBTc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"ave verum corpus\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "ave verum corpus",
+      "rank_sha256": "348ca1f12714bd906ac6073e9b7c34fbfee74b376ed1c1afb3bd509c1f554688",
+      "recording_ids": [
+        "hFvi9BLPdq8",
+        "sMs_zFDtr3I"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"finzi\",\"i praise the tender flower\"]",
+      "normalized_composer": "finzi",
+      "normalized_title": "i praise the tender flower",
+      "rank_sha256": "353c84accadeb7403e0de6cbbfd210dc1f6719326980b0dea743d45475fcbaf5",
+      "recording_ids": [
+        "nyvosm7QZSE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"anerio\",\"christus factus est\"]",
+      "normalized_composer": "anerio",
+      "normalized_title": "christus factus est",
+      "rank_sha256": "373b5d8760e89426f3aa47301b289f33fac75ba70497ffcff08c23c4e95e9e9a",
+      "recording_ids": [
+        "SsmW6d6A-Ak",
+        "fArGQY_wvmA",
+        "fdqjkM5-xeY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mudd\",\"let thy ears\"]",
+      "normalized_composer": "mudd",
+      "normalized_title": "let thy ears",
+      "rank_sha256": "38886e51c05763b28a16c5066b5cae0d4ca0ddeaaf1c15ec8f92e00a3f85e5b9",
+      "recording_ids": [
+        "GnqzXrH2NtY",
+        "jcSEi2VpgiQ",
+        "z8Awsj3onp4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"eben\",\"salve regina\"]",
+      "normalized_composer": "eben",
+      "normalized_title": "salve regina",
+      "rank_sha256": "3976fe121d5208e8ba2bc066b46f6ff94de7d23a527a1a0f61b62215a857401e",
+      "recording_ids": [
+        "LjHySS0tXYo",
+        "sJoBrkhnpcg",
+        "ypUQn8Yqtk0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"byrd\",\"haec dies\"]",
+      "normalized_composer": "byrd",
+      "normalized_title": "haec dies",
+      "rank_sha256": "39caf9ce5d625e8f47b9daa8e1c42aaad9070b1fd0acbdc86f96519fce55cc50",
+      "recording_ids": [
+        "9IwIa1ZBgT0",
+        "BtTbkfH9G2o"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"stone\",\"lord s prayer\"]",
+      "normalized_composer": "stone",
+      "normalized_title": "lord s prayer",
+      "rank_sha256": "39f010aebd0b31567239aadca2500847ed22aa6e1f6830d1dd657ea467d49014",
+      "recording_ids": [
+        "F-n52N8HyOs",
+        "mA3gbTxnnBc",
+        "zbSV6VHIhyk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"sviridov\",\"natasha\"]",
+      "normalized_composer": "sviridov",
+      "normalized_title": "natasha",
+      "rank_sha256": "3af06c1dcf3f45ce6c0b046bf862adf0aa3663a3a35a0388a777f8047413df0c",
+      "recording_ids": [
+        "9t6szpkLvoo",
+        "P5ChtbbPgK8",
+        "szAkIJDRWhM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"desprez\",\"ave maria\"]",
+      "normalized_composer": "desprez",
+      "normalized_title": "ave maria",
+      "rank_sha256": "3b8f709af0dd4fff7bd0fcdd9800de90278e2a48a0b423932a5feb5bbeea59f2",
+      "recording_ids": [
+        "xGkb5KFwx1I"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"la blanche neige\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "la blanche neige",
+      "rank_sha256": "3c5bc3749bca5d53e347cec7264b4d99b84d554b3a8911518c3f232a4f251d21",
+      "recording_ids": [
+        "3gY7GRABKfY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"beati mortui\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "beati mortui",
+      "rank_sha256": "3cfa6f7e4f79425911eb5380d0b43b6d583936c1d00ac3f7f5019df93b799f94",
+      "recording_ids": [
+        "DLEooeWCwzM",
+        "ZreW55NLA54",
+        "rIGMtLin3O8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"jesu dulcis\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "jesu dulcis",
+      "rank_sha256": "3ec0a5f961ec28ca4b3fec60267c0c696379bf1cea015b2f170eee5e1ca57ad5",
+      "recording_ids": [
+        "ZO10WxOJgJ8",
+        "d3WFoq9SUYw",
+        "smrLh8WrC3w"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bortnyansky\",\"dostoino est\"]",
+      "normalized_composer": "bortnyansky",
+      "normalized_title": "dostoino est",
+      "rank_sha256": "405e58bb6b9dace2c80f07ada574b9507ef589515f2e7f97f0eccce13648cec4",
+      "recording_ids": [
+        "-xLe8s8oOQM",
+        "XxS27B3FOB4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bairstow\",\"i sat down\"]",
+      "normalized_composer": "bairstow",
+      "normalized_title": "i sat down",
+      "rank_sha256": "4143cc3af5c8f1d90176ae63328ae1a287468c86b230acc6d32728927581a39d",
+      "recording_ids": [
+        "1Pc41lxwd7k",
+        "BFUAzZ5ZoR0",
+        "P6JfInyQI9Q"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"popule meus\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "popule meus",
+      "rank_sha256": "41866d87509a077159ba62301a5690f17d9a762d794c81019cd68fcf57e9ddb5",
+      "recording_ids": [
+        "JCxGIyYNZ7A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"elgar\",\"good morrow\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "good morrow",
+      "rank_sha256": "42d4e3be1d304ef728168e249063b70cc97ff4e65045d4f4b179f13e73e260ba",
+      "recording_ids": [
+        "Hgk3wsscggk",
+        "h0504ChQoV0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"sweelinck\",\"hodiechristus\"]",
+      "normalized_composer": "sweelinck",
+      "normalized_title": "hodiechristus",
+      "rank_sha256": "4381d6bf1d4d4b9d3691390c1b1980448395fa145f7c57ba740473c748e38c66",
+      "recording_ids": [
+        "lQQF7mW2c1c"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"desprez josquin\",\"tu pauperum refugium\"]",
+      "normalized_composer": "desprez josquin",
+      "normalized_title": "tu pauperum refugium",
+      "rank_sha256": "447a3ece2e9664a26d8631f0ec18e584c5227d4e3c82e4ffb50660ec78a75990",
+      "recording_ids": [
+        "z59R3eVDlQQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"stanford\",\"i heard voice\"]",
+      "normalized_composer": "stanford",
+      "normalized_title": "i heard voice",
+      "rank_sha256": "458a31aa253d1d9f24fe85c42301b7a2b50aef3d19e48610b8fc4fa38f95b44e",
+      "recording_ids": [
+        "LTW8297EkSE",
+        "bMBODfwaBQg",
+        "oLL_EXs2YoU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"elgar\",\"they are at rest\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "they are at rest",
+      "rank_sha256": "47188db325583fc45d92f144394aefecc5e5695cf5982cd59cdd5bcf80f730dd",
+      "recording_ids": [
+        "MSzVRbda6_E"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"eco\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "eco",
+      "rank_sha256": "472f65bd8cc014de174346f1a8725c452690734bdaead4f96350bee6499af0a9",
+      "recording_ids": [
+        "-foB75466zY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"monte\",\"bonjour mon coeur\"]",
+      "normalized_composer": "monte",
+      "normalized_title": "bonjour mon coeur",
+      "rank_sha256": "4b7ef6b8277178619df6665181dd709c402646605d7cb833d2bd69cb5c404b71",
+      "recording_ids": [
+        "RN1DSESbmXE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"telemann\",\"der gott unsers herrn jesu christi\"]",
+      "normalized_composer": "telemann",
+      "normalized_title": "der gott unsers herrn jesu christi",
+      "rank_sha256": "4c976a5214ff1075f70d4cde8443a721b90530313ed318957c46d8ae66c5bcf5",
+      "recording_ids": [
+        "9cSWeHb--V4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"i know my soul\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "i know my soul",
+      "rank_sha256": "4cb41d0b1e26d8db4b01a746f6c84c1d4942b69fa39aad4e2188306505d1a3bc",
+      "recording_ids": [
+        "EeCDckVNWIA",
+        "sRmOnHiXU0o"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"weelkes\",\"alleluia\"]",
+      "normalized_composer": "weelkes",
+      "normalized_title": "alleluia",
+      "rank_sha256": "4cb7205cdca2f891f9ab5ade4ef055b5250d9f16a67424b24576a82c3803d695",
+      "recording_ids": [
+        "3lV2GCJk3X8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"levabo oculos\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "levabo oculos",
+      "rank_sha256": "4d1c9363af752e4162f667205bd82ecd41ac202eeadfe55887c55e0701f1d1f2",
+      "recording_ids": [
+        "6tgUicGu994"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"becker albert\",\"fuerwahr er trug unsre krankheit\"]",
+      "normalized_composer": "becker albert",
+      "normalized_title": "fuerwahr er trug unsre krankheit",
+      "rank_sha256": "4d3204ec0d485b5186037617dc379fcd3f436f24d9fb99b31ac9aa95e88f91ec",
+      "recording_ids": [
+        "4p5hGT9SG1I"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"whitacre\",\"stolen child\"]",
+      "normalized_composer": "whitacre",
+      "normalized_title": "stolen child",
+      "rank_sha256": "4e97c7f239788a1849f2c328f636aaec13a5c12aee6b4e311ca42383e78e40c2",
+      "recording_ids": [
+        "Dqjb_FYTN7U",
+        "ff-lbYimn8Y",
+        "rv8B6tMNFJI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"pilons l orge\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "pilons l orge",
+      "rank_sha256": "4f1667ea22d60bb69760021fdb70459093778bbd53c9304ecc3df94bb2d69e4d",
+      "recording_ids": [
+        "0mghR0MIKWM",
+        "A5kFvX6mHB4",
+        "yMc5qPZf_gc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"dunstaple\",\"veni sancte spiritus\"]",
+      "normalized_composer": "dunstaple",
+      "normalized_title": "veni sancte spiritus",
+      "rank_sha256": "4f278a61b3ecb7ac5eebdef3161b2b7fca27fb0b8a58b9f6b826b21a9ec13e42",
+      "recording_ids": [
+        "P1PBPc1wRBI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"whitacre\",\"lux aurumque\"]",
+      "normalized_composer": "whitacre",
+      "normalized_title": "lux aurumque",
+      "rank_sha256": "500dd7162eb42b7308774595d0e2e7051f2d1f559e7cdac1a77616762d34f09e",
+      "recording_ids": [
+        "0j2JRcC6wBs",
+        "X5_LSBuPwXs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lassus\",\"timor et tremor\"]",
+      "normalized_composer": "lassus",
+      "normalized_title": "timor et tremor",
+      "rank_sha256": "502bfd25f061ef21c6e3336e9df554eee9ed8edce0a27263a6e3a4d717da1bda",
+      "recording_ids": [
+        "1GAVQkAp2Ls",
+        "KxVCKbX4fss"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"nachtwache ii\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "nachtwache ii",
+      "rank_sha256": "52a9e6b52f2bcd4e8b27d9d9f35345a628a87601066752f1d4ad6ee64c86628b",
+      "recording_ids": [
+        "Mf3zgU7ShU4",
+        "YWhxm6lWz3A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"palestrina\",\"mori quasi il more core\"]",
+      "normalized_composer": "palestrina",
+      "normalized_title": "mori quasi il more core",
+      "rank_sha256": "52b1c513d512c6a1ff41ccacf6636a4bc9077863722dfd51d3f43663ae44f1b3",
+      "recording_ids": [
+        "3nFNNvnisxI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"salveregina\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "salveregina",
+      "rank_sha256": "55ca5f3f36d1f721effb7d068f10fbf9215c2767cd6d8171150c3986acde41ec",
+      "recording_ids": [
+        "QZtC9SLN6F8",
+        "no18LBbupE0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"o quam gloriosum\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "o quam gloriosum",
+      "rank_sha256": "561720f79b366e28c2e7d8a36236f760208c1d32e210cab2c61307c6dfa53820",
+      "recording_ids": [
+        "NW9Ccv-xcRQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hensel\",\"abendlich schon rauscht der wald\"]",
+      "normalized_composer": "hensel",
+      "normalized_title": "abendlich schon rauscht der wald",
+      "rank_sha256": "56ab2bfc42ee3c6b2379a1686fef0ec3e6b377b7716599a0d157cff0d9103e88",
+      "recording_ids": [
+        "3gSmBaZwNqQ",
+        "9GvcZb_t0QM",
+        "Dgrd45PkBY8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"reger\",\"nachtlied\"]",
+      "normalized_composer": "reger",
+      "normalized_title": "nachtlied",
+      "rank_sha256": "56e1739019139fc42cd0df205627c17eda542c1b7cd032eb6b861813b42ec81d",
+      "recording_ids": [
+        "DcTSvsADsyI",
+        "lAoVftj8JcU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hindemith\",\"1 the doe\"]",
+      "normalized_composer": "hindemith",
+      "normalized_title": "1 the doe",
+      "rank_sha256": "5a7f3c8d471b0b90c94a082578318a4053e8f56517254f8c65f4df2f1f46cfe2",
+      "recording_ids": [
+        "Vof_21BrXfU",
+        "vHIwi795xgo",
+        "zVM8MD88MJ0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"pearsall\",\"lay a garland\"]",
+      "normalized_composer": "pearsall",
+      "normalized_title": "lay a garland",
+      "rank_sha256": "5b03852c79bbe2b4d2a5a8efb5029cb952513e44a6e58948ea3c5fffc5a0e856",
+      "recording_ids": [
+        "NA1eWba5ZCE",
+        "VM2xHJG2uJk",
+        "X8_kweiTJWs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"allegri\",\"miserere\"]",
+      "normalized_composer": "allegri",
+      "normalized_title": "miserere",
+      "rank_sha256": "5b4b6acd4963982c2c28313087710903ebfeeefb7980b274b9e6f818649b1b96",
+      "recording_ids": [
+        "36Y_ztEW1NE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"alkan\",\"eytz chayim\"]",
+      "normalized_composer": "alkan",
+      "normalized_title": "eytz chayim",
+      "rank_sha256": "5c55f2cfd43919af18c7ef108417bebc4108749ff27cf4921d27eb9cbd04b228",
+      "recording_ids": [
+        "0uQEfIeBCyY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"palestrina\",\"sicut cervus\"]",
+      "normalized_composer": "palestrina",
+      "normalized_title": "sicut cervus",
+      "rank_sha256": "5ce304d8c270b927e3435f114896b92605e2aeefe647c9587d88498146b4735b",
+      "recording_ids": [
+        "0yd5EE0hAB8",
+        "Pdv9vmGo4EE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rutter\",\"i wonder as i wander\"]",
+      "normalized_composer": "rutter",
+      "normalized_title": "i wonder as i wander",
+      "rank_sha256": "5e9f3264d75c8d958ea13f8ffcc72a4719c3f065a42ba638ca61b86db0ace84c",
+      "recording_ids": [
+        "whERHDBeygg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"ingegneri\",\"tenebrae factae sunt\"]",
+      "normalized_composer": "ingegneri",
+      "normalized_title": "tenebrae factae sunt",
+      "rank_sha256": "5f7d0e2dfa7370e4b4f383ed771ad2eb7a1f4328cca9e0e21f91f13693e8447a",
+      "recording_ids": [
+        "HM4vTwtV9g8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"taneev\",\"alps\"]",
+      "normalized_composer": "taneev",
+      "normalized_title": "alps",
+      "rank_sha256": "603d7960ce5f7beabfa51e6ee46ae2a3de33ab5c26fb6d7c1edcab840dda8152",
+      "recording_ids": [
+        "8r9ODSoKQvM",
+        "_2K34NM4aDo"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"elgar\",\"my love northern\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "my love northern",
+      "rank_sha256": "61287a22dcdc6ceb7e820423a8662aaae6e4af07e32055f07e6b21292e06ece9",
+      "recording_ids": [
+        "AjfgZje_TGU",
+        "ooZsAPlwXjc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"pearsall\",\"in dulci jubilo\"]",
+      "normalized_composer": "pearsall",
+      "normalized_title": "in dulci jubilo",
+      "rank_sha256": "61713dff5b6ab13777f6ed582dd7b523702f97093b2db8833de84577a018ca91",
+      "recording_ids": [
+        "Ob0B5zlpR8A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bairstow\",\"let all mortal\"]",
+      "normalized_composer": "bairstow",
+      "normalized_title": "let all mortal",
+      "rank_sha256": "62297bb9bc8dcea884ef93a8104a46241c3843446c7627b50130349c1c938852",
+      "recording_ids": [
+        "LGOhRpMg3F8",
+        "RtGKEV4pQNw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"britten\",\"hymn to virgin\"]",
+      "normalized_composer": "britten",
+      "normalized_title": "hymn to virgin",
+      "rank_sha256": "651c38a2f903aa6f9ad27f57c13a5e0314db4781cab4c2637bb18c7a08604478",
+      "recording_ids": [
+        "dQfBbBCmVqE",
+        "kmocmreevF8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"byrd\",\"i will not leave you\"]",
+      "normalized_composer": "byrd",
+      "normalized_title": "i will not leave you",
+      "rank_sha256": "65a2f45f13ea29f41faa2a6b500e10f9ae162ef45f3be20c25f3599cca0b8a83",
+      "recording_ids": [
+        "Jh_KGlPBM4E",
+        "YPaujaggRSU",
+        "gaVBAVpoMSs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"o vos omnes\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "o vos omnes",
+      "rank_sha256": "669a2c94d55cf9ba5175c028b5c51680e49d47e09df0955cbcb14dbdfa23c3eb",
+      "recording_ids": [
+        "m11B9GuDUmM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"hodie apparuit\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "hodie apparuit",
+      "rank_sha256": "69bb14b7e7e97ae805893a99c6b4b53d850eb16b524d1a26108eafbc8fbd133b",
+      "recording_ids": [
+        "gaoPV2IW9AA",
+        "nKYhFLI1zGs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"walton\",\"what cheer\"]",
+      "normalized_composer": "walton",
+      "normalized_title": "what cheer",
+      "rank_sha256": "6a16207a510e387b001fca0f96bc4035226ad3c22371fa5e6d1a0d41dbe34f92",
+      "recording_ids": [
+        "_C1fEwfFz84",
+        "bWhkO8I5ENA",
+        "hJFYbyBPPPw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"palestrina\",\"o che splendor\"]",
+      "normalized_composer": "palestrina",
+      "normalized_title": "o che splendor",
+      "rank_sha256": "6a1ccf4786c4513212e1b2df9e4f9ada9ecfcb725e40b6953f71f34ec1180566",
+      "recording_ids": [
+        "OkwxILCgyOg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"grieg\",\"ave maris stella\"]",
+      "normalized_composer": "grieg",
+      "normalized_title": "ave maris stella",
+      "rank_sha256": "6a784517036d08346e921880cfc7ef83bf86508d791f2df60fd5867c606385de",
+      "recording_ids": [
+        "aBFCXnaoMHs",
+        "jmFFYZID4rg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"senfl\",\"das glaut zu speyer\"]",
+      "normalized_composer": "senfl",
+      "normalized_title": "das glaut zu speyer",
+      "rank_sha256": "6a83a2e884498a3999aac79fbb31f4296f333b0061050f96bed44e9996161190",
+      "recording_ids": [
+        "RA6Owd4KdMg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"cantate domino\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "cantate domino",
+      "rank_sha256": "6c22ce7ccf9da76375b30e089fd69a66f148c87be1050b33769d85bacaadc479",
+      "recording_ids": [
+        "Oq-fMuZuZpM",
+        "g9yoaQWDshA"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"o mistress mine\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "o mistress mine",
+      "rank_sha256": "6c56327136d7c85f4f37d1d99a8f1d9b923e1f1558fa2c8bbaa05656233d8df5",
+      "recording_ids": [
+        "UwpYS1hygIY",
+        "gVutGak3lkw",
+        "thxLy5q-6Hw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"roberton\",\"all in april\"]",
+      "normalized_composer": "roberton",
+      "normalized_title": "all in april",
+      "rank_sha256": "6d32f349b257ab611c9cbd3447351e065ff12fa638835dcc621e1d4983adb710",
+      "recording_ids": [
+        "AlY8lcsG2NM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hensel\",\"im wald\"]",
+      "normalized_composer": "hensel",
+      "normalized_title": "im wald",
+      "rank_sha256": "6fd00680f79685f47422eac138b3d4ed19b1dede23034112d333d35f8baae10a",
+      "recording_ids": [
+        "AqzC1UNINRk",
+        "fAIV015yvTo"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"there is an old belief\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "there is an old belief",
+      "rank_sha256": "7096910e70891fe52f2537544ac1ce3a94d517210a2bc55ac43377642510d845",
+      "recording_ids": [
+        "6Cqd7qBH9sY",
+        "XNmwIiq0ESY",
+        "u6nZwNSlAXU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"victoria\",\"sancta maria succurre miseris\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "sancta maria succurre miseris",
+      "rank_sha256": "7177773103e4999c3f899da4f2b68e1022384bc65f30d79757b0e4ed2dc3c616",
+      "recording_ids": [
+        "Jbgge89vMQ4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"o ochi manza mia\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "o ochi manza mia",
+      "rank_sha256": "73366c87d0cfce00acc20ad1bad2d1e84643fc31a0f856bd17f9685f2ac45a07",
+      "recording_ids": [
+        "ZdeT4VhoFH4",
+        "s7Dp0j4FD9k"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"dindia\",\"dove dove son io\"]",
+      "normalized_composer": "dindia",
+      "normalized_title": "dove dove son io",
+      "rank_sha256": "7633bba5a41f6cc605479a01a223e262eaddabd0db491b464c0ca4ee827b8d50",
+      "recording_ids": [
+        "tOetpxX4AZE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tchaikovsky\",\"ne kukushechka vo sirom boru\"]",
+      "normalized_composer": "tchaikovsky",
+      "normalized_title": "ne kukushechka vo sirom boru",
+      "rank_sha256": "76e0a39f696c0b1e5fe61a82f58fbedac4e0cbcb655a73c8434ecee1d9f1b694",
+      "recording_ids": [
+        "SONI_BJLLeE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rachmaninov\",\"rejoice virgin\"]",
+      "normalized_composer": "rachmaninov",
+      "normalized_title": "rejoice virgin",
+      "rank_sha256": "7858ed6063a700e3112ec33d703258975f6f706010bb35b2b00117920f77f1ef",
+      "recording_ids": [
+        "_f4KVYABb5E"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"lord mine end\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "lord mine end",
+      "rank_sha256": "79a185ced8f18daa9065feafd19fa15fb2ae753d03cb9c28be970ec2f878faec",
+      "recording_ids": [
+        "Gacfz_DsWnk",
+        "gHW_eRBBcHY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rachmaninov\",\"ave maria\"]",
+      "normalized_composer": "rachmaninov",
+      "normalized_title": "ave maria",
+      "rank_sha256": "7b8413eb7e79228dbf520ec0faa610349b835a8ee21af18469f1b6c8db65cba8",
+      "recording_ids": [
+        "s2BzFD0eGaQ",
+        "uUb3EosohQo",
+        "wTH0pcu_t_8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"certon pierre\",\"que n est elle auprès de moi\"]",
+      "normalized_composer": "certon pierre",
+      "normalized_title": "que n est elle auprès de moi",
+      "rank_sha256": "7c77558641b20adc36e59acaeffd696af098868d781d9971715c111be6e1c488",
+      "recording_ids": [
+        "VPmcwL2i4O4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"viadana\",\"exsultate justi\"]",
+      "normalized_composer": "viadana",
+      "normalized_title": "exsultate justi",
+      "rank_sha256": "7ce4215f13afdadc5785c792d90a9f66fd883c3201f20edde5a3fd3937fb7b0a",
+      "recording_ids": [
+        "LDLeiOTlLiM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"les tisserands\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "les tisserands",
+      "rank_sha256": "7e3987881d100e31582a66af2f1ecbf3421ce5360e91436ff9b2f4481f2b4217",
+      "recording_ids": [
+        "N3oFBk9MynU",
+        "Ru-BqM66KQo"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"guerrero\",\"canite tuba\"]",
+      "normalized_composer": "guerrero",
+      "normalized_title": "canite tuba",
+      "rank_sha256": "7e4c5896d35c2032bf5714e7ed88235c61d6b180276d689c68fc295d6414a509",
+      "recording_ids": [
+        "JQJGliimRNQ",
+        "aKmBXWz09sw",
+        "v8Y0y3IOQeE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tavener\",\"song for athene\"]",
+      "normalized_composer": "tavener",
+      "normalized_title": "song for athene",
+      "rank_sha256": "7e524241eb3c8e65a62d16c39fcddfa131524c9b3263fd0aa00790b8291a2e6e",
+      "recording_ids": [
+        "2ma_Ouv74_8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"purcell\",\"hear my prayer oh lord\"]",
+      "normalized_composer": "purcell",
+      "normalized_title": "hear my prayer oh lord",
+      "rank_sha256": "7f49a95905b3d7cce213d9c4e032d3435b230d7509a47eb46c6e47872db4533b",
+      "recording_ids": [
+        "FyieyUw3GXk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"taverner\",\"dum transisset\"]",
+      "normalized_composer": "taverner",
+      "normalized_title": "dum transisset",
+      "rank_sha256": "800bf3c9c270a9113e4ac8947ad42b8917528418d2611c63bda5c3025af31159",
+      "recording_ids": [
+        "pTLx7aL7dIQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"szewalin\",\"zimniaja doroga\"]",
+      "normalized_composer": "szewalin",
+      "normalized_title": "zimniaja doroga",
+      "rank_sha256": "8060d7a400e54f6ef611edee6877cd36300446ffab0a1d02d386ea6e5581a4d8",
+      "recording_ids": [
+        "7StZth30qxg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"desprez josquin\",\"ave vera virginitas\"]",
+      "normalized_composer": "desprez josquin",
+      "normalized_title": "ave vera virginitas",
+      "rank_sha256": "814b8bc91a7969611186c9689800d97e624638afc0d67a23ded0e4a39b244229",
+      "recording_ids": [
+        "owD6cSDDTrU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"byrd\",\"ave maria\"]",
+      "normalized_composer": "byrd",
+      "normalized_title": "ave maria",
+      "rank_sha256": "81e0d4e85643b6e29ab261d513787eaedb740929550e3cefd9de411a56778af2",
+      "recording_ids": [
+        "Qn1y1kRThBg",
+        "yakrhqyDxoM",
+        "ysqn-o2uwEY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"finzi\",\"haste on my joys\"]",
+      "normalized_composer": "finzi",
+      "normalized_title": "haste on my joys",
+      "rank_sha256": "81ed92e35d2c64f051004c9d176ae81d0bb39fc72e53bf0384c8578d4e9e86f7",
+      "recording_ids": [
+        "NS6uqXBjmVk",
+        "O2x4TRMpU_w"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rheinberger\",\"hymne\"]",
+      "normalized_composer": "rheinberger",
+      "normalized_title": "hymne",
+      "rank_sha256": "831eb908e40db7ccb9d1e6b2820823adc0eb802f273b9e5131450af592917a9d",
+      "recording_ids": [
+        "dJ7QT3CsBQg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"soriano\",\"regina caeli\"]",
+      "normalized_composer": "soriano",
+      "normalized_title": "regina caeli",
+      "rank_sha256": "87035435812e12205a13128bd2fc1f3eb3b464659c44e8228d0d6df6d73f8777",
+      "recording_ids": [
+        "R68njdM3HGs",
+        "sstHOdA0pKg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"o mirtillo mirtillo anima mia\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "o mirtillo mirtillo anima mia",
+      "rank_sha256": "873ec1f77aaecde314bd2bb0f7e99ce0b53b4cf5ac5d4184bba8b89201cc70d8",
+      "recording_ids": [
+        "Ui9HN7VqJcI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tchaikovsky\",\"dostoino yest\"]",
+      "normalized_composer": "tchaikovsky",
+      "normalized_title": "dostoino yest",
+      "rank_sha256": "87690a831aba2ee8916c3a0eed0fd6e9bd72fa3eaef5dcf414c0a8a7c7c0016b",
+      "recording_ids": [
+        "D2LH-bDdVV0",
+        "UgOCZ5yTb94"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"belle et ressemblante\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "belle et ressemblante",
+      "rank_sha256": "8861a54d1151e7aa87f4f01d14dcab9e0db5b99513b43d2b9acc775f77a036b9",
+      "recording_ids": [
+        "7ZObExKH1TU",
+        "BcM6awEPupE",
+        "Y1BoRrvM0kY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"morley\",\"nolo mortem\"]",
+      "normalized_composer": "morley",
+      "normalized_title": "nolo mortem",
+      "rank_sha256": "893cd89ff505dccb538785a316d4cb8139b6e0b1ef0f6e34e994b61ffc031284",
+      "recording_ids": [
+        "9r_V8QBXud8",
+        "Et6l-Gop5Es"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"schumann\",\"am bodensee\"]",
+      "normalized_composer": "schumann",
+      "normalized_title": "am bodensee",
+      "rank_sha256": "89c428e19f30f098bdeeaa22681f59156f34effa98be47403430a14e03821e97",
+      "recording_ids": [
+        "TMOto-zbE7U",
+        "WxyuobOhYpM",
+        "auNYENJYGrg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"exaltabo te\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "exaltabo te",
+      "rank_sha256": "8ac37eeec7291649c65b736c1dc97e7889891821bb1da339f76970745e7a253e",
+      "recording_ids": [
+        "IsTzD9AEcao",
+        "dmoelD9WDT8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"ibert\",\"la berceuse du petit zébu\"]",
+      "normalized_composer": "ibert",
+      "normalized_title": "la berceuse du petit zébu",
+      "rank_sha256": "8acf459ae658706c109af9dfd480755096af260308fc10e801bbce4106202ee7",
+      "recording_ids": [
+        "3WkJD2b1mwQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"weelkes\",\"gloria\"]",
+      "normalized_composer": "weelkes",
+      "normalized_title": "gloria",
+      "rank_sha256": "8ad204153fdf7ea73c3f3d0a58293a4cfdf40a30950c6fe63f9cac64d9e10f4b",
+      "recording_ids": [
+        "9DsbtEmS0eE",
+        "WsLxBwToGaY",
+        "by1YdoEALL0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hassler\",\"dixit maria\"]",
+      "normalized_composer": "hassler",
+      "normalized_title": "dixit maria",
+      "rank_sha256": "8af2eb21ebc1742e908322132b6b7d6ed72db41ed560f9d51af6bd59d061178b",
+      "recording_ids": [
+        "Wd7s40s-Ltw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"die primel\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "die primel",
+      "rank_sha256": "8b8aa11c0dfdf54fa823ac485ffaaeab91c0ae2a48c9fbcbeb0f0dc096fc5d88",
+      "recording_ids": [
+        "mM1s6a0Y3mg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bruckner\",\"1 ave maria\"]",
+      "normalized_composer": "bruckner",
+      "normalized_title": "1 ave maria",
+      "rank_sha256": "8c476f98f527418276d2d604cbe33bed4935178946ee7bc5b6af699deb86885c",
+      "recording_ids": [
+        "jchJ2SUhXdg",
+        "vbHKnUhdv8g"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"penderecki\",\"agnus dei\"]",
+      "normalized_composer": "penderecki",
+      "normalized_title": "agnus dei",
+      "rank_sha256": "8cfae56b9a00586dedcaf941c99faa3eeda28e5fb595eb77e68a4441d318fb22",
+      "recording_ids": [
+        "_OD12l9FAIU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bortnyansky\",\"tibie paiom\"]",
+      "normalized_composer": "bortnyansky",
+      "normalized_title": "tibie paiom",
+      "rank_sha256": "8e251d7f6c91439db6b42d6b47d9e358ec990ca56bd48d41b7ffac5bca192d21",
+      "recording_ids": [
+        "USw-lkI2Fy0",
+        "jIee7nUnCoE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rossini\",\"o salutaris\"]",
+      "normalized_composer": "rossini",
+      "normalized_title": "o salutaris",
+      "rank_sha256": "8e4fe0c626fffaca787be1396e064a018f0434403ca419f268d1445ae2ff7602",
+      "recording_ids": [
+        "UeX4pWgkaK0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parsons\",\"ave maria\"]",
+      "normalized_composer": "parsons",
+      "normalized_title": "ave maria",
+      "rank_sha256": "90fbd40a3ff237bb8392338def6d9ddc09c0a159069d1b9dfc47dccab867656e",
+      "recording_ids": [
+        "5AOwGE0KuRI",
+        "v3pDIz9RLfg"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"howells\",\"a spotless rose\"]",
+      "normalized_composer": "howells",
+      "normalized_title": "a spotless rose",
+      "rank_sha256": "91d7ddfc78924967ed964d30dc55f0c4b915814b03a7f3b4e5bb60c7de0ceec2",
+      "recording_ids": [
+        "QQnApR9PNV8",
+        "fU039d1wthI",
+        "uzHIo4c3ukM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"artur harmat\",\"de profundis\"]",
+      "normalized_composer": "artur harmat",
+      "normalized_title": "de profundis",
+      "rank_sha256": "940235e24f38f60999b2b64c2d8f725119e5f034ac88411f5d13ddf0cde3d510",
+      "recording_ids": [
+        "ck2CM6dssZk",
+        "p14158ZIQL0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"verdi\",\"laudi maria\"]",
+      "normalized_composer": "verdi",
+      "normalized_title": "laudi maria",
+      "rank_sha256": "957527c02b60d6ff6a1d643bc5a735bd3b08a24f029075f416b527a76f81a2d8",
+      "recording_ids": [
+        "Dojf26nuyuY",
+        "GTkK2NS8QGI",
+        "ehtsGiwGwJE"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"pesenti\",\"dal lecto me levava\"]",
+      "normalized_composer": "pesenti",
+      "normalized_title": "dal lecto me levava",
+      "rank_sha256": "96b281859a8dd5b0d139b8d897fc9c4940aba74f3113830008519346d2dda704",
+      "recording_ids": [
+        "2Tn2uSxNKTw",
+        "zcodyDcfQgA"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"handl jacob\",\"ecce concipies\"]",
+      "normalized_composer": "handl jacob",
+      "normalized_title": "ecce concipies",
+      "rank_sha256": "9743efb843f0357cff51cd06f9aaa341fbd56f4e117ea34560814b2e85ff564b",
+      "recording_ids": [
+        "W0W124ZEfA4",
+        "Yf_LC7gmUvE",
+        "xmo75xcSErM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lotti\",\"miserere\"]",
+      "normalized_composer": "lotti",
+      "normalized_title": "miserere",
+      "rank_sha256": "9993db1f6d1376773ac059bde55bda3912437be93a4483ff294d613cab2fbbe1",
+      "recording_ids": [
+        "Faby9xSLyX8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"abendständchen\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "abendständchen",
+      "rank_sha256": "9ce00af7f4fbf7a08804fcd1d522745a7b119798d49ea5526458e6a48a8edee4",
+      "recording_ids": [
+        "TFOGLp766Ic",
+        "epVSmvFkRNQ",
+        "rcNyTVnpVe4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"vaughan williams\",\"the commonwealth\"]",
+      "normalized_composer": "vaughan williams",
+      "normalized_title": "the commonwealth",
+      "rank_sha256": "9dffb55696de7aef3dac5e6a13dc3099a24d1d7655fc85d33c282bf6a8e5c07e",
+      "recording_ids": [
+        "E-teMzCWeSA",
+        "n8_IR97wVIQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"verdi\",\"paternoster\"]",
+      "normalized_composer": "verdi",
+      "normalized_title": "paternoster",
+      "rank_sha256": "9efe1ea2ea3290bfa905261804800126fe264a723f48560cad6fcccc9a4ec878",
+      "recording_ids": [
+        "LZRjRzcwhcg",
+        "dyM1qKbHdws",
+        "s85huVu0NX8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"sullivan\",\"long day closes\"]",
+      "normalized_composer": "sullivan",
+      "normalized_title": "long day closes",
+      "rank_sha256": "9f6a47d77bc7ad915adfd59e2f12512ef33bd3f3901ba18a7e40e50ff4e18418",
+      "recording_ids": [
+        "_rwnprRRWvs",
+        "dPc9cbrArM8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"britten\",\"the sycamore tree\"]",
+      "normalized_composer": "britten",
+      "normalized_title": "the sycamore tree",
+      "rank_sha256": "9fabd8aa4999ef4b74e1c8b4520853d7b00126103ac5f50c82aadf79c3b70aaa",
+      "recording_ids": [
+        "AgU27nxkhog",
+        "SeBQqa0MhRo"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tchaikovsky\",\"blazenni jaze izbral\"]",
+      "normalized_composer": "tchaikovsky",
+      "normalized_title": "blazenni jaze izbral",
+      "rank_sha256": "a0a1cd61ec88c74120a62cb1b849aafa21f1f61cb3a1862d8153542afa9919c6",
+      "recording_ids": [
+        "0bxMPSBE3hA",
+        "I4u9QnnWBII"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"beach\",\"nunc dimittis\"]",
+      "normalized_composer": "beach",
+      "normalized_title": "nunc dimittis",
+      "rank_sha256": "a0d80b2a8554680616430d187ffdfaeced4a506199605eeeeb61c8edb945ea38",
+      "recording_ids": [
+        "tkJe47sWXGI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"gloria\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "gloria",
+      "rank_sha256": "a398430857fecb79d1f7dac8aa5eac33433d78cbb3050903b09dc4af5b191395",
+      "recording_ids": [
+        "F4skHXptTE0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"miserere mei domine\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "miserere mei domine",
+      "rank_sha256": "a39c1edc26db9ae5feeab24042289c6d48a677f9540b660d909945714aee697e",
+      "recording_ids": [
+        "zt86CdZistA"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"miskinis\",\"cantate domino\"]",
+      "normalized_composer": "miskinis",
+      "normalized_title": "cantate domino",
+      "rank_sha256": "a39d5f7c9a85b4a70c96712bb94a69c3bda59c1e246937d7d3c4922eaa66054d",
+      "recording_ids": [
+        "U_8RmRJSDlo",
+        "kWHKW6xzARs"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"at the round earth s\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "at the round earth s",
+      "rank_sha256": "a49a01e5811cf94e8da7affcdcd3e3558701628094b4fc0ddde5d99f81e28a6c",
+      "recording_ids": [
+        "PkMhWl30P4E",
+        "wQQV7T3j0MI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"verlorene jugend\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "verlorene jugend",
+      "rank_sha256": "a61d0b0097f14cdc6abdbc5558a3a985f30f7759de98e4cabd64ae52306f2188",
+      "recording_ids": [
+        "5s9qS_Uklmg",
+        "wjC7oGFp1LY"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"palestrina\",\"exsultate deo\"]",
+      "normalized_composer": "palestrina",
+      "normalized_title": "exsultate deo",
+      "rank_sha256": "a90d4a3ac91229f728868e3b64c02fb212497694b5907094256242c3c74a6e0e",
+      "recording_ids": [
+        "LjqY2Bo-NuA",
+        "jd2_r4PK5dc",
+        "nRmkj19i4Yk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bruckner\",\"3 os justi\"]",
+      "normalized_composer": "bruckner",
+      "normalized_title": "3 os justi",
+      "rank_sha256": "aae0b8c7a289c8098be4efd8d4d345243f485f56c4191303ad68d1ee75c511df",
+      "recording_ids": [
+        "AXv-QUU2mgk",
+        "ov-OAmpcRfw"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"nanino\",\"diffusa est gratia\"]",
+      "normalized_composer": "nanino",
+      "normalized_title": "diffusa est gratia",
+      "rank_sha256": "adde40abb673a4035faf46b86e9bedc04f5e2d0d1bcb21af44f72296e0355528",
+      "recording_ids": [
+        "9yRd62EJFJc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"pearsall\",\"sing we\"]",
+      "normalized_composer": "pearsall",
+      "normalized_title": "sing we",
+      "rank_sha256": "aef03325fe997c736c6e7d4d663e0c3295ab0f4bbba1eb1c9cec4db31ebc53ed",
+      "recording_ids": [
+        "6SNlJSdhF-o",
+        "k5IhKskW9Yk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"farrant hilton\",\"lord for thy tender mercy s sake\"]",
+      "normalized_composer": "farrant hilton",
+      "normalized_title": "lord for thy tender mercy s sake",
+      "rank_sha256": "b10819d6c18e6d3146f398bd166adb5476e94ab2f66c330a303746bbfc4e89b9",
+      "recording_ids": [
+        "EVidFFF0lfE",
+        "vf-braNVF2Q"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"purcell\",\"pleasant groves\"]",
+      "normalized_composer": "purcell",
+      "normalized_title": "pleasant groves",
+      "rank_sha256": "b177640cae600fc0e9870a4b5e8da2513b62986a7e0a50ce99322a11fb33c7ad",
+      "recording_ids": [
+        "WgJmy8f36yE",
+        "yk4XdUU-cqI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"barber\",\"anthony o daly\"]",
+      "normalized_composer": "barber",
+      "normalized_title": "anthony o daly",
+      "rank_sha256": "b19c09e36a191c78e439513f00c318baeaef4ad4bce2bd149634ae5cc45818e6",
+      "recording_ids": [
+        "0x-K8tALBMY",
+        "5j0Ra_jl9SQ",
+        "ZkGrS5nT8vI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"delius\",\"on craig ddu\"]",
+      "normalized_composer": "delius",
+      "normalized_title": "on craig ddu",
+      "rank_sha256": "b268c5edcf57b473779abec08dca2f97c9ecc08e65ca6b095a1aec451f1711d8",
+      "recording_ids": [
+        "13um_ULbfTU"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"rheinberger\",\"abendlied\"]",
+      "normalized_composer": "rheinberger",
+      "normalized_title": "abendlied",
+      "rank_sha256": "b2701927de185dc88b5ddf2dadcfca432ef3fe2c7a6649d9c26a334820c2b8ae",
+      "recording_ids": [
+        "TGc__HGwdxk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bartok\",\"madardal\"]",
+      "normalized_composer": "bartok",
+      "normalized_title": "madardal",
+      "rank_sha256": "b38ad2d39e5eac95dadf4c8660a9cb3d3808002ace22ceed1799e86fa10c6330",
+      "recording_ids": [
+        "_m7vM7EhHno",
+        "dGg0eLbjhiA",
+        "hNUjCd395Vk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"taneev\",\"posmotri kakaya mgla\"]",
+      "normalized_composer": "taneev",
+      "normalized_title": "posmotri kakaya mgla",
+      "rank_sha256": "b54af1544af66623f6eb52384be54f81c498c88e93465052c2ea06afb4aab8b9",
+      "recording_ids": [
+        "KBTAeqOCuL0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tavener\",\"hymn to mother\"]",
+      "normalized_composer": "tavener",
+      "normalized_title": "hymn to mother",
+      "rank_sha256": "b6fc3e04ad7c904955d27a492d0df61c5122608cfbbe29509b5af083f298c7f9",
+      "recording_ids": [
+        "7E_rKYkjSC4",
+        "Gk7J8T-IB_A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"la nuict froide et sombre\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "la nuict froide et sombre",
+      "rank_sha256": "b7936b2ea26d43b7bfbf3396a3a53c9f353ab517e09bc64a65ae48799b4926a7",
+      "recording_ids": [
+        "xYcJlrHOK1A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"tchaikovsky\",\"nochevala tuchka zolotaya\"]",
+      "normalized_composer": "tchaikovsky",
+      "normalized_title": "nochevala tuchka zolotaya",
+      "rank_sha256": "b97180c7c59875e1baa98aa959523a28d397e0b44d78503567e6cb47196c7a46",
+      "recording_ids": [
+        "50BL2dUBb1Q",
+        "gy6OJ31Z6A8",
+        "k1EOa_wDwNc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"barber\",\"the coolin\"]",
+      "normalized_composer": "barber",
+      "normalized_title": "the coolin",
+      "rank_sha256": "bb476be5accc08b7a42e6f6a1fd83a31f80e4e53bf995886ca9f20e31063973b",
+      "recording_ids": [
+        "4Kpyzw55V-c",
+        "PjGF1sk4fkA",
+        "jSEPN3Q0i68",
+        "s_pWvcV57RI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"parry\",\"never weatherbeaten sail\"]",
+      "normalized_composer": "parry",
+      "normalized_title": "never weatherbeaten sail",
+      "rank_sha256": "bc0a7be1193f9607e37fea017e48491b38fc3c31acc485896c3f128d5e34af7a",
+      "recording_ids": [
+        "Fh9m8gSL7wE",
+        "WwBoDqRL63g"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"bartok\",\"elment a madarka\"]",
+      "normalized_composer": "bartok",
+      "normalized_title": "elment a madarka",
+      "rank_sha256": "bc4b1d387f62e86bd42d6bf5def80981438cb5a35d2a3390617da0ded8898e94",
+      "recording_ids": [
+        "ViOXvCtqTzw",
+        "ueRGelvqxJc"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"child\",\"o lord grant\"]",
+      "normalized_composer": "child",
+      "normalized_title": "o lord grant",
+      "rank_sha256": "bf78e3b71a40a335b8a5072bd387175ed8b1a9715bb92216c22e88741fb1e55e",
+      "recording_ids": [
+        "LUnNiyMXXPI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"daley eleanor\",\"in remembrance\"]",
+      "normalized_composer": "daley eleanor",
+      "normalized_title": "in remembrance",
+      "rank_sha256": "bfadd3b65a3a4fd2cd776a086cfcb0e632be795523ca6fd9c85be192af834f08",
+      "recording_ids": [
+        "icJ-UaXGInw",
+        "nMES2S1O7Y8"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"agnus dei\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "agnus dei",
+      "rank_sha256": "c1f42957713cfd2d94ccda6235f7b07749318bcb24fe39a106346b9c8170209b",
+      "recording_ids": [
+        "RzdsX52ZhBA",
+        "SAEffmscld0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hassler\",\"verbum caro factum est\"]",
+      "normalized_composer": "hassler",
+      "normalized_title": "verbum caro factum est",
+      "rank_sha256": "c24a6db3381fe8252948b0d809c4e82045d81808f5854f04d9cddcaa29d5a21b",
+      "recording_ids": [
+        "zPfUKQiMYok"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lassus\",\"adoramus te\"]",
+      "normalized_composer": "lassus",
+      "normalized_title": "adoramus te",
+      "rank_sha256": "c2b60dbde189ff38416274ee3cc1cc937e71ee234391265f199f28fada2c4a40",
+      "recording_ids": [
+        "CRIVc-kqYTs",
+        "SAWbfNgzor4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"thompson\",\"alleluia\"]",
+      "normalized_composer": "thompson",
+      "normalized_title": "alleluia",
+      "rank_sha256": "c2c80599c928d9c29a44f453ac1512c208ecedb17906941d0953b695da18d1de",
+      "recording_ids": [
+        "21KRBIolbe8",
+        "xAhPD9zAImI"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"lasso\",\"o che bon eccho\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "o che bon eccho",
+      "rank_sha256": "c3c6e09b7ba7123534e840ab3334957cfbc44fe97ef7ca32e4fdc6c234ee2e5e",
+      "recording_ids": [
+        "RmwMbG0PnGI",
+        "Wyo43D6NHII",
+        "a6hNsLpSsIQ"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"darthulas grabgesang\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "darthulas grabgesang",
+      "rank_sha256": "c5459d2e1f40671a41b71cd674de1a5a0ce7631be4fab4b50bd7e56f6d36c52d",
+      "recording_ids": [
+        "CFCatCLsfpw",
+        "KlvuO0otkW4",
+        "PDPNdoqH5a0"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"marie\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "marie",
+      "rank_sha256": "c63cf5dcb0ede79e187fc34658151b8b8416c2c75614d97cf4f8d4706a846b18",
+      "recording_ids": [
+        "4d2mMnkAqME",
+        "67iBns5LuGY",
+        "Dohlakl4M4c"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"manz\",\"e en so lord jesus quickly com\"]",
+      "normalized_composer": "manz",
+      "normalized_title": "e en so lord jesus quickly com",
+      "rank_sha256": "c71ae64feedf5f8af0cc31d00b962dbf13fdb31c68b77ebf2b5b8c9db1f96ae2",
+      "recording_ids": [
+        "PxmxNMfKA08",
+        "qjtMJxtoooI",
+        "rdWN5DQ77Wk"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"poulenc\",\"kyrie\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "kyrie",
+      "rank_sha256": "c80dbd15e3d3c1893bba880aa40ed67d9d35d649feae28af9f162de6603df984",
+      "recording_ids": [
+        "LdKtivhcemU",
+        "qiv9y_v7OEM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"elgar\",\"o wild westwind\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "o wild westwind",
+      "rank_sha256": "c8a22b84411a647116acfecdec0067666a8281c98fd9f4902d13c9f41876a5a9",
+      "recording_ids": [
+        "rTyRAQ0RuO4",
+        "vGEUbTKyh1w",
+        "wsnh_aDJs3k"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"hassler\",\"cantate domino\"]",
+      "normalized_composer": "hassler",
+      "normalized_title": "cantate domino",
+      "rank_sha256": "c8a6a6a7860714dbf2224e951fb362dbfa3236f7bf51b0993a6077555b1ad7ac",
+      "recording_ids": [
+        "IOdsKAoYWEQ",
+        "NDgxT8XSGGM"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"brahms\",\"beherzigung\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "beherzigung",
+      "rank_sha256": "c918815e768a45c360c2c397739a7f0b9d6d2ec91046a58172b6e9e79f3662e8",
+      "recording_ids": [
+        "2i2AONLovGE",
+        "qICCcsg5o3E"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"ma tu piu che mai dura\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "ma tu piu che mai dura",
+      "rank_sha256": "c9fd5084427341aaa57550d216345eff7cb0c68130378510009b178720df014d",
+      "recording_ids": [
+        "C7XWilTYp3A"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"philips\",\"ascendit deus\"]",
+      "normalized_composer": "philips",
+      "normalized_title": "ascendit deus",
+      "rank_sha256": "ca93c69d12d442afbc25d24dd38be7384e98663f2570c59843d3652cae4f38a7",
+      "recording_ids": [
+        "Eb0bxmo661g",
+        "rMDhzAd7Bv4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"sfogava con le stelle\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "sfogava con le stelle",
+      "rank_sha256": "cb52319eece19fd5bf7dd6a7a97aa984171e8063cb8675c959e24f9bf9fab512",
+      "recording_ids": [
+        "Nrf2EILSowU",
+        "etwCfytWqr4"
+      ],
+      "split": "train"
+    },
+    {
+      "group_key": "[\"ravel\",\"trois beaux oiseaux du paradis\"]",
+      "normalized_composer": "ravel",
+      "normalized_title": "trois beaux oiseaux du paradis",
+      "rank_sha256": "cba9f41f3029c7c1fabd1b62ded83f54ed650abb0622ed3d961fe94e16aaf058",
+      "recording_ids": [
+        "6l-GPMd0KEk",
+        "YOE3tCiPMwQ"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"weelkes\",\"when david\"]",
+      "normalized_composer": "weelkes",
+      "normalized_title": "when david",
+      "rank_sha256": "cc884bd8fadaddc33df329069360ce8269bc1b8f7852d3cfa85b2e306a49afb2",
+      "recording_ids": [
+        "YmqKcDVXkA0"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"brahms\",\"ruf zur maria\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "ruf zur maria",
+      "rank_sha256": "cd3e86cafce1f5ef57524e56b44ea000738013c496365f94f7259f28dc49eb0d",
+      "recording_ids": [
+        "-vS0wZyK1D4",
+        "LFqyL-N_lAA"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"byrd\",\"though amaryllis dance\"]",
+      "normalized_composer": "byrd",
+      "normalized_title": "though amaryllis dance",
+      "rank_sha256": "cfd4a4aa9a823707e9316eda59ff88926462a78cbf39019568cc44b16a200e89",
+      "recording_ids": [
+        "sdUx08apO_g"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"stanford\",\"the blue bird\"]",
+      "normalized_composer": "stanford",
+      "normalized_title": "the blue bird",
+      "rank_sha256": "d091797909b14484a1a66d9222936f6403c1767c1db841354ab5b34763316e86",
+      "recording_ids": [
+        "PIabjOaCqvI",
+        "PtTDo6k1Y3U"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"gounod\",\"prière du soir\"]",
+      "normalized_composer": "gounod",
+      "normalized_title": "prière du soir",
+      "rank_sha256": "d51dd4a704596bb97eb7dea0ab99708fc0d9b1dc3662cb0eb3fdad95df3584a0",
+      "recording_ids": [
+        "2vC-aLqtUD4"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"praetorius\",\"enatus est\"]",
+      "normalized_composer": "praetorius",
+      "normalized_title": "enatus est",
+      "rank_sha256": "d5336b5f194b95a5e4354d4cc3c63e458d7fb5f96d830d26f90617c68108a332",
+      "recording_ids": [
+        "h94qNxO94eo",
+        "w4iar8aK6p4"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"desprez josquin\",\"in flagellis\"]",
+      "normalized_composer": "desprez josquin",
+      "normalized_title": "in flagellis",
+      "rank_sha256": "d58797554c006ebc883b7ab2e1e5410444f2ffbedb72308d5e08e257ce14e0ca",
+      "recording_ids": [
+        "pH7ywVHNhWA"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"hensel\",\"im herbste\"]",
+      "normalized_composer": "hensel",
+      "normalized_title": "im herbste",
+      "rank_sha256": "d8012e89d33d6cac6419cc180124ee06afd4e000d17cf6e0689b8fb9cf248cb3",
+      "recording_ids": [
+        "uO5GKuhJ76U"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"poulenc\",\"clic clac dansez sabots\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "clic clac dansez sabots",
+      "rank_sha256": "d8fb8abd44ef9f317c55fafc6acb92a0e18668077299baa219f36d5c5c658da4",
+      "recording_ids": [
+        "BcXySHuG7ig",
+        "y22-qnFoz3Q"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"poulenc\",\"a peine défigurée\"]",
+      "normalized_composer": "poulenc",
+      "normalized_title": "a peine défigurée",
+      "rank_sha256": "d9c3dd7087c86a7ec6a41049ee8db31d81ed90e225ea103ec916a4ede5e2b4bb",
+      "recording_ids": [
+        "g4pQqFKIa1Y",
+        "jgUeBTao6_o",
+        "okVSOEcjnu8"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"elgar\",\"there is music\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "there is music",
+      "rank_sha256": "db84dddd8882136a7c576b57296ddd93e67ef00886b028e950a127dc1a82f0f5",
+      "recording_ids": [
+        "Gc7U31gDvBY",
+        "p_UnMrzDsCY"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"elgar\",\"shower\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "shower",
+      "rank_sha256": "dba28ecdd7ad2325aa4ad7646fd7c78d83b8c10931c2bf082b665d9f36c6bc43",
+      "recording_ids": [
+        "1LQt84rtgQA",
+        "t2JWRGPOWjk"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"brahms\",\"vineta\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "vineta",
+      "rank_sha256": "ddca8dcfc18a84028ef749d607f7eb9a6f448b1ef42b2eee7ffc52ec2884c890",
+      "recording_ids": [
+        "bigxL8Uigvs",
+        "pH7sIHhDdhg"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"lassus\",\"ave verum\"]",
+      "normalized_composer": "lassus",
+      "normalized_title": "ave verum",
+      "rank_sha256": "de29af05ccb279d0a9e56abfb7953021e79f38b1d67c9d4c22ba2a3be7bbe411",
+      "recording_ids": [
+        "0m6D6hvYoFQ",
+        "5mEL_hZ66Tg",
+        "mXNhQbwNhqs"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"kyrie\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "kyrie",
+      "rank_sha256": "de9a01d26dd08f5ac2a3ccdf4ad6c0e6959e68ee228ab567a340f1ef15d92263",
+      "recording_ids": [
+        "pxq8BxJSS0s"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"john iv\",\"crux fidelis\"]",
+      "normalized_composer": "john iv",
+      "normalized_title": "crux fidelis",
+      "rank_sha256": "deb573206435461f5d742adfeaae07d711e8b0500fa0296de4df8a39bcfd68d5",
+      "recording_ids": [
+        "K-k4D1mGSWg",
+        "PXGKd7-G84Q"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"gibbons\",\"almighty everlastinggod\"]",
+      "normalized_composer": "gibbons",
+      "normalized_title": "almighty everlastinggod",
+      "rank_sha256": "e1ab36374db07db48750e10a620a0b17449ab41d13eaf5d4040ff7dfd82dd3f3",
+      "recording_ids": [
+        "T_J-6SyFqfA",
+        "q74dwLTMOh0"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"sanctus\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "sanctus",
+      "rank_sha256": "e221884e49e827344b31c8cf71f77eb94e06fa6c1a330c4494afdbcabcb72cb9",
+      "recording_ids": [
+        "_wMF3OJTETA"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"redford\",\"rejoice\"]",
+      "normalized_composer": "redford",
+      "normalized_title": "rejoice",
+      "rank_sha256": "e25ec4047869ef82e09446021a3449296a462094ea22d725447a9fd7e74d72c5",
+      "recording_ids": [
+        "Kq1T8-NvN44",
+        "azVITZ-zNAs",
+        "ng5ohZQCfj4"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"delius\",\"midsummer song\"]",
+      "normalized_composer": "delius",
+      "normalized_title": "midsummer song",
+      "rank_sha256": "e2e0ffa203440693615fd36fd068a4556ba3ba909aa53ca4831c55990f03bdbc",
+      "recording_ids": [
+        "erR-s7INc-Q"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"tallis\",\"o lord spirit\"]",
+      "normalized_composer": "tallis",
+      "normalized_title": "o lord spirit",
+      "rank_sha256": "e41836f604158dacf4e61637549c3cb53bb03fa952c421ec4a19848155a59ea2",
+      "recording_ids": [
+        "IOLNSh-W5r8"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"hassler\",\"ihr musici frisch auf\"]",
+      "normalized_composer": "hassler",
+      "normalized_title": "ihr musici frisch auf",
+      "rank_sha256": "e46444a4d0d9fcc141514de17dd809325b5a9f1e37efd322c089ea175568f5b3",
+      "recording_ids": [
+        "LU4CmMGPg-M"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"brahms\",\"im herbst\"]",
+      "normalized_composer": "brahms",
+      "normalized_title": "im herbst",
+      "rank_sha256": "e4c408efa8415757c3c1eeb5fced9a6d9f328ac832cd7015d04f88fc5d0b81f7",
+      "recording_ids": [
+        "j-ZmsnI6nJQ"
+      ],
+      "split": "valid"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"voi pur da me partite anima dura\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "voi pur da me partite anima dura",
+      "rank_sha256": "e7a52d542ca2f7a06efb799205bb4c78684d70b225bdd1547654f66b19ac875f",
+      "recording_ids": [
+        "P3vDgaUaERw"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"desprez josquin\",\"et incarnatus est\"]",
+      "normalized_composer": "desprez josquin",
+      "normalized_title": "et incarnatus est",
+      "rank_sha256": "eaaa9e6c33f896ff9ec22299eac4a9aaffe9e11c6738ee175a51ee9998085dd6",
+      "recording_ids": [
+        "pgxg_NF6s-U"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"monteverdi\",\"a un giro sol de begl occhi lucenti\"]",
+      "normalized_composer": "monteverdi",
+      "normalized_title": "a un giro sol de begl occhi lucenti",
+      "rank_sha256": "eb0ee39fb88121dfedb0158a5dc1036e10899e2b1c8540b76a93bdd3140d4f7e",
+      "recording_ids": [
+        "CJ_J8ik8j3E",
+        "ybp1Wvmu0y0"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"bairstow\",\"jesu the very\"]",
+      "normalized_composer": "bairstow",
+      "normalized_title": "jesu the very",
+      "rank_sha256": "eb5bc6ced7cbad6d2752a77847f57c07a8d74c77636bbd79b4da3fd79c9cd259",
+      "recording_ids": [
+        "GBI33lxzPMk",
+        "IbkbxvY_x5o"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"sanctus benedictus\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "sanctus benedictus",
+      "rank_sha256": "ebc21d6c3ddcac690ec95add3052c3799b6d4fe13760f69187b887c20c80f420",
+      "recording_ids": [
+        "XGWs2EJyb-c"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"hindemith\",\"2 a swan\"]",
+      "normalized_composer": "hindemith",
+      "normalized_title": "2 a swan",
+      "rank_sha256": "ed72ae8e17f40a55c26ec49da6468977f91284f5006c819fc0643b7fbbb2b82e",
+      "recording_ids": [
+        "xWPBHsd5IgM"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"victoria\",\"ave maria\"]",
+      "normalized_composer": "victoria",
+      "normalized_title": "ave maria",
+      "rank_sha256": "edb3a39ebabadbe94fb12246404ee4b5abc58de6a64c00de6fcb68d8b640afa6",
+      "recording_ids": [
+        "hXICnHx0Shc",
+        "zqEMrc1XXSQ"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"heilig\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "heilig",
+      "rank_sha256": "ee810d2751198857fc98f5e08d3e3ce47b6687e8eb66932e1c95a27ff392fe60",
+      "recording_ids": [
+        "-gpWqLQW-UM",
+        "mSXXhDtD7TM"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"balakirev\",\"svyshe prorotsy\"]",
+      "normalized_composer": "balakirev",
+      "normalized_title": "svyshe prorotsy",
+      "rank_sha256": "ef884817e2f179639e48872da3851509006080eb457702a0e45062e5935bc007",
+      "recording_ids": [
+        "yXOiIbSECik"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"pitoni\",\"cantate domino\"]",
+      "normalized_composer": "pitoni",
+      "normalized_title": "cantate domino",
+      "rank_sha256": "efe696ff4b4bd5c5ce32abb8ee01339662dbdbf847b1f8fe2ddf2f2a5f16e910",
+      "recording_ids": [
+        "DF_rxVoZoqM",
+        "oudkfwwrZq0"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"viadana\",\"o sacrum convivium\"]",
+      "normalized_composer": "viadana",
+      "normalized_title": "o sacrum convivium",
+      "rank_sha256": "f03af90793b1b8d6c9ad1859a241346b4d99103ea7c1dc3900614061e146f48e",
+      "recording_ids": [
+        "nV5OVSgvt1U"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"tallis\",\"salvator mundi\"]",
+      "normalized_composer": "tallis",
+      "normalized_title": "salvator mundi",
+      "rank_sha256": "f12d8e7c63d8d510e39604a1d201187cd612add60161af3e2d5a3a50d665b057",
+      "recording_ids": [
+        "EM421mbKubA",
+        "xn52A6wK1es",
+        "xokRhSiQRKw"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"tallis\",\"in jejunio et fletu\"]",
+      "normalized_composer": "tallis",
+      "normalized_title": "in jejunio et fletu",
+      "rank_sha256": "f4442e21581cecb03d2981172adf539df6bd65bc41bfa6a7a6c142ddfd06907a",
+      "recording_ids": [
+        "aQayyS-N6Tc"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"schumann\",\"nord oder sud\"]",
+      "normalized_composer": "schumann",
+      "normalized_title": "nord oder sud",
+      "rank_sha256": "f4d5d21ef5303943f83f8965f01f2588e280659751e36774934bd39650ccd96d",
+      "recording_ids": [
+        "KMjf3jJhJ88"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"lassus\",\"iustorum animae\"]",
+      "normalized_composer": "lassus",
+      "normalized_title": "iustorum animae",
+      "rank_sha256": "f68b53a0a8e0a573110f71f9c1bdf95fa3823571b194642fbd6951b9235c36b2",
+      "recording_ids": [
+        "OeO6lX8Lkx0",
+        "OrxiJw0lndQ",
+        "pvhhbSOQz8o"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"busto\",\"ave maria\"]",
+      "normalized_composer": "busto",
+      "normalized_title": "ave maria",
+      "rank_sha256": "f70883b7cc499d3858fca08fec6239572f96165a342cb0bef29c9e6aadd05343",
+      "recording_ids": [
+        "5plWvk5vTD8"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"lasso\",\"confortamini et iam\"]",
+      "normalized_composer": "lasso",
+      "normalized_title": "confortamini et iam",
+      "rank_sha256": "f7736c51460a830ce0c197fa3df12318e6b37c4b3eb77da63a597f7d44f3c03a",
+      "recording_ids": [
+        "QRG4J4SwoV4"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"bartok\",\"isten veled\"]",
+      "normalized_composer": "bartok",
+      "normalized_title": "isten veled",
+      "rank_sha256": "f7d69f906fb6cc31c32e4f806bc19264100fefdd3556334c38e76aa11ee88e04",
+      "recording_ids": [
+        "OtFuDJl3ql0",
+        "P4l8UzSP9BY",
+        "VpN6KBKWpms"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"reger\",\"unser lieben\"]",
+      "normalized_composer": "reger",
+      "normalized_title": "unser lieben",
+      "rank_sha256": "f8bc36b904e3688126648dfb784d26a085ae4348811f64debab145eb92da176d",
+      "recording_ids": [
+        "g2cUJK8Nc5w",
+        "rvXA_vW2D5k"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"sweelinck\",\"psalm 96\"]",
+      "normalized_composer": "sweelinck",
+      "normalized_title": "psalm 96",
+      "rank_sha256": "f91bddea85f54e25ac85b75ed27b15bd6a2f4893ace3c94c2807cdb81aec0e06",
+      "recording_ids": [
+        "rIwFUVkwXhY"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"gesualdo\",\"o vos omnes\"]",
+      "normalized_composer": "gesualdo",
+      "normalized_title": "o vos omnes",
+      "rank_sha256": "f9ea74d516d9f78b873f06bb6e5d5f94190357e7e98a00c67fd9c7aa52ae1f5b",
+      "recording_ids": [
+        "MiIKbUI6Dio"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"williams ralph vaughan\",\"linden lea\"]",
+      "normalized_composer": "williams ralph vaughan",
+      "normalized_title": "linden lea",
+      "rank_sha256": "fd472778820dc9df97fd7759e7461c77a0133e848432212f89ca52036c643288",
+      "recording_ids": [
+        "nvoYHwYDYLA"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"mendelssohn\",\"die nachtigall\"]",
+      "normalized_composer": "mendelssohn",
+      "normalized_title": "die nachtigall",
+      "rank_sha256": "fe323af2244addb10e12017d284182280f195428f0eb8a7b25e6508e7c36aef9",
+      "recording_ids": [
+        "FrsGw4GBtts",
+        "VAPJK0V1Luk"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"elgar\",\"weary wind of the west\"]",
+      "normalized_composer": "elgar",
+      "normalized_title": "weary wind of the west",
+      "rank_sha256": "fe419ee02ff5cd0765954b49811f861bc6d1d994cf136bd827284dcfa12c02fc",
+      "recording_ids": [
+        "3cdHrAmL_zg"
+      ],
+      "split": "test"
+    },
+    {
+      "group_key": "[\"schumann\",\"brautgesang\"]",
+      "normalized_composer": "schumann",
+      "normalized_title": "brautgesang",
+      "rank_sha256": "feffc876fbdff1450eeeaa66e3d6e312c00f5f9729ef5edae2c47b6f9689024a",
+      "recording_ids": [
+        "5ExnECGwQhU",
+        "of2-IWFSsR4"
+      ],
+      "split": "test"
+    }
+  ],
+  "normalization": "Unicode NFKC; casefold; replace every Unicode punctuation character with a space; collapse whitespace",
+  "recordings": {
+    "-foB75466zY": {
+      "group_key": "[\"lasso\",\"eco\"]",
+      "split": "train"
+    },
+    "-gpWqLQW-UM": {
+      "group_key": "[\"mendelssohn\",\"heilig\"]",
+      "split": "test"
+    },
+    "-vS0wZyK1D4": {
+      "group_key": "[\"brahms\",\"ruf zur maria\"]",
+      "split": "valid"
+    },
+    "-xLe8s8oOQM": {
+      "group_key": "[\"bortnyansky\",\"dostoino est\"]",
+      "split": "train"
+    },
+    "05Bzbz-RXiA": {
+      "group_key": "[\"williams ralph vaughan\",\"wassail\"]",
+      "split": "train"
+    },
+    "08C-hIpsmfo": {
+      "group_key": "[\"schumann\",\"der rekrut\"]",
+      "split": "train"
+    },
+    "0bxMPSBE3hA": {
+      "group_key": "[\"tchaikovsky\",\"blazenni jaze izbral\"]",
+      "split": "train"
+    },
+    "0j2JRcC6wBs": {
+      "group_key": "[\"whitacre\",\"lux aurumque\"]",
+      "split": "train"
+    },
+    "0m6D6hvYoFQ": {
+      "group_key": "[\"lassus\",\"ave verum\"]",
+      "split": "valid"
+    },
+    "0mghR0MIKWM": {
+      "group_key": "[\"poulenc\",\"pilons l orge\"]",
+      "split": "train"
+    },
+    "0uQEfIeBCyY": {
+      "group_key": "[\"alkan\",\"eytz chayim\"]",
+      "split": "train"
+    },
+    "0x-K8tALBMY": {
+      "group_key": "[\"barber\",\"anthony o daly\"]",
+      "split": "train"
+    },
+    "0yd5EE0hAB8": {
+      "group_key": "[\"palestrina\",\"sicut cervus\"]",
+      "split": "train"
+    },
+    "13um_ULbfTU": {
+      "group_key": "[\"delius\",\"on craig ddu\"]",
+      "split": "train"
+    },
+    "1GAVQkAp2Ls": {
+      "group_key": "[\"lassus\",\"timor et tremor\"]",
+      "split": "train"
+    },
+    "1LQt84rtgQA": {
+      "group_key": "[\"elgar\",\"shower\"]",
+      "split": "valid"
+    },
+    "1Pc41lxwd7k": {
+      "group_key": "[\"bairstow\",\"i sat down\"]",
+      "split": "train"
+    },
+    "1qml9uO0GLg": {
+      "group_key": "[\"part\",\"magnificat\"]",
+      "split": "train"
+    },
+    "1s2AqmfN318": {
+      "group_key": "[\"tchaikovsky\",\"milost mira\"]",
+      "split": "train"
+    },
+    "21KRBIolbe8": {
+      "group_key": "[\"thompson\",\"alleluia\"]",
+      "split": "train"
+    },
+    "2Tn2uSxNKTw": {
+      "group_key": "[\"pesenti\",\"dal lecto me levava\"]",
+      "split": "train"
+    },
+    "2i2AONLovGE": {
+      "group_key": "[\"brahms\",\"beherzigung\"]",
+      "split": "train"
+    },
+    "2jDLZUFchFk": {
+      "group_key": "[\"bruckner\",\"5 virga jesse\"]",
+      "split": "train"
+    },
+    "2ma_Ouv74_8": {
+      "group_key": "[\"tavener\",\"song for athene\"]",
+      "split": "train"
+    },
+    "2vC-aLqtUD4": {
+      "group_key": "[\"gounod\",\"prière du soir\"]",
+      "split": "valid"
+    },
+    "36Y_ztEW1NE": {
+      "group_key": "[\"allegri\",\"miserere\"]",
+      "split": "train"
+    },
+    "3WkJD2b1mwQ": {
+      "group_key": "[\"ibert\",\"la berceuse du petit zébu\"]",
+      "split": "train"
+    },
+    "3cdHrAmL_zg": {
+      "group_key": "[\"elgar\",\"weary wind of the west\"]",
+      "split": "test"
+    },
+    "3gSmBaZwNqQ": {
+      "group_key": "[\"hensel\",\"abendlich schon rauscht der wald\"]",
+      "split": "train"
+    },
+    "3gY7GRABKfY": {
+      "group_key": "[\"poulenc\",\"la blanche neige\"]",
+      "split": "train"
+    },
+    "3lV2GCJk3X8": {
+      "group_key": "[\"weelkes\",\"alleluia\"]",
+      "split": "train"
+    },
+    "3nFNNvnisxI": {
+      "group_key": "[\"palestrina\",\"mori quasi il more core\"]",
+      "split": "train"
+    },
+    "4Kpyzw55V-c": {
+      "group_key": "[\"barber\",\"the coolin\"]",
+      "split": "train"
+    },
+    "4d2mMnkAqME": {
+      "group_key": "[\"poulenc\",\"marie\"]",
+      "split": "train"
+    },
+    "4p5hGT9SG1I": {
+      "group_key": "[\"becker albert\",\"fuerwahr er trug unsre krankheit\"]",
+      "split": "train"
+    },
+    "50BL2dUBb1Q": {
+      "group_key": "[\"tchaikovsky\",\"nochevala tuchka zolotaya\"]",
+      "split": "train"
+    },
+    "5AOwGE0KuRI": {
+      "group_key": "[\"parsons\",\"ave maria\"]",
+      "split": "train"
+    },
+    "5ExnECGwQhU": {
+      "group_key": "[\"schumann\",\"brautgesang\"]",
+      "split": "test"
+    },
+    "5j0Ra_jl9SQ": {
+      "group_key": "[\"barber\",\"anthony o daly\"]",
+      "split": "train"
+    },
+    "5mEL_hZ66Tg": {
+      "group_key": "[\"lassus\",\"ave verum\"]",
+      "split": "valid"
+    },
+    "5plWvk5vTD8": {
+      "group_key": "[\"busto\",\"ave maria\"]",
+      "split": "test"
+    },
+    "5s9qS_Uklmg": {
+      "group_key": "[\"brahms\",\"verlorene jugend\"]",
+      "split": "train"
+    },
+    "67iBns5LuGY": {
+      "group_key": "[\"poulenc\",\"marie\"]",
+      "split": "train"
+    },
+    "6Cqd7qBH9sY": {
+      "group_key": "[\"parry\",\"there is an old belief\"]",
+      "split": "train"
+    },
+    "6SNlJSdhF-o": {
+      "group_key": "[\"pearsall\",\"sing we\"]",
+      "split": "train"
+    },
+    "6l-GPMd0KEk": {
+      "group_key": "[\"ravel\",\"trois beaux oiseaux du paradis\"]",
+      "split": "valid"
+    },
+    "6tgUicGu994": {
+      "group_key": "[\"lasso\",\"levabo oculos\"]",
+      "split": "train"
+    },
+    "76OarJEoCz4": {
+      "group_key": "[\"ravel\",\"nicolette\"]",
+      "split": "train"
+    },
+    "7E_rKYkjSC4": {
+      "group_key": "[\"tavener\",\"hymn to mother\"]",
+      "split": "train"
+    },
+    "7StZth30qxg": {
+      "group_key": "[\"szewalin\",\"zimniaja doroga\"]",
+      "split": "train"
+    },
+    "7ZObExKH1TU": {
+      "group_key": "[\"poulenc\",\"belle et ressemblante\"]",
+      "split": "train"
+    },
+    "8r9ODSoKQvM": {
+      "group_key": "[\"taneev\",\"alps\"]",
+      "split": "train"
+    },
+    "9DsbtEmS0eE": {
+      "group_key": "[\"weelkes\",\"gloria\"]",
+      "split": "train"
+    },
+    "9GvcZb_t0QM": {
+      "group_key": "[\"hensel\",\"abendlich schon rauscht der wald\"]",
+      "split": "train"
+    },
+    "9IwIa1ZBgT0": {
+      "group_key": "[\"byrd\",\"haec dies\"]",
+      "split": "train"
+    },
+    "9cSWeHb--V4": {
+      "group_key": "[\"telemann\",\"der gott unsers herrn jesu christi\"]",
+      "split": "train"
+    },
+    "9r_V8QBXud8": {
+      "group_key": "[\"morley\",\"nolo mortem\"]",
+      "split": "train"
+    },
+    "9t6szpkLvoo": {
+      "group_key": "[\"sviridov\",\"natasha\"]",
+      "split": "train"
+    },
+    "9xPh-fXYAc4": {
+      "group_key": "[\"victoria\",\"o magnum mysterium\"]",
+      "split": "train"
+    },
+    "9yRd62EJFJc": {
+      "group_key": "[\"nanino\",\"diffusa est gratia\"]",
+      "split": "train"
+    },
+    "A5kFvX6mHB4": {
+      "group_key": "[\"poulenc\",\"pilons l orge\"]",
+      "split": "train"
+    },
+    "AXv-QUU2mgk": {
+      "group_key": "[\"bruckner\",\"3 os justi\"]",
+      "split": "train"
+    },
+    "AgU27nxkhog": {
+      "group_key": "[\"britten\",\"the sycamore tree\"]",
+      "split": "train"
+    },
+    "AiuC_CaObbI": {
+      "group_key": "[\"barber\",\"agnus dei\"]",
+      "split": "train"
+    },
+    "AjfgZje_TGU": {
+      "group_key": "[\"elgar\",\"my love northern\"]",
+      "split": "train"
+    },
+    "AlY8lcsG2NM": {
+      "group_key": "[\"roberton\",\"all in april\"]",
+      "split": "train"
+    },
+    "AqzC1UNINRk": {
+      "group_key": "[\"hensel\",\"im wald\"]",
+      "split": "train"
+    },
+    "BFUAzZ5ZoR0": {
+      "group_key": "[\"bairstow\",\"i sat down\"]",
+      "split": "train"
+    },
+    "BcM6awEPupE": {
+      "group_key": "[\"poulenc\",\"belle et ressemblante\"]",
+      "split": "train"
+    },
+    "BcXySHuG7ig": {
+      "group_key": "[\"poulenc\",\"clic clac dansez sabots\"]",
+      "split": "valid"
+    },
+    "Bel9Ure2PZA": {
+      "group_key": "[\"schumann\",\"der rekrut\"]",
+      "split": "train"
+    },
+    "BtTbkfH9G2o": {
+      "group_key": "[\"byrd\",\"haec dies\"]",
+      "split": "train"
+    },
+    "ByOOAyPZkpo": {
+      "group_key": "[\"glinka\",\"the cherubic hymn\"]",
+      "split": "train"
+    },
+    "C7XWilTYp3A": {
+      "group_key": "[\"monteverdi\",\"ma tu piu che mai dura\"]",
+      "split": "train"
+    },
+    "CFCatCLsfpw": {
+      "group_key": "[\"brahms\",\"darthulas grabgesang\"]",
+      "split": "train"
+    },
+    "CJ_J8ik8j3E": {
+      "group_key": "[\"monteverdi\",\"a un giro sol de begl occhi lucenti\"]",
+      "split": "test"
+    },
+    "CRIVc-kqYTs": {
+      "group_key": "[\"lassus\",\"adoramus te\"]",
+      "split": "train"
+    },
+    "D2LH-bDdVV0": {
+      "group_key": "[\"tchaikovsky\",\"dostoino yest\"]",
+      "split": "train"
+    },
+    "DF_rxVoZoqM": {
+      "group_key": "[\"pitoni\",\"cantate domino\"]",
+      "split": "test"
+    },
+    "DLEooeWCwzM": {
+      "group_key": "[\"mendelssohn\",\"beati mortui\"]",
+      "split": "train"
+    },
+    "DcTSvsADsyI": {
+      "group_key": "[\"reger\",\"nachtlied\"]",
+      "split": "train"
+    },
+    "Dgrd45PkBY8": {
+      "group_key": "[\"hensel\",\"abendlich schon rauscht der wald\"]",
+      "split": "train"
+    },
+    "Dohlakl4M4c": {
+      "group_key": "[\"poulenc\",\"marie\"]",
+      "split": "train"
+    },
+    "Dojf26nuyuY": {
+      "group_key": "[\"verdi\",\"laudi maria\"]",
+      "split": "train"
+    },
+    "Dqjb_FYTN7U": {
+      "group_key": "[\"whitacre\",\"stolen child\"]",
+      "split": "train"
+    },
+    "E-teMzCWeSA": {
+      "group_key": "[\"vaughan williams\",\"the commonwealth\"]",
+      "split": "train"
+    },
+    "EM421mbKubA": {
+      "group_key": "[\"tallis\",\"salvator mundi\"]",
+      "split": "test"
+    },
+    "EVidFFF0lfE": {
+      "group_key": "[\"farrant hilton\",\"lord for thy tender mercy s sake\"]",
+      "split": "train"
+    },
+    "Eb0bxmo661g": {
+      "group_key": "[\"philips\",\"ascendit deus\"]",
+      "split": "train"
+    },
+    "EeCDckVNWIA": {
+      "group_key": "[\"parry\",\"i know my soul\"]",
+      "split": "train"
+    },
+    "Et6l-Gop5Es": {
+      "group_key": "[\"morley\",\"nolo mortem\"]",
+      "split": "train"
+    },
+    "F-n52N8HyOs": {
+      "group_key": "[\"stone\",\"lord s prayer\"]",
+      "split": "train"
+    },
+    "F4skHXptTE0": {
+      "group_key": "[\"williams ralph vaughan\",\"gloria\"]",
+      "split": "train"
+    },
+    "Faby9xSLyX8": {
+      "group_key": "[\"lotti\",\"miserere\"]",
+      "split": "train"
+    },
+    "FevpQN1BzX4": {
+      "group_key": "[\"kodaly\",\"ave maria\"]",
+      "split": "train"
+    },
+    "Fh9m8gSL7wE": {
+      "group_key": "[\"parry\",\"never weatherbeaten sail\"]",
+      "split": "train"
+    },
+    "FrsGw4GBtts": {
+      "group_key": "[\"mendelssohn\",\"die nachtigall\"]",
+      "split": "test"
+    },
+    "FyieyUw3GXk": {
+      "group_key": "[\"purcell\",\"hear my prayer oh lord\"]",
+      "split": "train"
+    },
+    "G4eVpdxtHng": {
+      "group_key": "[\"arkhangelsky\",\"pomyshlyayu den strashnyi\"]",
+      "split": "train"
+    },
+    "GBI33lxzPMk": {
+      "group_key": "[\"bairstow\",\"jesu the very\"]",
+      "split": "test"
+    },
+    "GJrXhjt7Gwo": {
+      "group_key": "[\"lauridsen\",\"o magnum mysterium\"]",
+      "split": "train"
+    },
+    "GTkK2NS8QGI": {
+      "group_key": "[\"verdi\",\"laudi maria\"]",
+      "split": "train"
+    },
+    "Gacfz_DsWnk": {
+      "group_key": "[\"parry\",\"lord mine end\"]",
+      "split": "train"
+    },
+    "Gc7U31gDvBY": {
+      "group_key": "[\"elgar\",\"there is music\"]",
+      "split": "valid"
+    },
+    "Gk7J8T-IB_A": {
+      "group_key": "[\"tavener\",\"hymn to mother\"]",
+      "split": "train"
+    },
+    "GnqzXrH2NtY": {
+      "group_key": "[\"mudd\",\"let thy ears\"]",
+      "split": "train"
+    },
+    "HM4vTwtV9g8": {
+      "group_key": "[\"ingegneri\",\"tenebrae factae sunt\"]",
+      "split": "train"
+    },
+    "Hgk3wsscggk": {
+      "group_key": "[\"elgar\",\"good morrow\"]",
+      "split": "train"
+    },
+    "I4u9QnnWBII": {
+      "group_key": "[\"tchaikovsky\",\"blazenni jaze izbral\"]",
+      "split": "train"
+    },
+    "IF-OXYfu6dU": {
+      "group_key": "[\"handl gallus\",\"pater noster\"]",
+      "split": "train"
+    },
+    "IOLNSh-W5r8": {
+      "group_key": "[\"tallis\",\"o lord spirit\"]",
+      "split": "valid"
+    },
+    "IOdsKAoYWEQ": {
+      "group_key": "[\"hassler\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "IbkbxvY_x5o": {
+      "group_key": "[\"bairstow\",\"jesu the very\"]",
+      "split": "test"
+    },
+    "IsTzD9AEcao": {
+      "group_key": "[\"lasso\",\"exaltabo te\"]",
+      "split": "train"
+    },
+    "JCxGIyYNZ7A": {
+      "group_key": "[\"victoria\",\"popule meus\"]",
+      "split": "train"
+    },
+    "JQJGliimRNQ": {
+      "group_key": "[\"guerrero\",\"canite tuba\"]",
+      "split": "train"
+    },
+    "Jbgge89vMQ4": {
+      "group_key": "[\"victoria\",\"sancta maria succurre miseris\"]",
+      "split": "train"
+    },
+    "Jh_KGlPBM4E": {
+      "group_key": "[\"byrd\",\"i will not leave you\"]",
+      "split": "train"
+    },
+    "JuHT7jtPdBg": {
+      "group_key": "[\"mendelssohn\",\"psalm 43\"]",
+      "split": "train"
+    },
+    "K-k4D1mGSWg": {
+      "group_key": "[\"john iv\",\"crux fidelis\"]",
+      "split": "valid"
+    },
+    "KBTAeqOCuL0": {
+      "group_key": "[\"taneev\",\"posmotri kakaya mgla\"]",
+      "split": "train"
+    },
+    "KMjf3jJhJ88": {
+      "group_key": "[\"schumann\",\"nord oder sud\"]",
+      "split": "test"
+    },
+    "KlvuO0otkW4": {
+      "group_key": "[\"brahms\",\"darthulas grabgesang\"]",
+      "split": "train"
+    },
+    "Kq1T8-NvN44": {
+      "group_key": "[\"redford\",\"rejoice\"]",
+      "split": "valid"
+    },
+    "KxVCKbX4fss": {
+      "group_key": "[\"lassus\",\"timor et tremor\"]",
+      "split": "train"
+    },
+    "LDLeiOTlLiM": {
+      "group_key": "[\"viadana\",\"exsultate justi\"]",
+      "split": "train"
+    },
+    "LFqyL-N_lAA": {
+      "group_key": "[\"brahms\",\"ruf zur maria\"]",
+      "split": "valid"
+    },
+    "LGOhRpMg3F8": {
+      "group_key": "[\"bairstow\",\"let all mortal\"]",
+      "split": "train"
+    },
+    "LTW8297EkSE": {
+      "group_key": "[\"stanford\",\"i heard voice\"]",
+      "split": "train"
+    },
+    "LU4CmMGPg-M": {
+      "group_key": "[\"hassler\",\"ihr musici frisch auf\"]",
+      "split": "valid"
+    },
+    "LUnNiyMXXPI": {
+      "group_key": "[\"child\",\"o lord grant\"]",
+      "split": "train"
+    },
+    "LZRjRzcwhcg": {
+      "group_key": "[\"verdi\",\"paternoster\"]",
+      "split": "train"
+    },
+    "LdKtivhcemU": {
+      "group_key": "[\"poulenc\",\"kyrie\"]",
+      "split": "train"
+    },
+    "LjHySS0tXYo": {
+      "group_key": "[\"eben\",\"salve regina\"]",
+      "split": "train"
+    },
+    "LjqY2Bo-NuA": {
+      "group_key": "[\"palestrina\",\"exsultate deo\"]",
+      "split": "train"
+    },
+    "Luh-UlFvxEk": {
+      "group_key": "[\"stravinsky\",\"ave maria\"]",
+      "split": "train"
+    },
+    "MSzVRbda6_E": {
+      "group_key": "[\"elgar\",\"they are at rest\"]",
+      "split": "train"
+    },
+    "Mf3zgU7ShU4": {
+      "group_key": "[\"brahms\",\"nachtwache ii\"]",
+      "split": "train"
+    },
+    "MiIKbUI6Dio": {
+      "group_key": "[\"gesualdo\",\"o vos omnes\"]",
+      "split": "test"
+    },
+    "MnGtjy5RUjg": {
+      "group_key": "[\"brahms\",\"es geht ein wehen\"]",
+      "split": "train"
+    },
+    "N3oFBk9MynU": {
+      "group_key": "[\"poulenc\",\"les tisserands\"]",
+      "split": "train"
+    },
+    "NA1eWba5ZCE": {
+      "group_key": "[\"pearsall\",\"lay a garland\"]",
+      "split": "train"
+    },
+    "NBy4Em72qig": {
+      "group_key": "[\"elgar\",\"o happy eyes\"]",
+      "split": "train"
+    },
+    "NDgxT8XSGGM": {
+      "group_key": "[\"hassler\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "NS6uqXBjmVk": {
+      "group_key": "[\"finzi\",\"haste on my joys\"]",
+      "split": "train"
+    },
+    "NW9Ccv-xcRQ": {
+      "group_key": "[\"victoria\",\"o quam gloriosum\"]",
+      "split": "train"
+    },
+    "NbkqD88Fs04": {
+      "group_key": "[\"tchaikovsky\",\"milost mira\"]",
+      "split": "train"
+    },
+    "Nrf2EILSowU": {
+      "group_key": "[\"monteverdi\",\"sfogava con le stelle\"]",
+      "split": "train"
+    },
+    "O2x4TRMpU_w": {
+      "group_key": "[\"finzi\",\"haste on my joys\"]",
+      "split": "train"
+    },
+    "OHXS3ONMNaQ": {
+      "group_key": "[\"farmer\",\"lord s prayer\"]",
+      "split": "train"
+    },
+    "Ob0B5zlpR8A": {
+      "group_key": "[\"pearsall\",\"in dulci jubilo\"]",
+      "split": "train"
+    },
+    "OeO6lX8Lkx0": {
+      "group_key": "[\"lassus\",\"iustorum animae\"]",
+      "split": "test"
+    },
+    "OkwxILCgyOg": {
+      "group_key": "[\"palestrina\",\"o che splendor\"]",
+      "split": "train"
+    },
+    "Oq-fMuZuZpM": {
+      "group_key": "[\"monteverdi\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "OrxiJw0lndQ": {
+      "group_key": "[\"lassus\",\"iustorum animae\"]",
+      "split": "test"
+    },
+    "OtFuDJl3ql0": {
+      "group_key": "[\"bartok\",\"isten veled\"]",
+      "split": "test"
+    },
+    "P1PBPc1wRBI": {
+      "group_key": "[\"dunstaple\",\"veni sancte spiritus\"]",
+      "split": "train"
+    },
+    "P3vDgaUaERw": {
+      "group_key": "[\"monteverdi\",\"voi pur da me partite anima dura\"]",
+      "split": "test"
+    },
+    "P4l8UzSP9BY": {
+      "group_key": "[\"bartok\",\"isten veled\"]",
+      "split": "test"
+    },
+    "P5ChtbbPgK8": {
+      "group_key": "[\"sviridov\",\"natasha\"]",
+      "split": "train"
+    },
+    "P6JfInyQI9Q": {
+      "group_key": "[\"bairstow\",\"i sat down\"]",
+      "split": "train"
+    },
+    "PDPNdoqH5a0": {
+      "group_key": "[\"brahms\",\"darthulas grabgesang\"]",
+      "split": "train"
+    },
+    "PIabjOaCqvI": {
+      "group_key": "[\"stanford\",\"the blue bird\"]",
+      "split": "valid"
+    },
+    "PXGKd7-G84Q": {
+      "group_key": "[\"john iv\",\"crux fidelis\"]",
+      "split": "valid"
+    },
+    "Pdv9vmGo4EE": {
+      "group_key": "[\"palestrina\",\"sicut cervus\"]",
+      "split": "train"
+    },
+    "PjGF1sk4fkA": {
+      "group_key": "[\"barber\",\"the coolin\"]",
+      "split": "train"
+    },
+    "PkMhWl30P4E": {
+      "group_key": "[\"parry\",\"at the round earth s\"]",
+      "split": "train"
+    },
+    "PmLacAB9aTs": {
+      "group_key": "[\"kodaly\",\"ave maria\"]",
+      "split": "train"
+    },
+    "PtTDo6k1Y3U": {
+      "group_key": "[\"stanford\",\"the blue bird\"]",
+      "split": "valid"
+    },
+    "PxmxNMfKA08": {
+      "group_key": "[\"manz\",\"e en so lord jesus quickly com\"]",
+      "split": "train"
+    },
+    "QQnApR9PNV8": {
+      "group_key": "[\"howells\",\"a spotless rose\"]",
+      "split": "train"
+    },
+    "QRG4J4SwoV4": {
+      "group_key": "[\"lasso\",\"confortamini et iam\"]",
+      "split": "test"
+    },
+    "QZtC9SLN6F8": {
+      "group_key": "[\"poulenc\",\"salveregina\"]",
+      "split": "train"
+    },
+    "Qn1y1kRThBg": {
+      "group_key": "[\"byrd\",\"ave maria\"]",
+      "split": "train"
+    },
+    "QvX51Bt8SoU": {
+      "group_key": "[\"barber\",\"mary hynes\"]",
+      "split": "train"
+    },
+    "R68njdM3HGs": {
+      "group_key": "[\"soriano\",\"regina caeli\"]",
+      "split": "train"
+    },
+    "RA6Owd4KdMg": {
+      "group_key": "[\"senfl\",\"das glaut zu speyer\"]",
+      "split": "train"
+    },
+    "RN1DSESbmXE": {
+      "group_key": "[\"monte\",\"bonjour mon coeur\"]",
+      "split": "train"
+    },
+    "RRkfwa6q4TE": {
+      "group_key": "[\"brahms\",\"es geht ein wehen\"]",
+      "split": "train"
+    },
+    "RSFtiMfFgTQ": {
+      "group_key": "[\"taneev\",\"sphinx\"]",
+      "split": "train"
+    },
+    "RlcAqb-h98A": {
+      "group_key": "[\"casals\",\"o vos omnes\"]",
+      "split": "train"
+    },
+    "RmwMbG0PnGI": {
+      "group_key": "[\"lasso\",\"o che bon eccho\"]",
+      "split": "train"
+    },
+    "RtGKEV4pQNw": {
+      "group_key": "[\"bairstow\",\"let all mortal\"]",
+      "split": "train"
+    },
+    "Ru-BqM66KQo": {
+      "group_key": "[\"poulenc\",\"les tisserands\"]",
+      "split": "train"
+    },
+    "RzdsX52ZhBA": {
+      "group_key": "[\"williams ralph vaughan\",\"agnus dei\"]",
+      "split": "train"
+    },
+    "S6T-JNJ8u88": {
+      "group_key": "[\"canteloube\",\"la baylere\"]",
+      "split": "train"
+    },
+    "SAEffmscld0": {
+      "group_key": "[\"williams ralph vaughan\",\"agnus dei\"]",
+      "split": "train"
+    },
+    "SAWbfNgzor4": {
+      "group_key": "[\"lassus\",\"adoramus te\"]",
+      "split": "train"
+    },
+    "SONI_BJLLeE": {
+      "group_key": "[\"tchaikovsky\",\"ne kukushechka vo sirom boru\"]",
+      "split": "train"
+    },
+    "SeBQqa0MhRo": {
+      "group_key": "[\"britten\",\"the sycamore tree\"]",
+      "split": "train"
+    },
+    "SsmW6d6A-Ak": {
+      "group_key": "[\"anerio\",\"christus factus est\"]",
+      "split": "train"
+    },
+    "TFOGLp766Ic": {
+      "group_key": "[\"brahms\",\"abendständchen\"]",
+      "split": "train"
+    },
+    "TGc__HGwdxk": {
+      "group_key": "[\"rheinberger\",\"abendlied\"]",
+      "split": "train"
+    },
+    "TMOto-zbE7U": {
+      "group_key": "[\"schumann\",\"am bodensee\"]",
+      "split": "train"
+    },
+    "T_J-6SyFqfA": {
+      "group_key": "[\"gibbons\",\"almighty everlastinggod\"]",
+      "split": "valid"
+    },
+    "U5BcK35G6hE": {
+      "group_key": "[\"kodaly\",\"esti dal\"]",
+      "split": "train"
+    },
+    "UIRrdvTyuTc": {
+      "group_key": "[\"delius\",\"to be sung of a summer night on the water\"]",
+      "split": "train"
+    },
+    "USw-lkI2Fy0": {
+      "group_key": "[\"bortnyansky\",\"tibie paiom\"]",
+      "split": "train"
+    },
+    "U_8RmRJSDlo": {
+      "group_key": "[\"miskinis\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "UeX4pWgkaK0": {
+      "group_key": "[\"rossini\",\"o salutaris\"]",
+      "split": "train"
+    },
+    "UgOCZ5yTb94": {
+      "group_key": "[\"tchaikovsky\",\"dostoino yest\"]",
+      "split": "train"
+    },
+    "Ui9HN7VqJcI": {
+      "group_key": "[\"monteverdi\",\"o mirtillo mirtillo anima mia\"]",
+      "split": "train"
+    },
+    "UwpYS1hygIY": {
+      "group_key": "[\"williams ralph vaughan\",\"o mistress mine\"]",
+      "split": "train"
+    },
+    "UzjKzRw4FSQ": {
+      "group_key": "[\"farmer\",\"lord s prayer\"]",
+      "split": "train"
+    },
+    "V-cJ-_HKMMs": {
+      "group_key": "[\"parry\",\"my soul there is a country\"]",
+      "split": "train"
+    },
+    "VAPJK0V1Luk": {
+      "group_key": "[\"mendelssohn\",\"die nachtigall\"]",
+      "split": "test"
+    },
+    "VM2xHJG2uJk": {
+      "group_key": "[\"pearsall\",\"lay a garland\"]",
+      "split": "train"
+    },
+    "VPmcwL2i4O4": {
+      "group_key": "[\"certon pierre\",\"que n est elle auprès de moi\"]",
+      "split": "train"
+    },
+    "ViOXvCtqTzw": {
+      "group_key": "[\"bartok\",\"elment a madarka\"]",
+      "split": "train"
+    },
+    "Vof_21BrXfU": {
+      "group_key": "[\"hindemith\",\"1 the doe\"]",
+      "split": "train"
+    },
+    "VpN6KBKWpms": {
+      "group_key": "[\"bartok\",\"isten veled\"]",
+      "split": "test"
+    },
+    "W0W124ZEfA4": {
+      "group_key": "[\"handl jacob\",\"ecce concipies\"]",
+      "split": "train"
+    },
+    "W9B0gn0EVGw": {
+      "group_key": "[\"sweelinck\",\"psaumme 55 exauce o mon dieu\"]",
+      "split": "train"
+    },
+    "Wd7s40s-Ltw": {
+      "group_key": "[\"hassler\",\"dixit maria\"]",
+      "split": "train"
+    },
+    "WfZ3ZuQ5g64": {
+      "group_key": "[\"casals\",\"o vos omnes\"]",
+      "split": "train"
+    },
+    "WgJmy8f36yE": {
+      "group_key": "[\"purcell\",\"pleasant groves\"]",
+      "split": "train"
+    },
+    "WsLxBwToGaY": {
+      "group_key": "[\"weelkes\",\"gloria\"]",
+      "split": "train"
+    },
+    "WwBoDqRL63g": {
+      "group_key": "[\"parry\",\"never weatherbeaten sail\"]",
+      "split": "train"
+    },
+    "WxyuobOhYpM": {
+      "group_key": "[\"schumann\",\"am bodensee\"]",
+      "split": "train"
+    },
+    "Wyo43D6NHII": {
+      "group_key": "[\"lasso\",\"o che bon eccho\"]",
+      "split": "train"
+    },
+    "X5_LSBuPwXs": {
+      "group_key": "[\"whitacre\",\"lux aurumque\"]",
+      "split": "train"
+    },
+    "X8_kweiTJWs": {
+      "group_key": "[\"pearsall\",\"lay a garland\"]",
+      "split": "train"
+    },
+    "XGWs2EJyb-c": {
+      "group_key": "[\"williams ralph vaughan\",\"sanctus benedictus\"]",
+      "split": "test"
+    },
+    "XNmwIiq0ESY": {
+      "group_key": "[\"parry\",\"there is an old belief\"]",
+      "split": "train"
+    },
+    "XQRYwe4KDDQ": {
+      "group_key": "[\"bruckner\",\"2 locus iste\"]",
+      "split": "train"
+    },
+    "XUZs5bERSiA": {
+      "group_key": "[\"handl gallus\",\"pater noster\"]",
+      "split": "train"
+    },
+    "XxS27B3FOB4": {
+      "group_key": "[\"bortnyansky\",\"dostoino est\"]",
+      "split": "train"
+    },
+    "Y1BoRrvM0kY": {
+      "group_key": "[\"poulenc\",\"belle et ressemblante\"]",
+      "split": "train"
+    },
+    "YOE3tCiPMwQ": {
+      "group_key": "[\"ravel\",\"trois beaux oiseaux du paradis\"]",
+      "split": "valid"
+    },
+    "YPaujaggRSU": {
+      "group_key": "[\"byrd\",\"i will not leave you\"]",
+      "split": "train"
+    },
+    "YWhxm6lWz3A": {
+      "group_key": "[\"brahms\",\"nachtwache ii\"]",
+      "split": "train"
+    },
+    "Yf_LC7gmUvE": {
+      "group_key": "[\"handl jacob\",\"ecce concipies\"]",
+      "split": "train"
+    },
+    "YmqKcDVXkA0": {
+      "group_key": "[\"weelkes\",\"when david\"]",
+      "split": "valid"
+    },
+    "ZEwo6jLInnM": {
+      "group_key": "[\"rutter\",\"dashing away with the smoothing iron\"]",
+      "split": "train"
+    },
+    "ZO10WxOJgJ8": {
+      "group_key": "[\"victoria\",\"jesu dulcis\"]",
+      "split": "train"
+    },
+    "ZdeT4VhoFH4": {
+      "group_key": "[\"lasso\",\"o ochi manza mia\"]",
+      "split": "train"
+    },
+    "ZfjTyfF84AA": {
+      "group_key": "[\"willan\",\"hodie christus natus est\"]",
+      "split": "train"
+    },
+    "ZkGrS5nT8vI": {
+      "group_key": "[\"barber\",\"anthony o daly\"]",
+      "split": "train"
+    },
+    "Zlyuve19wMg": {
+      "group_key": "[\"mendelssohn\",\"kyrie eleison\"]",
+      "split": "train"
+    },
+    "ZreW55NLA54": {
+      "group_key": "[\"mendelssohn\",\"beati mortui\"]",
+      "split": "train"
+    },
+    "_2K34NM4aDo": {
+      "group_key": "[\"taneev\",\"alps\"]",
+      "split": "train"
+    },
+    "_7eI4ZrD9PE": {
+      "group_key": "[\"poulenc\",\"margoton va t a l iau\"]",
+      "split": "train"
+    },
+    "_C1fEwfFz84": {
+      "group_key": "[\"walton\",\"what cheer\"]",
+      "split": "train"
+    },
+    "_OD12l9FAIU": {
+      "group_key": "[\"penderecki\",\"agnus dei\"]",
+      "split": "train"
+    },
+    "_f4KVYABb5E": {
+      "group_key": "[\"rachmaninov\",\"rejoice virgin\"]",
+      "split": "train"
+    },
+    "_m7vM7EhHno": {
+      "group_key": "[\"bartok\",\"madardal\"]",
+      "split": "train"
+    },
+    "_rwnprRRWvs": {
+      "group_key": "[\"sullivan\",\"long day closes\"]",
+      "split": "train"
+    },
+    "_wMF3OJTETA": {
+      "group_key": "[\"williams ralph vaughan\",\"sanctus\"]",
+      "split": "valid"
+    },
+    "a6hNsLpSsIQ": {
+      "group_key": "[\"lasso\",\"o che bon eccho\"]",
+      "split": "train"
+    },
+    "aBFCXnaoMHs": {
+      "group_key": "[\"grieg\",\"ave maris stella\"]",
+      "split": "train"
+    },
+    "aJW7Sc-NykQ": {
+      "group_key": "[\"stravinsky\",\"ave maria\"]",
+      "split": "train"
+    },
+    "aKmBXWz09sw": {
+      "group_key": "[\"guerrero\",\"canite tuba\"]",
+      "split": "train"
+    },
+    "aQayyS-N6Tc": {
+      "group_key": "[\"tallis\",\"in jejunio et fletu\"]",
+      "split": "test"
+    },
+    "acWWNh6Fs-w": {
+      "group_key": "[\"schutz\",\"oculi omnium\"]",
+      "split": "train"
+    },
+    "auNYENJYGrg": {
+      "group_key": "[\"schumann\",\"am bodensee\"]",
+      "split": "train"
+    },
+    "azVITZ-zNAs": {
+      "group_key": "[\"redford\",\"rejoice\"]",
+      "split": "valid"
+    },
+    "b4NY3iXMBTc": {
+      "group_key": "[\"part\",\"magnificat\"]",
+      "split": "train"
+    },
+    "bHkAzrRpNoA": {
+      "group_key": "[\"schumann clara\",\"abendfeier in venedig\"]",
+      "split": "train"
+    },
+    "bMBODfwaBQg": {
+      "group_key": "[\"stanford\",\"i heard voice\"]",
+      "split": "train"
+    },
+    "bWhkO8I5ENA": {
+      "group_key": "[\"walton\",\"what cheer\"]",
+      "split": "train"
+    },
+    "bigxL8Uigvs": {
+      "group_key": "[\"brahms\",\"vineta\"]",
+      "split": "valid"
+    },
+    "by1YdoEALL0": {
+      "group_key": "[\"weelkes\",\"gloria\"]",
+      "split": "train"
+    },
+    "c49J814p-ag": {
+      "group_key": "[\"glinka\",\"the cherubic hymn\"]",
+      "split": "train"
+    },
+    "ck2CM6dssZk": {
+      "group_key": "[\"artur harmat\",\"de profundis\"]",
+      "split": "train"
+    },
+    "cwjtd_ajoU0": {
+      "group_key": "[\"parry\",\"my soul there is a country\"]",
+      "split": "train"
+    },
+    "d3WFoq9SUYw": {
+      "group_key": "[\"victoria\",\"jesu dulcis\"]",
+      "split": "train"
+    },
+    "dGg0eLbjhiA": {
+      "group_key": "[\"bartok\",\"madardal\"]",
+      "split": "train"
+    },
+    "dJ7QT3CsBQg": {
+      "group_key": "[\"rheinberger\",\"hymne\"]",
+      "split": "train"
+    },
+    "dPc9cbrArM8": {
+      "group_key": "[\"sullivan\",\"long day closes\"]",
+      "split": "train"
+    },
+    "dQfBbBCmVqE": {
+      "group_key": "[\"britten\",\"hymn to virgin\"]",
+      "split": "train"
+    },
+    "dmoelD9WDT8": {
+      "group_key": "[\"lasso\",\"exaltabo te\"]",
+      "split": "train"
+    },
+    "dyM1qKbHdws": {
+      "group_key": "[\"verdi\",\"paternoster\"]",
+      "split": "train"
+    },
+    "ehtsGiwGwJE": {
+      "group_key": "[\"verdi\",\"laudi maria\"]",
+      "split": "train"
+    },
+    "epVSmvFkRNQ": {
+      "group_key": "[\"brahms\",\"abendständchen\"]",
+      "split": "train"
+    },
+    "erR-s7INc-Q": {
+      "group_key": "[\"delius\",\"midsummer song\"]",
+      "split": "valid"
+    },
+    "etwCfytWqr4": {
+      "group_key": "[\"monteverdi\",\"sfogava con le stelle\"]",
+      "split": "train"
+    },
+    "fAIV015yvTo": {
+      "group_key": "[\"hensel\",\"im wald\"]",
+      "split": "train"
+    },
+    "fArGQY_wvmA": {
+      "group_key": "[\"anerio\",\"christus factus est\"]",
+      "split": "train"
+    },
+    "fCeprtH2084": {
+      "group_key": "[\"schumann clara\",\"abendfeier in venedig\"]",
+      "split": "train"
+    },
+    "fRL447oDId4": {
+      "group_key": "[\"barber\",\"agnus dei\"]",
+      "split": "train"
+    },
+    "fU039d1wthI": {
+      "group_key": "[\"howells\",\"a spotless rose\"]",
+      "split": "train"
+    },
+    "fdqjkM5-xeY": {
+      "group_key": "[\"anerio\",\"christus factus est\"]",
+      "split": "train"
+    },
+    "ff-lbYimn8Y": {
+      "group_key": "[\"whitacre\",\"stolen child\"]",
+      "split": "train"
+    },
+    "fuf9hFo2F-Y": {
+      "group_key": "[\"brahms\",\"es geht ein wehen\"]",
+      "split": "train"
+    },
+    "fxy6ejUaf3w": {
+      "group_key": "[\"williams ralph vaughan\",\"credo\"]",
+      "split": "train"
+    },
+    "g2cUJK8Nc5w": {
+      "group_key": "[\"reger\",\"unser lieben\"]",
+      "split": "test"
+    },
+    "g4pQqFKIa1Y": {
+      "group_key": "[\"poulenc\",\"a peine défigurée\"]",
+      "split": "valid"
+    },
+    "g9yoaQWDshA": {
+      "group_key": "[\"monteverdi\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "gHW_eRBBcHY": {
+      "group_key": "[\"parry\",\"lord mine end\"]",
+      "split": "train"
+    },
+    "gVutGak3lkw": {
+      "group_key": "[\"williams ralph vaughan\",\"o mistress mine\"]",
+      "split": "train"
+    },
+    "gaVBAVpoMSs": {
+      "group_key": "[\"byrd\",\"i will not leave you\"]",
+      "split": "train"
+    },
+    "gaoPV2IW9AA": {
+      "group_key": "[\"lasso\",\"hodie apparuit\"]",
+      "split": "train"
+    },
+    "gtztvb0TNDg": {
+      "group_key": "[\"ravel\",\"nicolette\"]",
+      "split": "train"
+    },
+    "gy6OJ31Z6A8": {
+      "group_key": "[\"tchaikovsky\",\"nochevala tuchka zolotaya\"]",
+      "split": "train"
+    },
+    "h0504ChQoV0": {
+      "group_key": "[\"elgar\",\"good morrow\"]",
+      "split": "train"
+    },
+    "h94qNxO94eo": {
+      "group_key": "[\"praetorius\",\"enatus est\"]",
+      "split": "valid"
+    },
+    "hFvi9BLPdq8": {
+      "group_key": "[\"poulenc\",\"ave verum corpus\"]",
+      "split": "train"
+    },
+    "hJFYbyBPPPw": {
+      "group_key": "[\"walton\",\"what cheer\"]",
+      "split": "train"
+    },
+    "hNUjCd395Vk": {
+      "group_key": "[\"bartok\",\"madardal\"]",
+      "split": "train"
+    },
+    "hXICnHx0Shc": {
+      "group_key": "[\"victoria\",\"ave maria\"]",
+      "split": "test"
+    },
+    "icJ-UaXGInw": {
+      "group_key": "[\"daley eleanor\",\"in remembrance\"]",
+      "split": "train"
+    },
+    "j-ZmsnI6nJQ": {
+      "group_key": "[\"brahms\",\"im herbst\"]",
+      "split": "valid"
+    },
+    "jIee7nUnCoE": {
+      "group_key": "[\"bortnyansky\",\"tibie paiom\"]",
+      "split": "train"
+    },
+    "jSEPN3Q0i68": {
+      "group_key": "[\"barber\",\"the coolin\"]",
+      "split": "train"
+    },
+    "jTrEQJxvnSo": {
+      "group_key": "[\"schumann\",\"bankelsanger willie\"]",
+      "split": "train"
+    },
+    "jVxiKKy68Ag": {
+      "group_key": "[\"brahms\",\"letztes glück\"]",
+      "split": "train"
+    },
+    "jZZmPRgH0Dg": {
+      "group_key": "[\"passaquet\",\"la troupe\"]",
+      "split": "train"
+    },
+    "jcSEi2VpgiQ": {
+      "group_key": "[\"mudd\",\"let thy ears\"]",
+      "split": "train"
+    },
+    "jchJ2SUhXdg": {
+      "group_key": "[\"bruckner\",\"1 ave maria\"]",
+      "split": "train"
+    },
+    "jd2_r4PK5dc": {
+      "group_key": "[\"palestrina\",\"exsultate deo\"]",
+      "split": "train"
+    },
+    "jgUeBTao6_o": {
+      "group_key": "[\"poulenc\",\"a peine défigurée\"]",
+      "split": "valid"
+    },
+    "jmFFYZID4rg": {
+      "group_key": "[\"grieg\",\"ave maris stella\"]",
+      "split": "train"
+    },
+    "k1EOa_wDwNc": {
+      "group_key": "[\"tchaikovsky\",\"nochevala tuchka zolotaya\"]",
+      "split": "train"
+    },
+    "k2PsUA-lU90": {
+      "group_key": "[\"victoria\",\"sepulto domino\"]",
+      "split": "train"
+    },
+    "k5IhKskW9Yk": {
+      "group_key": "[\"pearsall\",\"sing we\"]",
+      "split": "train"
+    },
+    "kWHKW6xzARs": {
+      "group_key": "[\"miskinis\",\"cantate domino\"]",
+      "split": "train"
+    },
+    "kmJvK57OhuI": {
+      "group_key": "[\"palestrina\",\"fuit homo\"]",
+      "split": "train"
+    },
+    "kmocmreevF8": {
+      "group_key": "[\"britten\",\"hymn to virgin\"]",
+      "split": "train"
+    },
+    "kweT3nYf18Y": {
+      "group_key": "[\"schumann\",\"bankelsanger willie\"]",
+      "split": "train"
+    },
+    "lAoVftj8JcU": {
+      "group_key": "[\"reger\",\"nachtlied\"]",
+      "split": "train"
+    },
+    "lQQF7mW2c1c": {
+      "group_key": "[\"sweelinck\",\"hodiechristus\"]",
+      "split": "train"
+    },
+    "m11B9GuDUmM": {
+      "group_key": "[\"victoria\",\"o vos omnes\"]",
+      "split": "train"
+    },
+    "mA3gbTxnnBc": {
+      "group_key": "[\"stone\",\"lord s prayer\"]",
+      "split": "train"
+    },
+    "mHGBkvXDmII": {
+      "group_key": "[\"philips\",\"surgens jesus\"]",
+      "split": "train"
+    },
+    "mM1s6a0Y3mg": {
+      "group_key": "[\"mendelssohn\",\"die primel\"]",
+      "split": "train"
+    },
+    "mSXXhDtD7TM": {
+      "group_key": "[\"mendelssohn\",\"heilig\"]",
+      "split": "test"
+    },
+    "mXNhQbwNhqs": {
+      "group_key": "[\"lassus\",\"ave verum\"]",
+      "split": "valid"
+    },
+    "mxyasPFCSNQ": {
+      "group_key": "[\"brahms\",\"letztes glück\"]",
+      "split": "train"
+    },
+    "n8_IR97wVIQ": {
+      "group_key": "[\"vaughan williams\",\"the commonwealth\"]",
+      "split": "train"
+    },
+    "nKYhFLI1zGs": {
+      "group_key": "[\"lasso\",\"hodie apparuit\"]",
+      "split": "train"
+    },
+    "nMES2S1O7Y8": {
+      "group_key": "[\"daley eleanor\",\"in remembrance\"]",
+      "split": "train"
+    },
+    "nRmkj19i4Yk": {
+      "group_key": "[\"palestrina\",\"exsultate deo\"]",
+      "split": "train"
+    },
+    "nV5OVSgvt1U": {
+      "group_key": "[\"viadana\",\"o sacrum convivium\"]",
+      "split": "test"
+    },
+    "ng5ohZQCfj4": {
+      "group_key": "[\"redford\",\"rejoice\"]",
+      "split": "valid"
+    },
+    "nn5ken3RJBo": {
+      "group_key": "[\"lauridsen\",\"o magnum mysterium\"]",
+      "split": "train"
+    },
+    "no18LBbupE0": {
+      "group_key": "[\"poulenc\",\"salveregina\"]",
+      "split": "train"
+    },
+    "nvoYHwYDYLA": {
+      "group_key": "[\"williams ralph vaughan\",\"linden lea\"]",
+      "split": "test"
+    },
+    "nyvosm7QZSE": {
+      "group_key": "[\"finzi\",\"i praise the tender flower\"]",
+      "split": "train"
+    },
+    "oLL_EXs2YoU": {
+      "group_key": "[\"stanford\",\"i heard voice\"]",
+      "split": "train"
+    },
+    "of2-IWFSsR4": {
+      "group_key": "[\"schumann\",\"brautgesang\"]",
+      "split": "test"
+    },
+    "okVSOEcjnu8": {
+      "group_key": "[\"poulenc\",\"a peine défigurée\"]",
+      "split": "valid"
+    },
+    "ooZsAPlwXjc": {
+      "group_key": "[\"elgar\",\"my love northern\"]",
+      "split": "train"
+    },
+    "oudkfwwrZq0": {
+      "group_key": "[\"pitoni\",\"cantate domino\"]",
+      "split": "test"
+    },
+    "ov-OAmpcRfw": {
+      "group_key": "[\"bruckner\",\"3 os justi\"]",
+      "split": "train"
+    },
+    "owD6cSDDTrU": {
+      "group_key": "[\"desprez josquin\",\"ave vera virginitas\"]",
+      "split": "train"
+    },
+    "p14158ZIQL0": {
+      "group_key": "[\"artur harmat\",\"de profundis\"]",
+      "split": "train"
+    },
+    "pH7sIHhDdhg": {
+      "group_key": "[\"brahms\",\"vineta\"]",
+      "split": "valid"
+    },
+    "pH7ywVHNhWA": {
+      "group_key": "[\"desprez josquin\",\"in flagellis\"]",
+      "split": "valid"
+    },
+    "pTLx7aL7dIQ": {
+      "group_key": "[\"taverner\",\"dum transisset\"]",
+      "split": "train"
+    },
+    "p_UnMrzDsCY": {
+      "group_key": "[\"elgar\",\"there is music\"]",
+      "split": "valid"
+    },
+    "pgxg_NF6s-U": {
+      "group_key": "[\"desprez josquin\",\"et incarnatus est\"]",
+      "split": "test"
+    },
+    "pvhhbSOQz8o": {
+      "group_key": "[\"lassus\",\"iustorum animae\"]",
+      "split": "test"
+    },
+    "pxq8BxJSS0s": {
+      "group_key": "[\"williams ralph vaughan\",\"kyrie\"]",
+      "split": "valid"
+    },
+    "q5j0SBIi2oc": {
+      "group_key": "[\"barber\",\"mary hynes\"]",
+      "split": "train"
+    },
+    "q74dwLTMOh0": {
+      "group_key": "[\"gibbons\",\"almighty everlastinggod\"]",
+      "split": "valid"
+    },
+    "qICCcsg5o3E": {
+      "group_key": "[\"brahms\",\"beherzigung\"]",
+      "split": "train"
+    },
+    "qdbHOHXH7QI": {
+      "group_key": "[\"mendelssohn\",\"jagdlied\"]",
+      "split": "train"
+    },
+    "qiv9y_v7OEM": {
+      "group_key": "[\"poulenc\",\"kyrie\"]",
+      "split": "train"
+    },
+    "qjtMJxtoooI": {
+      "group_key": "[\"manz\",\"e en so lord jesus quickly com\"]",
+      "split": "train"
+    },
+    "rIGMtLin3O8": {
+      "group_key": "[\"mendelssohn\",\"beati mortui\"]",
+      "split": "train"
+    },
+    "rIwFUVkwXhY": {
+      "group_key": "[\"sweelinck\",\"psalm 96\"]",
+      "split": "test"
+    },
+    "rMDhzAd7Bv4": {
+      "group_key": "[\"philips\",\"ascendit deus\"]",
+      "split": "train"
+    },
+    "rTyRAQ0RuO4": {
+      "group_key": "[\"elgar\",\"o wild westwind\"]",
+      "split": "train"
+    },
+    "rcNyTVnpVe4": {
+      "group_key": "[\"brahms\",\"abendständchen\"]",
+      "split": "train"
+    },
+    "rdWN5DQ77Wk": {
+      "group_key": "[\"manz\",\"e en so lord jesus quickly com\"]",
+      "split": "train"
+    },
+    "rv8B6tMNFJI": {
+      "group_key": "[\"whitacre\",\"stolen child\"]",
+      "split": "train"
+    },
+    "rvXA_vW2D5k": {
+      "group_key": "[\"reger\",\"unser lieben\"]",
+      "split": "test"
+    },
+    "s2BzFD0eGaQ": {
+      "group_key": "[\"rachmaninov\",\"ave maria\"]",
+      "split": "train"
+    },
+    "s7Dp0j4FD9k": {
+      "group_key": "[\"lasso\",\"o ochi manza mia\"]",
+      "split": "train"
+    },
+    "s85huVu0NX8": {
+      "group_key": "[\"verdi\",\"paternoster\"]",
+      "split": "train"
+    },
+    "sIUnHJCbCck": {
+      "group_key": "[\"poulenc\",\"margoton va t a l iau\"]",
+      "split": "train"
+    },
+    "sJoBrkhnpcg": {
+      "group_key": "[\"eben\",\"salve regina\"]",
+      "split": "train"
+    },
+    "sMs_zFDtr3I": {
+      "group_key": "[\"poulenc\",\"ave verum corpus\"]",
+      "split": "train"
+    },
+    "sRmOnHiXU0o": {
+      "group_key": "[\"parry\",\"i know my soul\"]",
+      "split": "train"
+    },
+    "s_pWvcV57RI": {
+      "group_key": "[\"barber\",\"the coolin\"]",
+      "split": "train"
+    },
+    "sdUx08apO_g": {
+      "group_key": "[\"byrd\",\"though amaryllis dance\"]",
+      "split": "valid"
+    },
+    "smrLh8WrC3w": {
+      "group_key": "[\"victoria\",\"jesu dulcis\"]",
+      "split": "train"
+    },
+    "sstHOdA0pKg": {
+      "group_key": "[\"soriano\",\"regina caeli\"]",
+      "split": "train"
+    },
+    "svlVv07VOU8": {
+      "group_key": "[\"casals\",\"o vos omnes\"]",
+      "split": "train"
+    },
+    "szAkIJDRWhM": {
+      "group_key": "[\"sviridov\",\"natasha\"]",
+      "split": "train"
+    },
+    "t2JWRGPOWjk": {
+      "group_key": "[\"elgar\",\"shower\"]",
+      "split": "valid"
+    },
+    "tOetpxX4AZE": {
+      "group_key": "[\"dindia\",\"dove dove son io\"]",
+      "split": "train"
+    },
+    "tQd0apVsBZU": {
+      "group_key": "[\"stravinsky\",\"ave maria\"]",
+      "split": "train"
+    },
+    "thxLy5q-6Hw": {
+      "group_key": "[\"williams ralph vaughan\",\"o mistress mine\"]",
+      "split": "train"
+    },
+    "tkJe47sWXGI": {
+      "group_key": "[\"beach\",\"nunc dimittis\"]",
+      "split": "train"
+    },
+    "u6nZwNSlAXU": {
+      "group_key": "[\"parry\",\"there is an old belief\"]",
+      "split": "train"
+    },
+    "uO5GKuhJ76U": {
+      "group_key": "[\"hensel\",\"im herbste\"]",
+      "split": "valid"
+    },
+    "uTa_9GP8HjQ": {
+      "group_key": "[\"willan\",\"the three kings\"]",
+      "split": "train"
+    },
+    "uUb3EosohQo": {
+      "group_key": "[\"rachmaninov\",\"ave maria\"]",
+      "split": "train"
+    },
+    "udZCjXbwkzk": {
+      "group_key": "[\"bruckner\",\"2 locus iste\"]",
+      "split": "train"
+    },
+    "ueRGelvqxJc": {
+      "group_key": "[\"bartok\",\"elment a madarka\"]",
+      "split": "train"
+    },
+    "uzHIo4c3ukM": {
+      "group_key": "[\"howells\",\"a spotless rose\"]",
+      "split": "train"
+    },
+    "v3pDIz9RLfg": {
+      "group_key": "[\"parsons\",\"ave maria\"]",
+      "split": "train"
+    },
+    "v8Y0y3IOQeE": {
+      "group_key": "[\"guerrero\",\"canite tuba\"]",
+      "split": "train"
+    },
+    "vEuroi-49rw": {
+      "group_key": "[\"schumann\",\"der rekrut\"]",
+      "split": "train"
+    },
+    "vGEUbTKyh1w": {
+      "group_key": "[\"elgar\",\"o wild westwind\"]",
+      "split": "train"
+    },
+    "vHIwi795xgo": {
+      "group_key": "[\"hindemith\",\"1 the doe\"]",
+      "split": "train"
+    },
+    "vbHKnUhdv8g": {
+      "group_key": "[\"bruckner\",\"1 ave maria\"]",
+      "split": "train"
+    },
+    "vf-braNVF2Q": {
+      "group_key": "[\"farrant hilton\",\"lord for thy tender mercy s sake\"]",
+      "split": "train"
+    },
+    "vtR5mchwZjU": {
+      "group_key": "[\"rheinberger\",\"salve regina\"]",
+      "split": "train"
+    },
+    "w4iar8aK6p4": {
+      "group_key": "[\"praetorius\",\"enatus est\"]",
+      "split": "valid"
+    },
+    "wQQV7T3j0MI": {
+      "group_key": "[\"parry\",\"at the round earth s\"]",
+      "split": "train"
+    },
+    "wTH0pcu_t_8": {
+      "group_key": "[\"rachmaninov\",\"ave maria\"]",
+      "split": "train"
+    },
+    "wbk69Ps39rM": {
+      "group_key": "[\"willan\",\"hodie christus natus est\"]",
+      "split": "train"
+    },
+    "whERHDBeygg": {
+      "group_key": "[\"rutter\",\"i wonder as i wander\"]",
+      "split": "train"
+    },
+    "wjC7oGFp1LY": {
+      "group_key": "[\"brahms\",\"verlorene jugend\"]",
+      "split": "train"
+    },
+    "wsnh_aDJs3k": {
+      "group_key": "[\"elgar\",\"o wild westwind\"]",
+      "split": "train"
+    },
+    "xAhPD9zAImI": {
+      "group_key": "[\"thompson\",\"alleluia\"]",
+      "split": "train"
+    },
+    "xGkb5KFwx1I": {
+      "group_key": "[\"desprez\",\"ave maria\"]",
+      "split": "train"
+    },
+    "xWPBHsd5IgM": {
+      "group_key": "[\"hindemith\",\"2 a swan\"]",
+      "split": "test"
+    },
+    "xYcJlrHOK1A": {
+      "group_key": "[\"lasso\",\"la nuict froide et sombre\"]",
+      "split": "train"
+    },
+    "xmo75xcSErM": {
+      "group_key": "[\"handl jacob\",\"ecce concipies\"]",
+      "split": "train"
+    },
+    "xn52A6wK1es": {
+      "group_key": "[\"tallis\",\"salvator mundi\"]",
+      "split": "test"
+    },
+    "xokRhSiQRKw": {
+      "group_key": "[\"tallis\",\"salvator mundi\"]",
+      "split": "test"
+    },
+    "y1-O2qu_u8Y": {
+      "group_key": "[\"philips\",\"surgens jesus\"]",
+      "split": "train"
+    },
+    "y22-qnFoz3Q": {
+      "group_key": "[\"poulenc\",\"clic clac dansez sabots\"]",
+      "split": "valid"
+    },
+    "y3TDnZ1mqqM": {
+      "group_key": "[\"taneev\",\"ghosts\"]",
+      "split": "train"
+    },
+    "yMc5qPZf_gc": {
+      "group_key": "[\"poulenc\",\"pilons l orge\"]",
+      "split": "train"
+    },
+    "yXOiIbSECik": {
+      "group_key": "[\"balakirev\",\"svyshe prorotsy\"]",
+      "split": "test"
+    },
+    "yYZEzeBBP68": {
+      "group_key": "[\"willan\",\"hodie christus natus est\"]",
+      "split": "train"
+    },
+    "yakrhqyDxoM": {
+      "group_key": "[\"byrd\",\"ave maria\"]",
+      "split": "train"
+    },
+    "ybp1Wvmu0y0": {
+      "group_key": "[\"monteverdi\",\"a un giro sol de begl occhi lucenti\"]",
+      "split": "test"
+    },
+    "yk4XdUU-cqI": {
+      "group_key": "[\"purcell\",\"pleasant groves\"]",
+      "split": "train"
+    },
+    "ypUQn8Yqtk0": {
+      "group_key": "[\"eben\",\"salve regina\"]",
+      "split": "train"
+    },
+    "yqyOVcAJcm0": {
+      "group_key": "[\"ravel\",\"nicolette\"]",
+      "split": "train"
+    },
+    "ysqn-o2uwEY": {
+      "group_key": "[\"byrd\",\"ave maria\"]",
+      "split": "train"
+    },
+    "z59R3eVDlQQ": {
+      "group_key": "[\"desprez josquin\",\"tu pauperum refugium\"]",
+      "split": "train"
+    },
+    "z8Awsj3onp4": {
+      "group_key": "[\"mudd\",\"let thy ears\"]",
+      "split": "train"
+    },
+    "zPfUKQiMYok": {
+      "group_key": "[\"hassler\",\"verbum caro factum est\"]",
+      "split": "train"
+    },
+    "zVM8MD88MJ0": {
+      "group_key": "[\"hindemith\",\"1 the doe\"]",
+      "split": "train"
+    },
+    "zbSV6VHIhyk": {
+      "group_key": "[\"stone\",\"lord s prayer\"]",
+      "split": "train"
+    },
+    "zcodyDcfQgA": {
+      "group_key": "[\"pesenti\",\"dal lecto me levava\"]",
+      "split": "train"
+    },
+    "zqEMrc1XXSQ": {
+      "group_key": "[\"victoria\",\"ave maria\"]",
+      "split": "test"
+    },
+    "zt86CdZistA": {
+      "group_key": "[\"lasso\",\"miserere mei domine\"]",
+      "split": "train"
+    }
+  },
+  "schema_version": 1,
+  "unicode_database_version": "14.0.0"
+}

@@ -26,12 +26,13 @@ the manuscript's tables have been rerun.
   onset-group structure, and train-only pitch statistics.
 - [x] Versioned source-manifest versus packed-HDF5 stem audit, including exact
   runnable split hashes and missing-item disclosure.
+- [x] Frozen `available-audio-434` composition-disjoint group map and manifests,
+  with deterministic generation, hashes, and zero-overlap validation.
 
 ## Missing before a reproducibility claim
 
 - [ ] Immutable source commit corresponding to every reported run.
 - [ ] Exact expanded Hydra configuration and command for each table row.
-- [ ] Composition-disjoint split manifest with hashes.
 - [ ] Offline seven-transposition generation code and alignment tests.
 - [ ] Checkpoint files with SHA-256, config, environment, and load-key audit.
 - [ ] Validation-loss early stopping or corrected manuscript description.

@@ -50,6 +50,13 @@ For the located acoustic pack, manifest-to-HDF5 auditing finds 376/392 train,
 freeze the `available-audio-434` ID hashes and use its train-only RP range; they
 are not complete 452-recording runs.
 
+`dataset.youchorale_split_dir` can replace the historical split attributes
+stored inside those HDF5 files with a frozen external train/valid/test
+protocol. A shared strict selector is used by sampling, inference, threshold
+search, and scoring. It requires the three manifests to be disjoint and to
+cover the pack exactly, and stores a path-independent manifest identity in
+checkpoints and probability artifacts.
+
 ## 3. Acoustic features
 
 `src/feature_extractor.py` implements the time-frequency front end. The paper
@@ -91,10 +98,15 @@ The union terms encourage the four heads, collectively, to preserve global
 note content.
 
 The loss also provides opt-in positive-class weighting plus range and temporal
-continuity penalties for the normal PawCT heads. OC operates on consecutive
+continuity penalties for the normal PawCT heads. RP is a negative-label BCE on
+eligible out-of-range bins, so high-confidence unsupported notes receive a
+stronger logit correction than low-confidence ones while every trusted
+positive is excluded. OC operates on consecutive unambiguous single-pitch
 annotated onset events rather than every held frame, follows the annotated
 interval instead of favouring zero motion, and exponentially down-weights
-pairs separated by a long silent gap measured from the frame target. Separate assignment
+pairs separated by a long silent gap measured from the frame target.
+Multi-pitch/divisi onset frames retain normal BCE supervision but form a
+trajectory barrier rather than an artificial pitch centroid. Separate assignment
 regularizers for experimental VA2 modules are retained but were not part of
 the reported PawCT-OC system.
 
@@ -171,6 +183,9 @@ separately, and refuses accidental test-set tuning.
 `tools/visualize_choral_four_panel_single_song.py` generated the same four-way
 layout used in the manuscript: ground truth, PawCT, PagCT, and PagCT + Post-VA.
 Other files in `tools/` support batch rendering and legends.
+`tools/evaluate_label_masking.py` is a separate CPU-only train-label diagnostic
+for testing RP/OC assignment information under frozen 10/25/50% masks; its
+scores are not transcription metrics.
 
 `experiments/` contains symbolic SATB editors and VA2 variants that continued
 after the core paper pipeline. They are retained for provenance but should not

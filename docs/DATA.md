@@ -31,9 +31,12 @@ files with a documented JSON/Parquet representation.
 
 ## Split requirements
 
-The repository expects `train`, `validation`, and `test` labels inside packed
-HDF5 files, corresponding to `train.json`, `valid.json`, and `test.json` in the
-source directory.
+By default the repository reads `train`, `validation`, and `test` attributes
+inside packed HDF5 files, corresponding to `train.json`, `valid.json`, and
+`test.json` in the source directory. For YouChorale,
+`dataset.youchorale_split_dir` selects a frozen external three-manifest
+protocol and overrides those historical attributes consistently in training,
+inference, threshold search, and scoring.
 
 Before reporting results:
 
@@ -59,6 +62,10 @@ For the resulting `available-audio-434` protocol, 21/29 test works overlap the
 runnable train set and 22/30 test recordings belong to a train-seen work. Its
 exact stem hashes and missing IDs are archived in the
 [runnable-pack audit](../repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md).
+The separately frozen
+[`available-audio-434` composition-disjoint v1 protocol](../repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md)
+regroups those same 434 IDs into 355/40/39 recordings with zero normalized-work
+overlap for stronger out-of-composition evaluation.
 
 ## Pitch transposition
 

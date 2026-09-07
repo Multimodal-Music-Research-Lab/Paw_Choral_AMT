@@ -769,7 +769,7 @@ class CheckpointMetadataTest(unittest.TestCase):
 
         validate_checkpoint_behavior(cfg, checkpoint)
 
-    def test_pre_event_level_oc_semantics_are_rejected(self):
+    def test_pre_v4_prior_loss_semantics_are_rejected(self):
         cfg = add_runtime_identity_config(SimpleNamespace(
             choral=SimpleNamespace(
                 enable=True,
@@ -780,8 +780,8 @@ class CheckpointMetadataTest(unittest.TestCase):
             exp=SimpleNamespace(),
         ))
         target_semantics = checkpoint_target_semantics(cfg)
-        self.assertGreater(target_semantics['prior_loss_semantics_version'], 2)
-        target_semantics['prior_loss_semantics_version'] = 2
+        self.assertEqual(target_semantics['prior_loss_semantics_version'], 4)
+        target_semantics['prior_loss_semantics_version'] = 3
         checkpoint = versioned_checkpoint(
             cfg,
             target_assignment=target_semantics,

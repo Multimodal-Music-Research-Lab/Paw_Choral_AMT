@@ -1,0 +1,223 @@
+{
+  "composition_disjoint_split": {
+    "artifact_sha256": {
+      "group_map.json": "d447c0d4bc7a9d722a1e67a5f67e45f622a3b1c995f866fbb957464423882d7c",
+      "test.json": "5c44353da8ea5aa4daf0708a73cdecd5d85ab0e9b343baef8e73b2facf91406e",
+      "train.json": "01701c53dc32a1a6f355126b0918f676dd0a9206c321b1efd1128b797a1ce2ff",
+      "valid.json": "32913ce955b3826c85372cffd31f1be8d94aaf0877d5a53a66d6034ca7e9bbfb"
+    },
+    "cuts": {
+      "total_groups": 242,
+      "train_end": 193,
+      "valid_end": 217
+    },
+    "group_counts": {
+      "test": 25,
+      "train": 193,
+      "valid": 24
+    },
+    "group_key": "compact UTF-8 JSON array [normalized_composer,normalized_title]",
+    "rank": "SHA256(UTF-8(salt + group_key)) ascending",
+    "recording_counts": {
+      "test": 39,
+      "train": 355,
+      "valid": 40
+    },
+    "recording_ids_sha256": {
+      "test": "0e774c0fe388459e73af4fb7060a19d00aac0d836c828a300ae065ae01bd9a10",
+      "train": "aa2ed644a7b09fac8f7afd7fab126aae7e900ba5fc3bfb1bb6ad96ecbc4232ef",
+      "valid": "d622d482ed8faa2462a2b983e7fea3879935cfcbfb2d549c6a67315be4089cf7"
+    },
+    "salt": "pawct-icassp2027-v1",
+    "work_overlap": {
+      "train__test": {
+        "left_group_fraction": 0.0,
+        "right_group_fraction": 0.0,
+        "shared_group_keys_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shared_groups": 0
+      },
+      "train__valid": {
+        "left_group_fraction": 0.0,
+        "right_group_fraction": 0.0,
+        "shared_group_keys_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shared_groups": 0
+      },
+      "valid__test": {
+        "left_group_fraction": 0.0,
+        "right_group_fraction": 0.0,
+        "shared_group_keys_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "shared_groups": 0
+      }
+    }
+  },
+  "metadata": {
+    "manifest_group_keys_sha256": "653d113158a4033b63b114ae1198b2079cf955cec0b895acea3a3105470c1b6e",
+    "manifest_groups": 244,
+    "manifest_recording_ids_sha256": "0106d2bd6316bfe55a2c94cfda0f66966cb1211836fbe148d21bc1e7d1925326",
+    "manifest_recordings": 452,
+    "recording_ids_sha256": "c0464217f5178964d9da4a3c7dafb95fba1fa81ea53a318a45d10924ea092960",
+    "rows": 496
+  },
+  "normalization": "Unicode NFKC; casefold; replace every Unicode punctuation character with a space; collapse whitespace",
+  "official_recording_split_overlap": {
+    "evaluation_seen_in_train": {
+      "test": {
+        "group_fraction": 0.7586206896551724,
+        "groups": 22,
+        "recording_fraction": 0.7666666666666667,
+        "recording_ids_sha256": "e989e3ad9f737f8a32c33b97016deac40b46bc128439ce75a4f40519c3362629",
+        "recordings": 23
+      },
+      "valid": {
+        "group_fraction": 0.7931034482758621,
+        "groups": 23,
+        "recording_fraction": 0.7666666666666667,
+        "recording_ids_sha256": "e5b9f2880ca3b22333c7050db9a42b6aad8b1cf2463e27fcb7d6ee7911208642",
+        "recordings": 23
+      }
+    },
+    "group_counts": {
+      "test": 29,
+      "train": 232,
+      "valid": 29
+    },
+    "group_keys_sha256": {
+      "test": "cfde2675e1f2eed5b731aae68a699e5e8df0b9ac765305d858568aa2b6629352",
+      "train": "de358b5f60b00cbb0917d91e38170ca4e7aeebb0af8bc22bfb3c7c201daabb6f",
+      "valid": "08c2ba033d45e81e362d5be3b0b7acbe1731110ea3234e3488c416b8507899f3"
+    },
+    "pairwise_work_overlap": {
+      "train__test": {
+        "left_group_fraction": 0.09482758620689655,
+        "right_group_fraction": 0.7586206896551724,
+        "shared_group_keys_sha256": "e7c0bee5595742c14f88bc8c459fb11c7ad7cac3dc67b35ce26000fb35a432ab",
+        "shared_groups": 22
+      },
+      "train__valid": {
+        "left_group_fraction": 0.09913793103448276,
+        "right_group_fraction": 0.7931034482758621,
+        "shared_group_keys_sha256": "b017ee52075a58388711ced63fe00c40ed53878db9287e77b46918103c660fa0",
+        "shared_groups": 23
+      },
+      "valid__test": {
+        "left_group_fraction": 0.1724137931034483,
+        "right_group_fraction": 0.1724137931034483,
+        "shared_group_keys_sha256": "57c21b7f2492f8cc796aad8838d87a51052d6086d9196edd8221937d29686956",
+        "shared_groups": 5
+      }
+    },
+    "recording_counts": {
+      "test": 30,
+      "train": 392,
+      "valid": 30
+    },
+    "recording_ids_sha256": {
+      "test": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+      "train": "5a804cf31dba8b13d362ae2248374eab3b1887c87292cadc166b512226f260c7",
+      "valid": "069b4df7d4af3c70536555f14d423e215237d9f194bb3914da4f3994dd97a6e0"
+    }
+  },
+  "packed_hdf5_coverage": {
+    "by_official_split": {
+      "test": {
+        "coverage_fraction": 1.0,
+        "intersection_recording_ids_sha256": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+        "intersection_recordings": 30,
+        "manifest_recordings": 30
+      },
+      "train": {
+        "coverage_fraction": 0.9591836734693877,
+        "intersection_recording_ids_sha256": "74a42cb4f7ab6184d90d68b630d2533b9cbb6ae9c3a6c6e6f83d2831ffc3a0e7",
+        "intersection_recordings": 376,
+        "manifest_recordings": 392
+      },
+      "valid": {
+        "coverage_fraction": 0.9333333333333333,
+        "intersection_recording_ids_sha256": "4aff65d7eb0543343690fb802da7f573e78b32f9260c855b333820f89bfbe562",
+        "intersection_recordings": 28,
+        "manifest_recordings": 30
+      }
+    },
+    "hash_semantics": "SHA256 of sorted, exact stems encoded as UTF-8, one per line with a trailing newline",
+    "intersection_recordings": 434,
+    "intersection_recordings_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+    "manifest_coverage_fraction": 0.9601769911504425,
+    "manifest_missing_packed": 18,
+    "manifest_missing_packed_sha256": "1dcb56675c216c3d695bebb6e00501150fd153a991147d7ee1a33f7b490acc3a",
+    "manifest_recordings": 452,
+    "manifest_recordings_sha256": "0106d2bd6316bfe55a2c94cfda0f66966cb1211836fbe148d21bc1e7d1925326",
+    "match_semantics": "recursive case-insensitive .h5/.hdf5 extension discovery; exact case-sensitive stem equality; file contents are not read",
+    "packed_not_in_manifests": 0,
+    "packed_not_in_manifests_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "packed_stems": 434,
+    "packed_stems_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c"
+  },
+  "schema_version": 1,
+  "selected_official_split_overlap": {
+    "evaluation_seen_in_train": {
+      "test": {
+        "group_fraction": 0.7241379310344828,
+        "groups": 21,
+        "recording_fraction": 0.7333333333333333,
+        "recording_ids_sha256": "b644824901ee7717657e921e1521a9088408c6ab3ada85aa821e9812130419f4",
+        "recordings": 22
+      },
+      "valid": {
+        "group_fraction": 0.7407407407407407,
+        "groups": 20,
+        "recording_fraction": 0.7142857142857143,
+        "recording_ids_sha256": "316537430fc1f235ccc0b13153ff14b5ff7cc7aba83e4291e9b8c9ac35825ff7",
+        "recordings": 20
+      }
+    },
+    "group_counts": {
+      "test": 29,
+      "train": 229,
+      "valid": 27
+    },
+    "group_keys_sha256": {
+      "test": "cfde2675e1f2eed5b731aae68a699e5e8df0b9ac765305d858568aa2b6629352",
+      "train": "b85f529678b1269c6afa43fb9163e0c0dcab872e7a64fcea340988a19a4353c2",
+      "valid": "63fd3f88e0276a34c16f9999cf9447e9c5ded430dae14389f25b45172aaa67a0"
+    },
+    "pairwise_work_overlap": {
+      "train__test": {
+        "left_group_fraction": 0.09170305676855896,
+        "right_group_fraction": 0.7241379310344828,
+        "shared_group_keys_sha256": "2d6f924beb1b2ea15f95e1607e15dcb8f56ede9ea16b1f0dc0195c03102d2397",
+        "shared_groups": 21
+      },
+      "train__valid": {
+        "left_group_fraction": 0.08733624454148471,
+        "right_group_fraction": 0.7407407407407407,
+        "shared_group_keys_sha256": "e7e88dce22b871b09587e368be6ff7bdb44be6153faabce71569034002a18fad",
+        "shared_groups": 20
+      },
+      "valid__test": {
+        "left_group_fraction": 0.14814814814814814,
+        "right_group_fraction": 0.13793103448275862,
+        "shared_group_keys_sha256": "bb45dc2f00bfb71cfff38f32c2b965c3ca03e39c05d1116df1fff8dd6a93f336",
+        "shared_groups": 4
+      }
+    },
+    "recording_counts": {
+      "test": 30,
+      "train": 376,
+      "valid": 28
+    },
+    "recording_ids_sha256": {
+      "test": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+      "train": "74a42cb4f7ab6184d90d68b630d2533b9cbb6ae9c3a6c6e6f83d2831ffc3a0e7",
+      "valid": "4aff65d7eb0543343690fb802da7f573e78b32f9260c855b333820f89bfbe562"
+    }
+  },
+  "selection": {
+    "group_keys_sha256": "5d07264ad50860a64a49f411dedcb11dec52ace6c1c91bbbc6cf6cf72445a107",
+    "groups": 242,
+    "mode": "manifest_and_packed_stem_intersection",
+    "recording_ids_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+    "recordings": 434
+  },
+  "sequence_hash_semantics": "SHA256 of values after lexicographic sorting, encoded as UTF-8 one per line with a trailing newline",
+  "unicode_database_version": "14.0.0"
+}

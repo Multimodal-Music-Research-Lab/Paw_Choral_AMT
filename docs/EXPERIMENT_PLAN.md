@@ -126,8 +126,11 @@ named diagnostic ablation, not added to the primary grid:
 2. P2 fixes the P1b winner and the train-derived range, then searches RP weight
    `{0.003, 0.01, 0.03}`.
 3. P3 fixes the P1b and P2 winners, including the exact RP range/margin, then
-   searches OC weight `{0.003, 0.01, 0.03}` crossed
-   with silent-gap decay `{0.5, 2.0, 8.0}` seconds.
+   searches OC weight `{0.003, 0.01, 0.03}` at the pre-registered two-second
+   silent-gap decay. If the winning OC candidate passes the promotion gate,
+   compare `0.5` and `8.0` seconds at that one frozen weight as a second-stage
+   mechanism ablation. This sequential design separates weight from decay and
+   avoids six unnecessary crossed pilot runs before the deadline.
 
 For each candidate, select thresholds on validation and rank by 50 ms macro
 SATB note F1, subject to union recall falling by at most 0.01 relative to its
@@ -165,10 +168,19 @@ Do not call the old `VA Rate` a voice-assignment accuracy. If retained, name it
 
 ### A. Prior validity / label-recovery study
 
-Mask a controlled 10%, 25%, and 50% of known training or validation part labels
+Mask a controlled 10%, 25%, and 50% of known training part labels
 and ask RP/OC to recover them. Report accuracy, macro-F1, and confusion by part.
 This directly tests whether the priors contain useful assignment information
 without corrupting ground truth.
+
+The committed `tools/evaluate_label_masking.py` protocol deliberately narrows
+this to training data: nested SHA-256 masks hold out 10/25/50% of source notes;
+RP ranges are re-estimated only from the still-visible labels; OC may use those
+visible labels as within-recording temporal context; and only masked notes enter
+the denominator. A fixed cyclic mapping of voice ranges is evaluated on the
+identical held-out IDs as a negative control. The tool preserves individual
+divisi notes rather than projecting them into binary-head events and exposes no
+validation/test mode or tunable mask/weight CLI.
 
 ### B. Difficulty-stratified transcription
 
@@ -243,11 +255,21 @@ use floor). Generate the report, group map, and manifests with
 `tools/build_youchorale_composition_split.py`; the tool records the Unicode
 database version and sequence-hash encoding, verifies zero generated work
 overlap, and refuses to overwrite a different or partial frozen output.
-Commit the generated group map and manifests before training.
+The resulting v1 protocol is frozen in
+[`repro/splits/youchorale_available_audio_434_composition_disjoint_v1`](../repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md):
+355/40/39 recordings and 193/24/25 groups in train/validation/test, with zero
+pairwise work overlap.
 Retrain every row on this train split, make every model/threshold choice on its
 validation split, and do not inspect its test metrics until the run registry is
-frozen. Until those artifacts exist, do not label any result
-“composition-disjoint.”
+frozen. Only runs that consume these exact manifests may use the label
+“composition-disjoint v1.”
+
+Pass
+`dataset.youchorale_split_dir=./repro/splits/youchorale_available_audio_434_composition_disjoint_v1`
+to training, validation inference, test inference, and scoring, together with
+`exp.name_suffix=composition_disjoint_v1` to isolate checkpoints and
+probabilities from the official-split run. The loader verifies the three-way
+manifest partition against the entire packed stem set before reading a batch.
 
 For every selected comparison:
 
@@ -288,8 +310,11 @@ reported as a targeted benefit, not a global gain.
    supervision; the legacy OC rule is additionally unsafe because it overwrites
    14.47% of trusted runnable training labels.
 5. Anchored RP keeps trusted notes while suppressing unsupported output mass
-   outside a train-derived register; the current OC loss adds target-relative
-   onset-event trajectory consistency, including across rests with gap decay.
+   outside a train-derived register using negative-label BCE; the current OC
+   loss adds target-relative onset-event trajectory consistency, including
+   across rests with gap decay. Multi-pitch/divisi onset frames remain under
+   full BCE supervision but act as trajectory barriers rather than being
+   reduced to fictitious centroids.
    Gap-aware/divisi-safe assignment applies only when a training label is
    genuinely unknown and must not be claimed as the main loss.
 6. Overall, difficulty-stratified, label-recovery, and oracle analyses explain

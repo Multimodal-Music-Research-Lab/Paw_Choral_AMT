@@ -1,0 +1,20 @@
+{
+  "group_counts": {
+    "test": 25,
+    "train": 193,
+    "valid": 24
+  },
+  "packed_recording_ids_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+  "recording_counts": {
+    "test": 39,
+    "train": 355,
+    "valid": 40
+  },
+  "rerun_report_byte_identical": true,
+  "source_commit": "a6fa99bc9107d605f4e53057aed0a3ca896596fd",
+  "work_overlap_shared_groups": {
+    "train__test": 0,
+    "train__valid": 0,
+    "valid__test": 0
+  }
+}

@@ -60,3 +60,20 @@ See the
 for target statistics, exact missing stems, scope limits, and report hashes.
 Filename existence was checked; this audit does not claim a byte-level HDF5
 content validation.
+
+## Composition-disjoint split (2026-09-08)
+
+The final split generator source commit is
+`a6fa99bc9107d605f4e53057aed0a3ca896596fd`; its transfer bundle SHA-256 is
+`945005bda68cf8bfdf42d2090190065eeb34d5f7183d8698f902eb977a79e712`.
+The CPU-only run selected the same 434-ID set as the packed-target audit, ran
+twice with byte-identical reports, and verified zero work overlap. The frozen
+group map, 355/40/39 recording manifests, complete report, validation record,
+and checksums are in the
+[`composition-disjoint v1 bundle`](../repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md).
+
+An earlier isolated execution from `8ccdc41` stopped during external validation
+because the split tool and target audit declared different sequence-hash
+encodings. It did not alter data or GPU state and was not published. Commit
+`a6fa99b` aligned the hash convention and added a regression test before the
+final split was generated.

@@ -8,8 +8,8 @@ assignment baseline (Post-VA).
 
 > **Release status — audited research snapshot.** The core methods and the
 > script used for the manuscript's qualitative figure are present. The exact
-> training manifests, frozen configurations, checkpoints, and a one-command
-> Table 1/2 reproduction are not yet available. Paper numbers below are
+> historical training manifests, frozen configurations, checkpoints, and a
+> one-command Table 1/2 reproduction are not yet available. Paper numbers below are
 > reported results, not results regenerated from this commit. See
 > [Reproducibility status](docs/REPRODUCIBILITY.md) before citing numerical
 > claims.
@@ -20,7 +20,9 @@ assignment baseline (Post-VA).
 [Reproducibility audit](docs/REPRODUCIBILITY.md) ·
 [YouChorale target audit](repro/audits/youchorale_targets_20260907_abe2438/README.md) ·
 [Runnable-pack audit](repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md) ·
-[ICASSP experiment plan](docs/EXPERIMENT_PLAN.md)
+[Composition-disjoint split](repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md) ·
+[ICASSP experiment plan](docs/EXPERIMENT_PLAN.md) ·
+[Submission plan](docs/ICASSP_SUBMISSION_PLAN.md)
 
 ## What is implemented
 
@@ -36,7 +38,12 @@ heads, an auxiliary segment-level part-presence head, and a max-over-parts union
 The training objective combines per-part losses with union and presence losses.
 RP and OC keep trusted S/A/T/B (including divisi such as S1/S2) labels and infer
 only ambiguous labels; optional range and continuity losses regularize the
-voice heads. They are not extra inference modules. Explicit `legacy_*` target
+voice heads. RP uses negative-label BCE on unsupported out-of-register outputs,
+so confident violations receive a useful corrective gradient while trusted
+positives are excluded. OC links only unambiguous single-pitch onset events;
+multi-pitch/divisi onsets remain fully supervised but break the trajectory
+chain instead of creating a fictitious mean pitch. They are not extra
+inference modules. Explicit `legacy_*` target
 modes reproduce the earlier all-note relabeling for audit purposes only.
 
 ![Ground truth, PawCT, PagCT, and PagCT plus Post-VA piano rolls](docs/assets/exsultate-deo-four-panel.png)
@@ -220,7 +227,45 @@ python tools/build_youchorale_composition_split.py \
 The command groups normalized `(composer, title)` pairs before assigning any
 recording, verifies zero work overlap, records source/packed ID-set hashes, and
 publishes frozen manifests atomically. Re-running against identical artifacts
-is a no-op; conflicting or partial output fails closed.
+is a no-op; conflicting or partial output fails closed. The committed v1
+protocol contains 355/40/39 recordings in train/validation/test and 193/24/25
+composition groups, with zero pairwise work overlap.
+
+Select this protocol in every training, inference, and scoring command with:
+
+```bash
+dataset.youchorale_split_dir=./repro/splits/youchorale_available_audio_434_composition_disjoint_v1 \
+exp.name_suffix=composition_disjoint_v1
+```
+
+The split directory is optional; leaving it unset preserves the official HDF5
+split attributes. When it is set, all three manifests are mandatory, must be
+pairwise disjoint, and must cover the packed HDF5 stems exactly. The manifest
+identity is stored in checkpoints and probability provenance, and inference
+rejects a checkpoint trained under another split protocol.
+For `src/search_best_thresholds.py`, pass the equivalent dedicated flags
+`--youchorale-split-dir ./repro/splits/youchorale_available_audio_434_composition_disjoint_v1`
+and `--name_suffix composition_disjoint_v1`.
+
+Audit whether RP/OC contain useful assignment information without training a
+transcriber by masking a fixed, nested 10/25/50% of **training** labels:
+
+```bash
+python tools/evaluate_label_masking.py \
+  --dataset-dir "$YOUCHORALE_DATASET_DIR" \
+  --split train \
+  --recording-manifest \
+    repro/splits/youchorale_available_audio_434_composition_disjoint_v1/train.json \
+  --packed-hdf5-dir "$YOUCHORALE_HDF5_DIR" \
+  --output-json /tmp/pawct-label-masking.json
+```
+
+The tool has no test/validation mode and exposes no mask-rate or prior-weight
+search. It estimates each RP range from that rate's still-visible training
+labels, scores only the same held-out source-note IDs for RP and OC, preserves
+divisi notes as distinct events, and includes a fixed cyclic-range negative
+control. This is a semi-supervised prior-validity diagnostic, not an acoustic
+transcription result.
 
 ## Train
 
@@ -356,13 +401,16 @@ Because all 285,674 notes in the runnable YouChorale training pack have
 canonical labels,
 `target_assignment=range_prior` and `ordered_continuity` each change exactly
 zero modern targets. The explicit output-prior loss is therefore what
-distinguishes the pilots above; trusted labels remain anchored. RP suppresses
-unsupported output mass outside the frozen train-only range and never penalizes
-an annotated positive. The OC row keeps the RP range and weight fixed and adds
+distinguishes the pilots above; trusted labels remain anchored. RP uses
+negative-label BCE to suppress unsupported output mass outside the frozen
+train-only range and never penalizes an annotated positive. The OC row keeps
+the RP range and weight fixed and adds
 only the continuity loss, so its comparison with RP isolates the incremental
 OC hypothesis. The corrected OC loss matches predicted pitch motion
-to annotated pitch motion between consecutive onset events, including events
-separated by rests. Gap decay weakens distant links, while event-level
+to annotated pitch motion between consecutive unambiguous onset events,
+including events separated by rests. Multi-pitch/divisi frames break the
+trajectory chain instead of being reduced to an artificial centroid. Gap decay
+weakens distant links, while event-level
 normalization prevents long held notes from diluting the transition signal;
 the gap is measured from frame activity, not merely from inter-onset time.
 Unlike the historical zero-motion penalty, it does not punish a correctly
@@ -568,7 +616,8 @@ python scripts/check_release.py
 The test suite includes data-free PawCT forward/union/loss-backward checks,
 strict checkpoint compatibility, anchored RP/OC target retention, decoder
 boundaries, deterministic validation sampling, threshold-split guards, metric
-helpers, and visualization. A versioned real-data label/target audit is
+helpers, external-manifest integrity, frozen-split integrity, prior label
+recovery, and visualization. A versioned real-data label/target audit is
 [checked in](repro/audits/youchorale_targets_20260907_abe2438/README.md);
 end-to-end model retraining, probability-integrity integration, and
 table-regression tests remain release work and are tracked in
@@ -592,8 +641,10 @@ Then open <http://localhost:8000>.
 
 ## Known limitations
 
-- Exact checkpoints, commit/config hashes, split manifests, and table
-  reproduction scripts are not yet released.
+- Exact historical-paper checkpoints, per-run configurations, and table
+  reproduction scripts are not yet released. The corrected
+  `available-audio-434` composition split is released separately and must not
+  be presented as the historical paper split.
 - PagCT and PawCT are not parameter-matched in this snapshot: the PagCT class
   has separate full frame/onset/offset acoustic branches, whereas PawCT uses a
   shared encoder.

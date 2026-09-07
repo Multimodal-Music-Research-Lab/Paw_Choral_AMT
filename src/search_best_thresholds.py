@@ -68,6 +68,12 @@ def parse_args():
     parser.add_argument("--onset_tolerance", type=float, default=None, help="Optional onset tolerance override in seconds")
     parser.add_argument("--name_suffix", type=str, default="", help="Optional experiment name suffix used in model_name")
     parser.add_argument("--youchorale-dir", type=str, default="", help="Optional YouChorale dataset root override")
+    parser.add_argument(
+        "--youchorale-split-dir",
+        type=str,
+        default="",
+        help="Optional external YouChorale train/valid/test manifest directory",
+    )
     parser.add_argument("--youchorale-pro-dir", type=str, default="", help="Optional YouChorale-Pro dataset root override")
     parser.add_argument("--choral_enable", action="store_true", help="Use choral SATB evaluation instead of single-stream evaluation")
     parser.add_argument("--choral_per_voice", action="store_true", help="Search independent thresholds for S/A/T/B and combine them")
@@ -294,6 +300,10 @@ def build_overrides(args, extra_overrides=None):
         overrides.append(f"exp.name_suffix={args.name_suffix}")
     if getattr(args, "youchorale_dir", ""):
         overrides.append(f"dataset.youchorale_dir={args.youchorale_dir}")
+    if getattr(args, "youchorale_split_dir", ""):
+        overrides.append(
+            f"dataset.youchorale_split_dir={args.youchorale_split_dir}"
+        )
     if getattr(args, "youchorale_pro_dir", ""):
         overrides.append(f"dataset.youchorale_pro_dir={args.youchorale_pro_dir}")
     if args.choral_enable:
