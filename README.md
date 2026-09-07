@@ -291,6 +291,12 @@ selection, rerun each frozen main configuration with seeds 17, 42, and 86.
 The fixed pilot grid, constraints, tie-breaks, and statistical estimand are in
 [docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
 
+Full validation computes exact split-level AP through bounded-memory,
+disk-backed accumulators. The default `exp.num_workers=0` also prevents train
+and validation DataLoader pools from duplicating several gigabytes of HDF5 and
+model state per worker. Raise it only after profiling host RAM on the target
+machine; it does not change the model or the evaluation protocol.
+
 ### PagCT
 
 ```bash

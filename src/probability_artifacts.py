@@ -37,8 +37,6 @@ from utilities import (
 
 
 CANONICAL_VOICE_NAMES = ("S", "A", "T", "B")
-_HASH_CACHE = {}
-
 _NOTE_PROBABILITY_OUTPUT_KEYS = frozenset({
     "frame_output",
     "onset_output",
@@ -79,32 +77,14 @@ _TEMPORAL_OUTPUT_KEYS = (
 
 
 def sha256_file(path: str, chunk_size: int = 1024 * 1024) -> str:
-    """Return a cached SHA-256 keyed by path, size, and modification time."""
+    """Return a content-derived SHA-256 without trusting file timestamps."""
 
     absolute_path = os.path.realpath(path)
-    stat = os.stat(absolute_path)
-    # ``ctime`` changes even when a caller rewrites a same-sized file and then
-    # restores its mtime.  Including it prevents a formal scoring process from
-    # reusing a stale digest after such an in-place mutation.
-    cache_key = (
-        absolute_path,
-        stat.st_dev,
-        stat.st_ino,
-        stat.st_size,
-        stat.st_mtime_ns,
-        stat.st_ctime_ns,
-    )
-    cached = _HASH_CACHE.get(cache_key)
-    if cached is not None:
-        return cached
-
     digest = hashlib.sha256()
     with open(absolute_path, "rb") as artifact_file:
         for chunk in iter(lambda: artifact_file.read(chunk_size), b""):
             digest.update(chunk)
-    value = digest.hexdigest()
-    _HASH_CACHE[cache_key] = value
-    return value
+    return digest.hexdigest()
 
 
 def resolve_inference_checkpoint_path(checkpoints_dir: str, selector) -> str:

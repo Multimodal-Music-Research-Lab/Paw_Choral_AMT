@@ -83,7 +83,10 @@ exp:
   mini_data: false
   cuda: true
   debug: false
-  num_workers: 8
+  # Full-split AP evaluation is intentionally single-process. Increase this
+  # only after measuring host RAM: train and validation loaders each own a
+  # worker pool, and forked HDF5/model state can multiply memory sharply.
+  num_workers: 0
   batch_size: 8
   max_train_eval_batches: 20  # lightweight monitoring only; never a selection set
   max_eval_batches: null  # complete validation for checkpoint selection; set explicitly only for pilots

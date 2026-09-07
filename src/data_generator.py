@@ -225,24 +225,8 @@ def resolve_segment_bounds(
     return start_sample, end_sample, actual_start_time
 
 
-_FILE_SHA256_CACHE = {}
-
-
 def _file_sha256(path, chunk_size=1024 * 1024):
-    """Hash immutable sampler inputs without repeatedly rereading large HDF5s."""
-
-    stat_result = os.stat(path)
-    cache_key = (
-        os.path.realpath(path),
-        stat_result.st_dev,
-        stat_result.st_ino,
-        stat_result.st_size,
-        stat_result.st_mtime_ns,
-        stat_result.st_ctime_ns,
-    )
-    cached = _FILE_SHA256_CACHE.get(cache_key)
-    if cached is not None:
-        return cached
+    """Hash sampler inputs by content without trusting file timestamps."""
 
     digest = hashlib.sha256()
     with open(path, 'rb') as file_handle:
@@ -251,9 +235,7 @@ def _file_sha256(path, chunk_size=1024 * 1024):
             if not chunk:
                 break
             digest.update(chunk)
-    value = digest.hexdigest()
-    _FILE_SHA256_CACHE[cache_key] = value
-    return value
+    return digest.hexdigest()
 
 
 
