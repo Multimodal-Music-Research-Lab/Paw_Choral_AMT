@@ -113,11 +113,13 @@ threshold-free checkpoint-selection proxy. It is not the primary endpoint;
 macro SATB note F1 is computed after thresholds are chosen on validation. This
 separation must be stated explicitly and kept identical across rows.
 
-The pilot search is sequential and fixed before test evaluation. P2 and P3 use
-the train-only p01/p99 MIDI ranges `mins=[60,55,50,41]` and
-`maxs=[79,74,70,62]` for S/A/T/B, with a two-semitone margin. These values come
-from the 376-recording runnable training subset, not from missing-audio
-annotations. The loss excludes
+The pilot search is sequential and fixed before test evaluation. On the
+official runnable split, P2 and P3 use the train-only p01/p99 MIDI ranges
+`mins=[60,55,50,41]` and `maxs=[79,74,70,62]` for S/A/T/B. On the frozen
+composition-disjoint split they use `mins=[60,55,50,41]` and
+`maxs=[79,74,69,62]`; its tenor p99 is one semitone lower. Both protocols use
+a two-semitone margin, and each range comes only from that protocol's training
+manifest. The loss excludes
 trusted annotated positives, so genuine out-of-register notes are not punished.
 The older broad defaults `[60,55,48,40]..[88,79,72,67]` are retained as one
 named diagnostic ablation, not added to the primary grid:
@@ -181,6 +183,15 @@ the denominator. A fixed cyclic mapping of voice ranges is evaluated on the
 identical held-out IDs as a negative control. The tool preserves individual
 divisi notes rather than projecting them into binary-head events and exposes no
 validation/test mode or tunable mask/weight CLI.
+
+The frozen real-data diagnostic supports carrying both priors into acoustic
+pilots. Across the official runnable and composition-disjoint training
+protocols, aligned RP reaches `0.631–0.640` macro F1 and aligned OC reaches
+`0.717–0.744`; OC exceeds RP by `0.083–0.110` at every mask rate. RP and OC are
+also respectively `0.469–0.493` and `0.301–0.348` above their cyclic-range
+controls. These are assignment-mechanism results over source notes, not
+transcription scores. Full confusion matrices and hashes are in the
+[prior-recovery artifact](../repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md).
 
 ### B. Difficulty-stratified transcription
 
@@ -259,6 +270,11 @@ The resulting v1 protocol is frozen in
 [`repro/splits/youchorale_available_audio_434_composition_disjoint_v1`](../repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md):
 355/40/39 recordings and 193/24/25 groups in train/validation/test, with zero
 pairwise work overlap.
+Its [target audit](../repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md)
+finds 14.86%/12.51%/18.53% greater-than-four-note onset groups and
+34.97%/29.79%/38.97% duplicate-canonical-voice groups in
+train/validation/test. These values define strata before model results are
+seen; they are not themselves evidence that OC improves transcription.
 Retrain every row on this train split, make every model/threshold choice on its
 validation split, and do not inspect its test metrics until the run registry is
 frozen. Only runs that consume these exact manifests may use the label

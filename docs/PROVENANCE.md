@@ -77,3 +77,21 @@ because the split tool and target audit declared different sequence-hash
 encodings. It did not alter data or GPU state and was not published. Commit
 `a6fa99b` aligned the hash convention and added a regression test before the
 final split was generated.
+
+## Composition targets and RP/OC recovery (2026-09-08)
+
+Source commit `bde12f65008d61b2e72872ea0345732d6ad9c1b5` was transferred
+in a bundle with SHA-256
+`3a72af72b6165470f836ae47c6aeb09be646c0928e746dd768f8e0658508dd11`.
+A CPU-only, single-threaded, low-priority run audited all three frozen
+composition-disjoint manifests and evaluated the train-only nested 10/25/50%
+label-masking protocol on both the official runnable and
+composition-disjoint training sets. Both label-masking reports were generated
+twice and were byte-identical. The worker's existing GPU PID, command, working
+directory, and persistent session were unchanged before and after the run.
+
+The public artifacts are the
+[`composition-disjoint target audit`](../repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md)
+and the [RP/OC prior-recovery diagnostic](../repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md).
+They establish target/range provenance and prior mechanism behavior only;
+neither is evidence of audio transcription performance.

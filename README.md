@@ -247,6 +247,15 @@ For `src/search_best_thresholds.py`, pass the equivalent dedicated flags
 `--youchorale-split-dir ./repro/splits/youchorale_available_audio_434_composition_disjoint_v1`
 and `--name_suffix composition_disjoint_v1`.
 
+The composition-disjoint target audit covers 282,493/28,002/26,433 canonical
+notes in train/validation/test and again finds zero modern RP/OC relabeling.
+Its train-only p01/p99 ranges are S `60–79`, A `55–74`, T `50–69`, and B
+`41–62`. Composition-disjoint P2/P3 runs must therefore use tenor maximum 69,
+not the official runnable split's 70. The [versioned audit](repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md)
+records exact hashes and also shows that its test subset has more >4-note onset
+groups than train (18.53% versus 14.86%), motivating the planned difficulty
+breakdown without treating it as performance evidence.
+
 Audit whether RP/OC contain useful assignment information without training a
 transcriber by masking a fixed, nested 10/25/50% of **training** labels:
 
@@ -266,6 +275,14 @@ labels, scores only the same held-out source-note IDs for RP and OC, preserves
 divisi notes as distinct events, and includes a fixed cyclic-range negative
 control. This is a semi-supervised prior-validity diagnostic, not an acoustic
 transcription result.
+
+The checked-in real-data run gives RP macro F1 `0.631–0.640` and OC macro F1
+`0.717–0.744` across both training protocols and all three mask rates. OC is
+`+0.083–0.110` above RP, and each aligned method is well above its cyclic-range
+control. These results show that the priors contain assignment information;
+they do not predict an acoustic F1 gain. See the [full mechanism diagnostic](repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md)
+for per-voice confusion matrices, exact masked-event hashes, repeatability, and
+the required interpretation boundary.
 
 ## Train
 
@@ -617,8 +634,10 @@ The test suite includes data-free PawCT forward/union/loss-backward checks,
 strict checkpoint compatibility, anchored RP/OC target retention, decoder
 boundaries, deterministic validation sampling, threshold-split guards, metric
 helpers, external-manifest integrity, frozen-split integrity, prior label
-recovery, and visualization. A versioned real-data label/target audit is
-[checked in](repro/audits/youchorale_targets_20260907_abe2438/README.md);
+recovery, and visualization. Versioned real-data [label/target audits](repro/audits/youchorale_targets_20260907_abe2438/README.md),
+[composition-disjoint audit](repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md),
+and [prior-recovery diagnostic](repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md)
+are checked in;
 end-to-end model retraining, probability-integrity integration, and
 table-regression tests remain release work and are tracked in
 [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).

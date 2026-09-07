@@ -28,6 +28,11 @@ the manuscript's tables have been rerun.
   runnable split hashes and missing-item disclosure.
 - [x] Frozen `available-audio-434` composition-disjoint group map and manifests,
   with deterministic generation, hashes, and zero-overlap validation.
+- [x] Versioned composition-disjoint target audit with protocol-specific RP
+  ranges and fixed train/validation/test recording hashes.
+- [x] Repeated, byte-identical real-data 10/25/50% training-label recovery for
+  RP/OC, including identical-ID cyclic-range negative controls and full
+  per-voice confusion matrices.
 
 ## Missing before a reproducibility claim
 

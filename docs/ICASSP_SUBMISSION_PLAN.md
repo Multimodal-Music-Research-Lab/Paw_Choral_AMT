@@ -55,8 +55,8 @@ pre-registered crossing/divisi/high-polyphony strata, or a negative result.
 1. Repeat selected P1b/P2/P3 settings on the frozen composition-disjoint v1
    protocol. A one-seed row must be labelled preliminary; it cannot substitute
    for uncertainty on the primary protocol.
-2. Controlled 10/25/50% label-masking recovery for RP/OC, including a shuffled
-   structure negative control.
+2. Controlled 10/25/50% label-masking recovery for RP/OC, including the fixed
+   cyclic-range negative control implemented by the frozen diagnostic.
 3. Oracle decomposition: ground-truth notes + assignment, detected notes +
    oracle voices, detected notes + repaired Post-VA, and end-to-end PawCT.
 4. Parameter count, MACs, and real-time factor for a capacity/fairness check.
@@ -67,6 +67,23 @@ pre-registered crossing/divisi/high-polyphony strata, or a negative result.
   architecture variant, and a full Post-VA redesign;
 - any comparison whose feature parity, checkpoint provenance, or test-free
   threshold selection cannot be demonstrated.
+
+## Evidence ledger as of 8 September 2026
+
+| Evidence | Status | What it supports |
+| --- | --- | --- |
+| Frozen `available-audio-434` split and runnable-pack audit | Complete | Honest data denominator and official-split leakage disclosure |
+| Frozen composition-disjoint v1 manifests and target audit | Complete | Zero work overlap, split-specific RP ranges, difficulty pre-registration |
+| Train-only 10/25/50% RP/OC label recovery with cyclic control | Complete | Both priors encode assignment information; OC adds temporal-context value |
+| Corrected P1a/P1b/P2/P3 acoustic pilots | Pending GPU availability | Validation-only selection of union/RP/OC weights |
+| Three-seed locked P1b/P2/P3 comparison and bootstrap | Pending pilot gate | Main transcription claim |
+
+The completed label-recovery diagnostic is mechanism evidence only. On the
+composition-disjoint train set, RP obtains `0.631–0.634` macro F1 and OC
+`0.717–0.740`; OC exceeds RP by `0.083–0.110`, while both beat their identical-ID
+cyclic-range controls. These values must not be placed in the acoustic
+transcription table. Exact results and hashes are in the
+[versioned artifact](../repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md).
 
 ## Compute order and stop gates
 

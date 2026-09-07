@@ -1,0 +1,1257 @@
+{
+  "assignment_config": {
+    "active_cost_terms": {
+      "ordered_continuity": [
+        "range_cost",
+        "gap_decayed_pitch_continuity",
+        "overlap_penalty"
+      ],
+      "range_prior": [
+        "range_cost"
+      ]
+    },
+    "begin_note": 21,
+    "classes_num": 88,
+    "continuity_weight": 0.35,
+    "frames_per_second": 100.0,
+    "inactive_for_evaluated_methods": [
+      "part_label_mismatch_penalty_for_masked_notes",
+      "range_margin",
+      "range_mask_penalty"
+    ],
+    "oc_gap_decay_seconds": 2.0,
+    "oc_overlap_tolerance_seconds": 0.05,
+    "overlap_penalty": 4.0,
+    "part_label_mismatch_penalty": 2.0,
+    "preserve_known_part_labels": true,
+    "range_margin": 2.0,
+    "range_mask_penalty": 8.0,
+    "voice_order": [
+      "S",
+      "A",
+      "T",
+      "B"
+    ]
+  },
+  "dataset": {
+    "annotation_pickle_sequence_sha256": "211a9b7404cae8b70b920e138999d3e1fb406346ad130566de3f380b895328c1",
+    "duplicate_split_membership_count": 0,
+    "duplicate_split_memberships": {},
+    "eligible_event_sequence_sha256": "2a8f69bffa1730ec4b005228e7cddaa10201911b9b0fc27d508e94ad27ec8d06",
+    "eligible_notes": 282493,
+    "eligible_notes_by_voice": {
+      "A": 74662,
+      "B": 64834,
+      "S": 74292,
+      "T": 68705
+    },
+    "name": "YouChorale",
+    "packed_coverage": {
+      "intersection_recording_ids_sha256": "aa2ed644a7b09fac8f7afd7fab126aae7e900ba5fc3bfb1bb6ad96ecbc4232ef",
+      "intersection_recordings": 355,
+      "manifest_coverage_ratio": 1.0,
+      "manifest_missing_packed_recording_ids": [],
+      "manifest_missing_packed_recordings": 0,
+      "manifest_recording_ids_sha256": "aa2ed644a7b09fac8f7afd7fab126aae7e900ba5fc3bfb1bb6ad96ecbc4232ef",
+      "manifest_recordings": 355,
+      "match_semantics": "exact_case_sensitive_filename_stem_existence_only",
+      "packed_not_in_selected_manifest_recording_ids_sha256": "7118e17bd7e242f001e7a2d14ec2b14502c7edf8196233a3895cb9de54653356",
+      "packed_not_in_selected_manifest_recordings": 79,
+      "packed_recording_ids_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+      "packed_recordings_total": 434,
+      "packed_selection_ratio": 0.8179723502304147,
+      "schema_version": 1
+    },
+    "recording_ids_sha256": "aa2ed644a7b09fac8f7afd7fab126aae7e900ba5fc3bfb1bb6ad96ecbc4232ef",
+    "recording_manifest": {
+      "filename": "train.json",
+      "recordings": 355,
+      "sha256": "01701c53dc32a1a6f355126b0918f676dd0a9206c321b1efd1128b797a1ce2ff"
+    },
+    "recordings": 355,
+    "split": "train",
+    "split_files": {}
+  },
+  "protocol": {
+    "binary_head_projection": false,
+    "divisi_semantics": "each source note remains distinct; S1/S2 etc. share their canonical SATB truth without target projection or merging",
+    "intended_use": "training_only_semi_supervised_label_recovery_diagnostic",
+    "mask_hash": "SHA256(canonical_JSON([salt,recording_id,bar_index,part_index,note_index,midi_note,onset_float_hex,offset_float_hex]))",
+    "mask_rates_percent": [
+      10,
+      25,
+      50
+    ],
+    "mask_rule": "unsigned_digest_integer < floor(rate_percent*2^256/100)",
+    "mask_salt": "pawct-icassp2027-label-mask-v1",
+    "mask_sets_nested": true,
+    "methods": [
+      "range_prior",
+      "ordered_continuity"
+    ],
+    "metric_definition": "accuracy and one-vs-rest per-voice F1 over masked notes; macro-F1 is the unweighted S/A/T/B mean with zero_division=0",
+    "name": "pawct_train_label_masking_v1",
+    "negative_control": "fixed cyclic range mapping S<-A,A<-T,T<-B,B<-S with identical masked event IDs and visible labels",
+    "score_scope": "masked_canonical_notes_only",
+    "test_tuning_prohibited": true,
+    "visible_label_role": "range estimation for RP/OC and within-recording trajectory context for OC"
+  },
+  "rates": {
+    "10": {
+      "conditions": {
+        "aligned": {
+          "evaluated_masked_event_sequence_sha256": "146b03bb046acfc56d737bda7a15aabc08777b3356e4bbc96c2f2e1f821743ff",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.7371426544654891,
+              "confusion": {
+                "A": {
+                  "A": 4916,
+                  "B": 123,
+                  "S": 1179,
+                  "T": 1164
+                },
+                "B": {
+                  "A": 157,
+                  "B": 5021,
+                  "S": 16,
+                  "T": 1285
+                },
+                "S": {
+                  "A": 1312,
+                  "B": 12,
+                  "S": 5876,
+                  "T": 259
+                },
+                "T": {
+                  "A": 1073,
+                  "B": 674,
+                  "S": 157,
+                  "T": 4970
+                }
+              },
+              "correct": 20783,
+              "evaluated_masked_notes": 28194,
+              "macro_f1": 0.7403976351546389,
+              "per_voice": {
+                "A": {
+                  "f1": 0.662533692722372,
+                  "false_negative": 2466,
+                  "false_positive": 2542,
+                  "precision": 0.6591579511933494,
+                  "predicted": 7458,
+                  "recall": 0.6659441885667841,
+                  "support": 7382,
+                  "true_positive": 4916
+                },
+                "B": {
+                  "f1": 0.8158258185067837,
+                  "false_negative": 1458,
+                  "false_positive": 809,
+                  "precision": 0.8612349914236707,
+                  "predicted": 5830,
+                  "recall": 0.7749652724185832,
+                  "support": 6479,
+                  "true_positive": 5021
+                },
+                "S": {
+                  "f1": 0.8001634098182066,
+                  "false_negative": 1583,
+                  "false_positive": 1352,
+                  "precision": 0.8129496402877698,
+                  "predicted": 7228,
+                  "recall": 0.7877731599410108,
+                  "support": 7459,
+                  "true_positive": 5876
+                },
+                "T": {
+                  "f1": 0.683067619571193,
+                  "false_negative": 1904,
+                  "false_positive": 2708,
+                  "precision": 0.6473039854128679,
+                  "predicted": 7678,
+                  "recall": 0.7230142566191446,
+                  "support": 6874,
+                  "true_positive": 4970
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.6325459317585301,
+              "confusion": {
+                "A": {
+                  "A": 3346,
+                  "B": 66,
+                  "S": 2639,
+                  "T": 1331
+                },
+                "B": {
+                  "A": 137,
+                  "B": 4745,
+                  "S": 1,
+                  "T": 1596
+                },
+                "S": {
+                  "A": 1214,
+                  "B": 4,
+                  "S": 6059,
+                  "T": 182
+                },
+                "T": {
+                  "A": 1849,
+                  "B": 1150,
+                  "S": 191,
+                  "T": 3684
+                }
+              },
+              "correct": 17834,
+              "evaluated_masked_notes": 28194,
+              "macro_f1": 0.6308509328055553,
+              "per_voice": {
+                "A": {
+                  "f1": 0.4804709936817921,
+                  "false_negative": 4036,
+                  "false_positive": 3200,
+                  "precision": 0.5111518484570731,
+                  "predicted": 6546,
+                  "recall": 0.4532646979138445,
+                  "support": 7382,
+                  "true_positive": 3346
+                },
+                "B": {
+                  "f1": 0.7626165220186435,
+                  "false_negative": 1734,
+                  "false_positive": 1220,
+                  "precision": 0.7954735959765298,
+                  "predicted": 5965,
+                  "recall": 0.7323661058805371,
+                  "support": 6479,
+                  "true_positive": 4745
+                },
+                "S": {
+                  "f1": 0.7412074132974494,
+                  "false_negative": 1400,
+                  "false_positive": 2831,
+                  "precision": 0.6815523059617548,
+                  "predicted": 8890,
+                  "recall": 0.8123072797962193,
+                  "support": 7459,
+                  "true_positive": 6059
+                },
+                "T": {
+                  "f1": 0.539108802224336,
+                  "false_negative": 3190,
+                  "false_positive": 3109,
+                  "precision": 0.5423229795377594,
+                  "predicted": 6793,
+                  "recall": 0.5359324992726214,
+                  "support": 6874,
+                  "true_positive": 3684
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            79.0,
+            74.0,
+            69.0,
+            62.0
+          ],
+          "range_mins": [
+            60.0,
+            55.0,
+            50.0,
+            41.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "A",
+            "B": "B",
+            "S": "S",
+            "T": "T"
+          }
+        },
+        "cyclic_range_negative_control": {
+          "evaluated_masked_event_sequence_sha256": "146b03bb046acfc56d737bda7a15aabc08777b3356e4bbc96c2f2e1f821743ff",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.43679506277931474,
+              "confusion": {
+                "A": {
+                  "A": 3978,
+                  "B": 685,
+                  "S": 2482,
+                  "T": 237
+                },
+                "B": {
+                  "A": 1216,
+                  "B": 191,
+                  "S": 178,
+                  "T": 4894
+                },
+                "S": {
+                  "A": 498,
+                  "B": 1511,
+                  "S": 5433,
+                  "T": 17
+                },
+                "T": {
+                  "A": 3068,
+                  "B": 318,
+                  "S": 775,
+                  "T": 2713
+                }
+              },
+              "correct": 12315,
+              "evaluated_masked_notes": 28194,
+              "macro_f1": 0.3920580144441907,
+              "per_voice": {
+                "A": {
+                  "f1": 0.49287572791475653,
+                  "false_negative": 3404,
+                  "false_positive": 4782,
+                  "precision": 0.4541095890410959,
+                  "predicted": 8760,
+                  "recall": 0.5388783527499322,
+                  "support": 7382,
+                  "true_positive": 3978
+                },
+                "B": {
+                  "f1": 0.04159407665505226,
+                  "false_negative": 6288,
+                  "false_positive": 2514,
+                  "precision": 0.07060998151571164,
+                  "predicted": 2705,
+                  "recall": 0.029479858002778206,
+                  "support": 6479,
+                  "true_positive": 191
+                },
+                "S": {
+                  "f1": 0.6655233662032216,
+                  "false_negative": 2026,
+                  "false_positive": 3435,
+                  "precision": 0.6126522327469553,
+                  "predicted": 8868,
+                  "recall": 0.728381820619386,
+                  "support": 7459,
+                  "true_positive": 5433
+                },
+                "T": {
+                  "f1": 0.3682388870037326,
+                  "false_negative": 4161,
+                  "false_positive": 5148,
+                  "precision": 0.34512148581605395,
+                  "predicted": 7861,
+                  "recall": 0.3946755891766075,
+                  "support": 6874,
+                  "true_positive": 2713
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.154181740795914,
+              "confusion": {
+                "A": {
+                  "A": 1331,
+                  "B": 1765,
+                  "S": 4220,
+                  "T": 66
+                },
+                "B": {
+                  "A": 1596,
+                  "B": 0,
+                  "S": 138,
+                  "T": 4745
+                },
+                "S": {
+                  "A": 182,
+                  "B": 5407,
+                  "S": 1866,
+                  "T": 4
+                },
+                "T": {
+                  "A": 3684,
+                  "B": 96,
+                  "S": 1944,
+                  "T": 1150
+                }
+              },
+              "correct": 4347,
+              "evaluated_masked_notes": 28194,
+              "macro_f1": 0.15143863088290535,
+              "per_voice": {
+                "A": {
+                  "f1": 0.18779541446208112,
+                  "false_negative": 6051,
+                  "false_positive": 5462,
+                  "precision": 0.19593699396437508,
+                  "predicted": 6793,
+                  "recall": 0.18030344080195068,
+                  "support": 7382,
+                  "true_positive": 1331
+                },
+                "B": {
+                  "f1": 0.0,
+                  "false_negative": 6479,
+                  "false_positive": 7268,
+                  "precision": 0.0,
+                  "predicted": 7268,
+                  "recall": 0.0,
+                  "support": 6479,
+                  "true_positive": 0
+                },
+                "S": {
+                  "f1": 0.2388174313687848,
+                  "false_negative": 5593,
+                  "false_positive": 6302,
+                  "precision": 0.22845249755142016,
+                  "predicted": 8168,
+                  "recall": 0.25016758278589624,
+                  "support": 7459,
+                  "true_positive": 1866
+                },
+                "T": {
+                  "f1": 0.1791416777007555,
+                  "false_negative": 5724,
+                  "false_positive": 4815,
+                  "precision": 0.19279128248113997,
+                  "predicted": 5965,
+                  "recall": 0.16729706139074774,
+                  "support": 6874,
+                  "true_positive": 1150
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            74.0,
+            69.0,
+            62.0,
+            79.0
+          ],
+          "range_mins": [
+            55.0,
+            50.0,
+            41.0,
+            60.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "T",
+            "B": "S",
+            "S": "A",
+            "T": "B"
+          }
+        }
+      },
+      "eligible_notes": 282493,
+      "masked_event_sequence_sha256": "146b03bb046acfc56d737bda7a15aabc08777b3356e4bbc96c2f2e1f821743ff",
+      "masked_notes": 28194,
+      "masked_notes_by_true_voice": {
+        "A": 7382,
+        "B": 6479,
+        "S": 7459,
+        "T": 6874
+      },
+      "range_estimation": {
+        "maxs": [
+          79.0,
+          74.0,
+          69.0,
+          62.0
+        ],
+        "method": "exact_linear_type7_position_(n-1)*q",
+        "mins": [
+          60.0,
+          55.0,
+          50.0,
+          41.0
+        ],
+        "percentiles": [
+          1,
+          99
+        ],
+        "source": "same_training_manifest_visible_labels_only",
+        "visible_notes_by_voice": {
+          "A": 67280,
+          "B": 58355,
+          "S": 66833,
+          "T": 61831
+        }
+      },
+      "realized_mask_rate": 0.09980424293699312,
+      "recordings_with_masked_notes": 355,
+      "requested_mask_rate_percent": 10,
+      "visible_notes": 254299
+    },
+    "25": {
+      "conditions": {
+        "aligned": {
+          "evaluated_masked_event_sequence_sha256": "ea35a3c90ae00392071278655daf6ffb1da08a809fb5bdcfe258548d1666a1a5",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.7243373493975903,
+              "confusion": {
+                "A": {
+                  "A": 12258,
+                  "B": 378,
+                  "S": 3004,
+                  "T": 3118
+                },
+                "B": {
+                  "A": 423,
+                  "B": 12255,
+                  "S": 51,
+                  "T": 3312
+                },
+                "S": {
+                  "A": 3366,
+                  "B": 27,
+                  "S": 14575,
+                  "T": 559
+                },
+                "T": {
+                  "A": 3041,
+                  "B": 1702,
+                  "S": 467,
+                  "T": 12014
+                }
+              },
+              "correct": 51102,
+              "evaluated_masked_notes": 70550,
+              "macro_f1": 0.7282854852885015,
+              "per_voice": {
+                "A": {
+                  "f1": 0.6477831210695978,
+                  "false_negative": 6500,
+                  "false_positive": 6830,
+                  "precision": 0.6421835708298408,
+                  "predicted": 19088,
+                  "recall": 0.6534811813626186,
+                  "support": 18758,
+                  "true_positive": 12258
+                },
+                "B": {
+                  "f1": 0.8061704437062132,
+                  "false_negative": 3786,
+                  "false_positive": 2107,
+                  "precision": 0.8532934131736527,
+                  "predicted": 14362,
+                  "recall": 0.7639798017579952,
+                  "support": 16041,
+                  "true_positive": 12255
+                },
+                "S": {
+                  "f1": 0.7959261686325907,
+                  "false_negative": 3952,
+                  "false_positive": 3522,
+                  "precision": 0.8053821075316351,
+                  "predicted": 18097,
+                  "recall": 0.7866896961191774,
+                  "support": 18527,
+                  "true_positive": 14575
+                },
+                "T": {
+                  "f1": 0.6632622077456041,
+                  "false_negative": 5210,
+                  "false_positive": 6989,
+                  "precision": 0.6322159659001211,
+                  "predicted": 19003,
+                  "recall": 0.6975150952159777,
+                  "support": 17224,
+                  "true_positive": 12014
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.6324592487597449,
+              "confusion": {
+                "A": {
+                  "A": 8653,
+                  "B": 194,
+                  "S": 6525,
+                  "T": 3386
+                },
+                "B": {
+                  "A": 342,
+                  "B": 11754,
+                  "S": 2,
+                  "T": 3943
+                },
+                "S": {
+                  "A": 2980,
+                  "B": 12,
+                  "S": 15110,
+                  "T": 425
+                },
+                "T": {
+                  "A": 4775,
+                  "B": 2829,
+                  "S": 517,
+                  "T": 9103
+                }
+              },
+              "correct": 44620,
+              "evaluated_masked_notes": 70550,
+              "macro_f1": 0.6317345121272442,
+              "per_voice": {
+                "A": {
+                  "f1": 0.48738312492959335,
+                  "false_negative": 10105,
+                  "false_positive": 8097,
+                  "precision": 0.5165970149253731,
+                  "predicted": 16750,
+                  "recall": 0.4612965134875786,
+                  "support": 18758,
+                  "true_positive": 8653
+                },
+                "B": {
+                  "f1": 0.7625040544923776,
+                  "false_negative": 4287,
+                  "false_positive": 3035,
+                  "precision": 0.7947799039826898,
+                  "predicted": 14789,
+                  "recall": 0.7327473349541799,
+                  "support": 16041,
+                  "true_positive": 11754
+                },
+                "S": {
+                  "f1": 0.7428529288857206,
+                  "false_negative": 3417,
+                  "false_positive": 7044,
+                  "precision": 0.6820438746953146,
+                  "predicted": 22154,
+                  "recall": 0.8155664705564851,
+                  "support": 18527,
+                  "true_positive": 15110
+                },
+                "T": {
+                  "f1": 0.5341979402012852,
+                  "false_negative": 8121,
+                  "false_positive": 7754,
+                  "precision": 0.540013050958059,
+                  "predicted": 16857,
+                  "recall": 0.5285067347886669,
+                  "support": 17224,
+                  "true_positive": 9103
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            79.0,
+            74.0,
+            68.0,
+            62.0
+          ],
+          "range_mins": [
+            60.0,
+            55.0,
+            50.0,
+            41.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "A",
+            "B": "B",
+            "S": "S",
+            "T": "T"
+          }
+        },
+        "cyclic_range_negative_control": {
+          "evaluated_masked_event_sequence_sha256": "ea35a3c90ae00392071278655daf6ffb1da08a809fb5bdcfe258548d1666a1a5",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.4308008504606662,
+              "confusion": {
+                "A": {
+                  "A": 9407,
+                  "B": 2100,
+                  "S": 6465,
+                  "T": 786
+                },
+                "B": {
+                  "A": 2832,
+                  "B": 929,
+                  "S": 350,
+                  "T": 11930
+                },
+                "S": {
+                  "A": 1408,
+                  "B": 2948,
+                  "S": 14111,
+                  "T": 60
+                },
+                "T": {
+                  "A": 8117,
+                  "B": 1168,
+                  "S": 1993,
+                  "T": 5946
+                }
+              },
+              "correct": 30393,
+              "evaluated_masked_notes": 70550,
+              "macro_f1": 0.38904734293726806,
+              "per_voice": {
+                "A": {
+                  "f1": 0.46429100241843935,
+                  "false_negative": 9351,
+                  "false_positive": 12357,
+                  "precision": 0.4322275317037309,
+                  "predicted": 21764,
+                  "recall": 0.5014926964495149,
+                  "support": 18758,
+                  "true_positive": 9407
+                },
+                "B": {
+                  "f1": 0.08013456396101096,
+                  "false_negative": 15112,
+                  "false_positive": 6216,
+                  "precision": 0.13002099370188944,
+                  "predicted": 7145,
+                  "recall": 0.05791409513122623,
+                  "support": 16041,
+                  "true_positive": 929
+                },
+                "S": {
+                  "f1": 0.680934227669739,
+                  "false_negative": 4416,
+                  "false_positive": 8808,
+                  "precision": 0.6156900388324098,
+                  "predicted": 22919,
+                  "recall": 0.7616451665137367,
+                  "support": 18527,
+                  "true_positive": 14111
+                },
+                "T": {
+                  "f1": 0.33082957769988314,
+                  "false_negative": 11278,
+                  "false_positive": 12776,
+                  "precision": 0.31759427411601326,
+                  "predicted": 18722,
+                  "recall": 0.34521597770552714,
+                  "support": 17224,
+                  "true_positive": 5946
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.15274273564847626,
+              "confusion": {
+                "A": {
+                  "A": 3386,
+                  "B": 4353,
+                  "S": 10825,
+                  "T": 194
+                },
+                "B": {
+                  "A": 3943,
+                  "B": 0,
+                  "S": 344,
+                  "T": 11754
+                },
+                "S": {
+                  "A": 425,
+                  "B": 13529,
+                  "S": 4561,
+                  "T": 12
+                },
+                "T": {
+                  "A": 9103,
+                  "B": 257,
+                  "S": 5035,
+                  "T": 2829
+                }
+              },
+              "correct": 10776,
+              "evaluated_masked_notes": 70550,
+              "macro_f1": 0.14976112981149853,
+              "per_voice": {
+                "A": {
+                  "f1": 0.19014460199354205,
+                  "false_negative": 15372,
+                  "false_positive": 13471,
+                  "precision": 0.20086610903482233,
+                  "predicted": 16857,
+                  "recall": 0.18050964921633436,
+                  "support": 18758,
+                  "true_positive": 3386
+                },
+                "B": {
+                  "f1": 0.0,
+                  "false_negative": 16041,
+                  "false_positive": 18139,
+                  "precision": 0.0,
+                  "predicted": 18139,
+                  "recall": 0.0,
+                  "support": 16041,
+                  "true_positive": 0
+                },
+                "S": {
+                  "f1": 0.2321592181614578,
+                  "false_negative": 13966,
+                  "false_positive": 16204,
+                  "precision": 0.2196484469058512,
+                  "predicted": 20765,
+                  "recall": 0.2461812489879635,
+                  "support": 18527,
+                  "true_positive": 4561
+                },
+                "T": {
+                  "f1": 0.1767406990909943,
+                  "false_negative": 14395,
+                  "false_positive": 11960,
+                  "precision": 0.19129082426127528,
+                  "predicted": 14789,
+                  "recall": 0.16424756154203438,
+                  "support": 17224,
+                  "true_positive": 2829
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            74.0,
+            68.0,
+            62.0,
+            79.0
+          ],
+          "range_mins": [
+            55.0,
+            50.0,
+            41.0,
+            60.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "T",
+            "B": "S",
+            "S": "A",
+            "T": "B"
+          }
+        }
+      },
+      "eligible_notes": 282493,
+      "masked_event_sequence_sha256": "ea35a3c90ae00392071278655daf6ffb1da08a809fb5bdcfe258548d1666a1a5",
+      "masked_notes": 70550,
+      "masked_notes_by_true_voice": {
+        "A": 18758,
+        "B": 16041,
+        "S": 18527,
+        "T": 17224
+      },
+      "range_estimation": {
+        "maxs": [
+          79.0,
+          74.0,
+          68.0,
+          62.0
+        ],
+        "method": "exact_linear_type7_position_(n-1)*q",
+        "mins": [
+          60.0,
+          55.0,
+          50.0,
+          41.0
+        ],
+        "percentiles": [
+          1,
+          99
+        ],
+        "source": "same_training_manifest_visible_labels_only",
+        "visible_notes_by_voice": {
+          "A": 55904,
+          "B": 48793,
+          "S": 55765,
+          "T": 51481
+        }
+      },
+      "realized_mask_rate": 0.24974070153950717,
+      "recordings_with_masked_notes": 355,
+      "requested_mask_rate_percent": 25,
+      "visible_notes": 211943
+    },
+    "50": {
+      "conditions": {
+        "aligned": {
+          "evaluated_masked_event_sequence_sha256": "8549e5da535fbe509f29467bb4d283a197d8f8437bf5fdb07cbddea42229f00a",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.7130459403978198,
+              "confusion": {
+                "A": {
+                  "A": 23789,
+                  "B": 944,
+                  "S": 5871,
+                  "T": 6951
+                },
+                "B": {
+                  "A": 749,
+                  "B": 24986,
+                  "S": 75,
+                  "T": 6574
+                },
+                "S": {
+                  "A": 7088,
+                  "B": 70,
+                  "S": 28765,
+                  "T": 1088
+                },
+                "T": {
+                  "A": 6359,
+                  "B": 3784,
+                  "S": 985,
+                  "T": 23192
+                }
+              },
+              "correct": 100732,
+              "evaluated_masked_notes": 141270,
+              "macro_f1": 0.7170060451316611,
+              "per_voice": {
+                "A": {
+                  "f1": 0.6298384961609743,
+                  "false_negative": 13766,
+                  "false_positive": 14196,
+                  "precision": 0.626273529024615,
+                  "predicted": 37985,
+                  "recall": 0.6334442817201438,
+                  "support": 37555,
+                  "true_positive": 23789
+                },
+                "B": {
+                  "f1": 0.8038219019431219,
+                  "false_negative": 7398,
+                  "false_positive": 4798,
+                  "precision": 0.8389067955949503,
+                  "predicted": 29784,
+                  "recall": 0.7715538537549407,
+                  "support": 32384,
+                  "true_positive": 24986
+                },
+                "S": {
+                  "f1": 0.7912580631851128,
+                  "false_negative": 8246,
+                  "false_positive": 6931,
+                  "precision": 0.8058325862841775,
+                  "predicted": 35696,
+                  "recall": 0.7772013725649132,
+                  "support": 37011,
+                  "true_positive": 28765
+                },
+                "T": {
+                  "f1": 0.643105719237435,
+                  "false_negative": 11128,
+                  "false_positive": 14613,
+                  "precision": 0.6134638275360402,
+                  "predicted": 37805,
+                  "recall": 0.6757575757575758,
+                  "support": 34320,
+                  "true_positive": 23192
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.6353507467969137,
+              "confusion": {
+                "A": {
+                  "A": 17435,
+                  "B": 388,
+                  "S": 13074,
+                  "T": 6658
+                },
+                "B": {
+                  "A": 693,
+                  "B": 23833,
+                  "S": 9,
+                  "T": 7849
+                },
+                "S": {
+                  "A": 5934,
+                  "B": 25,
+                  "S": 30226,
+                  "T": 826
+                },
+                "T": {
+                  "A": 9428,
+                  "B": 5626,
+                  "S": 1004,
+                  "T": 18262
+                }
+              },
+              "correct": 89756,
+              "evaluated_masked_notes": 141270,
+              "macro_f1": 0.6343995600670772,
+              "per_voice": {
+                "A": {
+                  "f1": 0.49081568020268845,
+                  "false_negative": 20120,
+                  "false_positive": 16055,
+                  "precision": 0.5206031651239176,
+                  "predicted": 33490,
+                  "recall": 0.4642524297696711,
+                  "support": 37555,
+                  "true_positive": 17435
+                },
+                "B": {
+                  "f1": 0.765645078386019,
+                  "false_negative": 8551,
+                  "false_positive": 6039,
+                  "precision": 0.797837439742903,
+                  "predicted": 29872,
+                  "recall": 0.7359498517786561,
+                  "support": 32384,
+                  "true_positive": 23833
+                },
+                "S": {
+                  "f1": 0.7433475972652599,
+                  "false_negative": 6785,
+                  "false_positive": 14087,
+                  "precision": 0.6821023176043147,
+                  "predicted": 44313,
+                  "recall": 0.8166761233146902,
+                  "support": 37011,
+                  "true_positive": 30226
+                },
+                "T": {
+                  "f1": 0.5377898844143415,
+                  "false_negative": 16058,
+                  "false_positive": 15333,
+                  "precision": 0.5435927965471052,
+                  "predicted": 33595,
+                  "recall": 0.5321095571095571,
+                  "support": 34320,
+                  "true_positive": 18262
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            79.0,
+            74.0,
+            69.0,
+            62.0
+          ],
+          "range_mins": [
+            60.0,
+            55.0,
+            50.0,
+            41.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "A",
+            "B": "B",
+            "S": "S",
+            "T": "T"
+          }
+        },
+        "cyclic_range_negative_control": {
+          "evaluated_masked_event_sequence_sha256": "8549e5da535fbe509f29467bb4d283a197d8f8437bf5fdb07cbddea42229f00a",
+          "methods": {
+            "ordered_continuity": {
+              "accuracy": 0.4467261272740143,
+              "confusion": {
+                "A": {
+                  "A": 18934,
+                  "B": 4581,
+                  "S": 11788,
+                  "T": 2252
+                },
+                "B": {
+                  "A": 4504,
+                  "B": 4250,
+                  "S": 535,
+                  "T": 23095
+                },
+                "S": {
+                  "A": 3891,
+                  "B": 4548,
+                  "S": 28404,
+                  "T": 168
+                },
+                "T": {
+                  "A": 15826,
+                  "B": 3419,
+                  "S": 3554,
+                  "T": 11521
+                }
+              },
+              "correct": 63109,
+              "evaluated_masked_notes": 141270,
+              "macro_f1": 0.41593591646759775,
+              "per_voice": {
+                "A": {
+                  "f1": 0.4691859744765209,
+                  "false_negative": 18621,
+                  "false_positive": 24221,
+                  "precision": 0.43874406210172634,
+                  "predicted": 43155,
+                  "recall": 0.5041672214086007,
+                  "support": 37555,
+                  "true_positive": 18934
+                },
+                "B": {
+                  "f1": 0.17282745719978854,
+                  "false_negative": 28134,
+                  "false_positive": 12548,
+                  "precision": 0.25300631027503273,
+                  "predicted": 16798,
+                  "recall": 0.13123764822134387,
+                  "support": 32384,
+                  "true_positive": 4250
+                },
+                "S": {
+                  "f1": 0.6988141514540176,
+                  "false_negative": 8607,
+                  "false_positive": 15877,
+                  "precision": 0.6414489284343172,
+                  "predicted": 44281,
+                  "recall": 0.7674475156034692,
+                  "support": 37011,
+                  "true_positive": 28404
+                },
+                "T": {
+                  "f1": 0.3229160827400639,
+                  "false_negative": 22799,
+                  "false_positive": 25515,
+                  "precision": 0.31107571011988333,
+                  "predicted": 37036,
+                  "recall": 0.3356934731934732,
+                  "support": 34320,
+                  "true_positive": 11521
+                }
+              }
+            },
+            "range_prior": {
+              "accuracy": 0.15073971826997948,
+              "confusion": {
+                "A": {
+                  "A": 6658,
+                  "B": 8617,
+                  "S": 21892,
+                  "T": 388
+                },
+                "B": {
+                  "A": 7849,
+                  "B": 0,
+                  "S": 702,
+                  "T": 23833
+                },
+                "S": {
+                  "A": 826,
+                  "B": 27149,
+                  "S": 9011,
+                  "T": 25
+                },
+                "T": {
+                  "A": 18262,
+                  "B": 488,
+                  "S": 9944,
+                  "T": 5626
+                }
+              },
+              "correct": 21295,
+              "evaluated_masked_notes": 141270,
+              "macro_f1": 0.14796120431908158,
+              "per_voice": {
+                "A": {
+                  "f1": 0.1871539002108222,
+                  "false_negative": 30897,
+                  "false_positive": 26937,
+                  "precision": 0.19818425360916803,
+                  "predicted": 33595,
+                  "recall": 0.1772866462521635,
+                  "support": 37555,
+                  "true_positive": 6658
+                },
+                "B": {
+                  "f1": 0.0,
+                  "false_negative": 32384,
+                  "false_positive": 36254,
+                  "precision": 0.0,
+                  "predicted": 36254,
+                  "recall": 0.0,
+                  "support": 32384,
+                  "true_positive": 0
+                },
+                "S": {
+                  "f1": 0.2294042769857434,
+                  "false_negative": 28000,
+                  "false_positive": 32538,
+                  "precision": 0.21687645912055645,
+                  "predicted": 41549,
+                  "recall": 0.24346815811515496,
+                  "support": 37011,
+                  "true_positive": 9011
+                },
+                "T": {
+                  "f1": 0.17528664007976072,
+                  "false_negative": 28694,
+                  "false_positive": 24246,
+                  "precision": 0.18833690412426352,
+                  "predicted": 29872,
+                  "recall": 0.16392773892773893,
+                  "support": 34320,
+                  "true_positive": 5626
+                }
+              }
+            }
+          },
+          "range_maxs": [
+            74.0,
+            69.0,
+            62.0,
+            79.0
+          ],
+          "range_mins": [
+            55.0,
+            50.0,
+            41.0,
+            60.0
+          ],
+          "range_source_voice_for_output_voice": {
+            "A": "T",
+            "B": "S",
+            "S": "A",
+            "T": "B"
+          }
+        }
+      },
+      "eligible_notes": 282493,
+      "masked_event_sequence_sha256": "8549e5da535fbe509f29467bb4d283a197d8f8437bf5fdb07cbddea42229f00a",
+      "masked_notes": 141270,
+      "masked_notes_by_true_voice": {
+        "A": 37555,
+        "B": 32384,
+        "S": 37011,
+        "T": 34320
+      },
+      "range_estimation": {
+        "maxs": [
+          79.0,
+          74.0,
+          69.0,
+          62.0
+        ],
+        "method": "exact_linear_type7_position_(n-1)*q",
+        "mins": [
+          60.0,
+          55.0,
+          50.0,
+          41.0
+        ],
+        "percentiles": [
+          1,
+          99
+        ],
+        "source": "same_training_manifest_visible_labels_only",
+        "visible_notes_by_voice": {
+          "A": 37107,
+          "B": 32450,
+          "S": 37281,
+          "T": 34385
+        }
+      },
+      "realized_mask_rate": 0.5000831879020011,
+      "recordings_with_masked_notes": 355,
+      "requested_mask_rate_percent": 50,
+      "visible_notes": 141223
+    }
+  },
+  "schema_version": 1
+}
