@@ -678,8 +678,20 @@ class ChoralTargetBuilder:
         ))
         return self._events_to_voice_tuples(assigned_events)
 
-    def assign_voice_events(self, note_bars, *, quantization_origin=0.0):
-        """Return ``(voice, pitch, onset, offset)`` tuples for all retained notes."""
+    def assign_voice_events(
+        self,
+        note_bars,
+        *,
+        quantization_origin=0.0,
+        project_representable=True,
+    ):
+        """Assign voices and optionally project notes to binary-head events.
+
+        Training target construction keeps ``project_representable=True`` so
+        same-voice/same-pitch overlaps match what one binary head can express.
+        Data audits may disable only that final projection to compare assignment
+        decisions over the same original-note denominator for every method.
+        """
 
         note_events = self.note_bars_to_events(note_bars)
         method = self.target_assignment
@@ -727,6 +739,9 @@ class ChoralTargetBuilder:
             )
         else:
             raise AssertionError(f'Unreachable target-assignment method: {method}')
+
+        if not project_representable:
+            return assigned_events
 
         merged_events = merge_quantized_voice_events(
             assigned_events,

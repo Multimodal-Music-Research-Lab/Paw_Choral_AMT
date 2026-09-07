@@ -88,6 +88,7 @@ class AuditChoralTargetsTest(unittest.TestCase):
 
         for method in ('range_prior', 'ordered_continuity'):
             metrics = result['assignments'][method]
+            self.assertEqual(metrics['assigned_notes'], 9)
             self.assertEqual(metrics['known_labels'], 7)
             self.assertEqual(metrics['retained_known_labels'], 7)
             self.assertEqual(metrics['changed_known_labels'], 0)
@@ -104,6 +105,13 @@ class AuditChoralTargetsTest(unittest.TestCase):
             0,
         )
         self.assertEqual(
+            {
+                metrics['assigned_notes']
+                for metrics in result['assignments'].values()
+            },
+            {9},
+        )
+        self.assertEqual(
             list(result['assignments']['range_prior']['confusion']),
             ['S', 'A', 'T', 'B'],
         )
@@ -116,6 +124,34 @@ class AuditChoralTargetsTest(unittest.TestCase):
         self.assertEqual(result['dataset']['split_files'], {'validation': 'valid.json'})
         self.assertEqual(result['dataset']['recordings'], 1)
         self.assertEqual(result['notes']['canonical_distribution']['A'], 1)
+
+    def test_assignment_statistics_keep_original_note_denominator(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dataset_dir = Path(temp_dir) / 'DuplicateAttackChoral'
+            (dataset_dir / 'note').mkdir(parents=True)
+            (dataset_dir / 'train.json').write_text(
+                json.dumps(['same_attack']),
+                encoding='utf-8',
+            )
+            self.write_note_file(dataset_dir, 'same_attack', [{
+                'S1': [note(72, offset=0.5)],
+                'S2': [note(72, offset=1.0)],
+            }])
+
+            result = audit_choral_targets.audit_dataset(dataset_dir, 'train')
+
+        self.assertEqual(result['notes']['total'], 2)
+        self.assertEqual(
+            {
+                metrics['assigned_notes']
+                for metrics in result['assignments'].values()
+            },
+            {2},
+        )
+        self.assertEqual(
+            result['assignments']['range_prior']['known_labels'],
+            2,
+        )
 
     def test_all_split_output_is_deterministic_and_cli_can_write_json(self):
         with tempfile.TemporaryDirectory() as temp_dir:

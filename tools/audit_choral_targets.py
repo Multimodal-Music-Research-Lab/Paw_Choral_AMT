@@ -335,7 +335,13 @@ def audit_dataset(
                 duplicate_excess_notes += sum(count - 1 for count in duplicate_counts)
 
         for method, builder in builders.items():
-            assigned_events = builder.assign_voice_events(note_bars)
+            # Compare assignment strategies over identical source-note
+            # denominators. The later binary-head projection is a target
+            # representability operation, not a label-assignment decision.
+            assigned_events = builder.assign_voice_events(
+                note_bars,
+                project_representable=False,
+            )
             method_stats = assignment_stats[method]
             method_stats['assigned_notes'] += len(assigned_events)
             for assigned_voice_idx, event in assigned_events:
