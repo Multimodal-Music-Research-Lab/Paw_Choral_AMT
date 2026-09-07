@@ -22,7 +22,7 @@ def make_cfg(arch="pawct", target_assignment=None, legacy_assignment=None):
         ),
         exp=SimpleNamespace(name_suffix=""),
         choral=SimpleNamespace(
-            enable=arch in {"pawct", "hpt"},
+            enable=arch == "pawct",
             append_assignment_to_name=True,
             target_assignment=target_assignment,
             voice_assignment_method=legacy_assignment,

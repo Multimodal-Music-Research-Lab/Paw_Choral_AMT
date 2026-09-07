@@ -44,13 +44,13 @@ class BuildOverridesTest(unittest.TestCase):
 
     def test_build_overrides_includes_model_name_when_provided(self):
         args = self.make_args(
-            model_name="hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_va_ordered_continuity_vint_self_attn"
+            model_name="pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_va_ordered_continuity_vint_self_attn"
         )
 
         overrides = search_best_thresholds.build_overrides(args)
 
         self.assertIn(
-            "model.name=hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_va_ordered_continuity_vint_self_attn",
+            "model.name=pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_va_ordered_continuity_vint_self_attn",
             overrides,
         )
 

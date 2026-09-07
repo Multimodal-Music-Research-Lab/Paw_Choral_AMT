@@ -318,9 +318,9 @@ def read_midi(midi_path, dataset='maestro'):
 
     Args:
         midi_path (str): Path to the MIDI file.
-        dataset (str): One of 'maestro', 'hpt', 'smd', or 'maps'. Determines where tempo and events are stored.
+        dataset (str): One of 'maestro', 'smd', 'maps', or 'youchorale'. Determines where tempo and events are stored.
 
-            - 'maestro' or 'hpt': 2 tracks.
+            - 'maestro': 2 tracks.
               • Track 0 holds all meta messages (set_tempo, time_signature, end_of_track).
               • Track 1 holds piano events.
 
@@ -372,7 +372,7 @@ def read_midi(midi_path, dataset='maestro'):
             'midi_event_time': np.array(time_in_second)
         }
 
-    if ds in ('maestro', 'hpt'):
+    if ds == 'maestro':
         # Expect 2 tracks: track 0 for meta (tempo at index 0), track 1 for piano events
         assert len(midi_file.tracks) == 2, f"{dataset} format requires 2 tracks, found {len(midi_file.tracks)}"
         microseconds_per_beat = midi_file.tracks[0][0].tempo

@@ -31,21 +31,21 @@ class VisualizeChoralFourPanelTestSetTest(unittest.TestCase):
 
         checkpoint_path = Path(
             "/tmp/workspaces/checkpoints/"
-            "hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity/"
+            "pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity/"
             "299999_iteration.pth"
         )
 
         output_dir = viz_batch.resolve_output_dir(
             args=Args(),
             checkpoint_path=checkpoint_path,
-            model_name="hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity",
+            model_name="pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity",
             iteration=299999,
         )
 
         self.assertEqual(
             output_dir,
             Path("/tmp/workspaces/visualizations")
-            / "hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity"
+            / "pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity"
             / "299999_iteration",
         )
 

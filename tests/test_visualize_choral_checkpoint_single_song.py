@@ -22,7 +22,7 @@ class VisualizeChoralCheckpointSingleSongTest(unittest.TestCase):
     def test_parse_checkpoint_info_extracts_model_name_and_iteration(self):
         checkpoint_path = (
             "/tmp/workspaces/checkpoints/"
-            "hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity/"
+            "pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity/"
             "299999_iteration.pth"
         )
 
@@ -30,7 +30,7 @@ class VisualizeChoralCheckpointSingleSongTest(unittest.TestCase):
 
         self.assertEqual(
             model_name,
-            "hpt_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity",
+            "pawct_frame_onset_offset_logmel_sr16000_fps100_pro_choral_stream_foff_onsetx2_unionx1_oc_va_ordered_continuity",
         )
         self.assertEqual(iteration, 299999)
 
