@@ -8,8 +8,30 @@ import numpy as np
 from hydra import compose, initialize_config_dir
 
 from calculate_scores import ScoreCalculator
-from calculate_choral_scores import ChoralScoreCalculator, VOICE_NAMES
+from calculate_choral_scores import (
+    SAME_OUTPUT_REPORT_KEYS,
+    ChoralScoreCalculator,
+    VOICE_NAMES,
+    aggregate_same_output_summary,
+)
 from utilities import get_model_name
+
+
+CHORAL_RESULT_KEYS = (
+    "mean_satb_note_f1",
+    "mean_satb_note_f1_50ms",
+    "mean_satb_note_f1_100ms",
+    "min_satb_note_f1",
+    "harmonic_satb_note_f1",
+    "balanced_satb_note_f1",
+    "satb_f1_std",
+    *SAME_OUTPUT_REPORT_KEYS,
+    *(
+        f"{voice_name}_{metric_name}"
+        for voice_name in VOICE_NAMES
+        for metric_name in ("f1", "f1_50ms", "f1_100ms")
+    ),
+)
 
 
 def parse_float_list(value: str) -> list[float]:
@@ -34,7 +56,12 @@ def parse_args():
     )
     parser.add_argument("--ckpt_iteration", type=str, required=True, help="Checkpoint iteration, e.g. 17999")
     parser.add_argument("--model_name", type=str, default="", help="Optional explicit model name override")
-    parser.add_argument("--model_arch", type=str, default="hpt", help="Model architecture")
+    parser.add_argument(
+        "--model_arch",
+        type=str,
+        default=None,
+        help="Model architecture (default: pawct for choral, pagct otherwise)",
+    )
     parser.add_argument("--model_mode", type=str, default="frame_onset_offset", help="Model mode")
     parser.add_argument("--post_processor_type", type=str, default="onsets_frames", help="Post processor")
     parser.add_argument("--sample_rate", type=int, default=None, help="Optional sample rate override")
@@ -45,19 +72,76 @@ def parse_args():
     parser.add_argument("--choral_enable", action="store_true", help="Use choral SATB evaluation instead of single-stream evaluation")
     parser.add_argument("--choral_per_voice", action="store_true", help="Search independent thresholds for S/A/T/B and combine them")
     parser.add_argument(
+        "--range-prior-loss-weight",
+        "--range_prior_loss_weight",
+        dest="range_prior_loss_weight",
+        type=float,
+        default=None,
+        help="Training-time RP weight recorded by the checkpoint.",
+    )
+    parser.add_argument(
+        "--continuity-prior-loss-weight",
+        "--continuity_prior_loss_weight",
+        dest="continuity_prior_loss_weight",
+        type=float,
+        default=None,
+        help="Training-time OC weight recorded by the checkpoint.",
+    )
+    assignment_group = parser.add_mutually_exclusive_group()
+    assignment_group.add_argument(
+        "--target-assignment",
+        "--target_assignment",
+        dest="target_assignment",
+        choices=(
+            "part_name",
+            "range_prior",
+            "ordered_continuity",
+            "range_masked_continuity",
+            "legacy_range_prior",
+            "legacy_ordered_continuity",
+            "legacy_range_masked_continuity",
+        ),
+        default=None,
+        help="Canonical SATB target construction used for the checkpoint.",
+    )
+    assignment_group.add_argument(
         "--voice-assignment-method",
         "--voice_assignment_method",
         dest="voice_assignment_method",
-        choices=("part_name", "range_prior", "ordered_continuity", "range_masked_continuity"),
-        default="part_name",
-        help="SATB target-assignment method used to train the checkpoint.",
+        choices=(
+            "part_name",
+            "range_prior",
+            "ordered_continuity",
+            "range_masked_continuity",
+        ),
+        default=None,
+        help=(
+            "Deprecated compatibility flag: preserves legacy all-note reassignment "
+            "and the historical _va_* model path."
+        ),
     )
     parser.add_argument("--objective", type=str, default="", help="Metric key to maximize")
     parser.add_argument("--frame_thresholds", type=str, default="0.05,0.1,0.15,0.2,0.3")
     parser.add_argument("--onset_thresholds", type=str, default="0.003,0.005,0.01,0.02,0.03,0.05")
     parser.add_argument("--offset_thresholds", type=str, default="0.003,0.005,0.01,0.02,0.03,0.05")
     parser.add_argument("--output_txt", type=str, required=True, help="Path to txt summary")
-    return parser.parse_args()
+    parser.add_argument(
+        "--config-override",
+        dest="config_overrides",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help=(
+            "Repeatable Hydra override for checkpoint-recorded settings not covered "
+            "by dedicated flags (for example an audited RP pitch range)."
+        ),
+    )
+    args = parser.parse_args()
+    if args.model_arch is None:
+        args.model_arch = "pawct" if args.choral_enable else "pagct"
+    if args.target_assignment is None and args.voice_assignment_method is None:
+        args.target_assignment = "part_name"
+    return args
 
 
 def validate_selection_split(split: str, allow_test_tuning: bool = False) -> None:
@@ -108,11 +192,35 @@ def build_choral_result(stats_dict: dict) -> dict:
         "mean_satb_note_f1_50ms": metric_mean(stats_dict, "mean_satb_note_f1_50ms"),
         "mean_satb_note_f1_100ms": metric_mean(stats_dict, "mean_satb_note_f1_100ms"),
     }
+    result.update(aggregate_same_output_summary(stats_dict))
     for voice_name in VOICE_NAMES:
         result[f"{voice_name}_f1"] = metric_mean(stats_dict, f"{voice_name}_f1")
         result[f"{voice_name}_f1_50ms"] = metric_mean(stats_dict, f"{voice_name}_f1_50ms")
         result[f"{voice_name}_f1_100ms"] = metric_mean(stats_dict, f"{voice_name}_f1_100ms")
     return add_choral_summary_metrics(result)
+
+
+def format_metric_value(key: str, value) -> str:
+    if key.endswith("_count") or key.startswith("voice_confusion_"):
+        return str(int(value))
+    return f"{float(value):.4f}"
+
+
+def artifact_identity(calculator) -> dict:
+    validator = getattr(calculator, "artifact_validator", None)
+    if validator is None:
+        return {}
+    return validator.identity_summary()
+
+
+def write_artifact_identity(file_object, identity: dict) -> None:
+    for key in (
+        "checkpoint_filename",
+        "checkpoint_iteration",
+        "checkpoint_sha256",
+        "inference_run_id",
+    ):
+        file_object.write(f"actual_{key}: {identity.get(key)}\n")
 
 
 def build_voice_search_result(voice_name: str, thresholds: dict, voice_stats: dict) -> dict:
@@ -190,7 +298,26 @@ def build_overrides(args, extra_overrides=None):
         overrides.append(f"dataset.youchorale_pro_dir={args.youchorale_pro_dir}")
     if args.choral_enable:
         overrides.append("choral.enable=true")
-        overrides.append(f"choral.voice_assignment_method={args.voice_assignment_method}")
+        target_assignment = getattr(args, "target_assignment", None)
+        legacy_assignment = getattr(args, "voice_assignment_method", None)
+        if target_assignment is not None and legacy_assignment is not None:
+            raise ValueError(
+                "Choose either canonical target_assignment or deprecated "
+                "voice_assignment_method, not both."
+            )
+        if legacy_assignment is not None:
+            overrides.append(f"choral.voice_assignment_method={legacy_assignment}")
+        else:
+            overrides.append(
+                f"choral.target_assignment={target_assignment or 'part_name'}"
+            )
+        range_weight = getattr(args, "range_prior_loss_weight", None)
+        continuity_weight = getattr(args, "continuity_prior_loss_weight", None)
+        if range_weight is not None:
+            overrides.append(f"choral.range_prior_loss_weight={range_weight}")
+        if continuity_weight is not None:
+            overrides.append(f"choral.continuity_prior_loss_weight={continuity_weight}")
+    overrides.extend(getattr(args, "config_overrides", ()) or ())
     if extra_overrides:
         overrides.extend(extra_overrides)
     return overrides
@@ -204,8 +331,6 @@ def main():
     offset_thresholds = parse_float_list(args.offset_thresholds)
     if args.objective:
         objective_key = args.objective
-    elif args.choral_per_voice:
-        objective_key = "min_satb_note_f1"
     elif args.choral_enable:
         objective_key = "mean_satb_note_f1"
     else:
@@ -240,6 +365,7 @@ def main():
         calculator = ChoralScoreCalculator(base_cfg)
         combos = list(product(frame_thresholds, onset_thresholds, offset_thresholds))
         per_voice_best = search_best_choral_per_voice(calculator, combos)
+        validated_identity = artifact_identity(calculator)
 
         best_voice_thresholds = {
             voice_name: {
@@ -265,6 +391,7 @@ def main():
             os.makedirs(output_dir, exist_ok=True)
         with open(args.output_txt, "w", encoding="utf-8") as f:
             f.write(f"checkpoint: {args.ckpt_iteration}\n")
+            write_artifact_identity(f, validated_identity)
             f.write(f"test_set: {args.test_set}\n")
             f.write(f"selection_split: {args.split}\n")
             f.write(f"model_name: {model_name}\n")
@@ -291,28 +418,10 @@ def main():
                     f"{item['recall']:.4f}\n"
                 )
             f.write("\nCombined evaluation with per-voice thresholds:\n")
-            for key in [
-                "mean_satb_note_f1",
-                "mean_satb_note_f1_50ms",
-                "mean_satb_note_f1_100ms",
-                "min_satb_note_f1",
-                "harmonic_satb_note_f1",
-                "balanced_satb_note_f1",
-                "satb_f1_std",
-                "S_f1",
-                "S_f1_50ms",
-                "S_f1_100ms",
-                "A_f1",
-                "A_f1_50ms",
-                "A_f1_100ms",
-                "T_f1",
-                "T_f1_50ms",
-                "T_f1_100ms",
-                "B_f1",
-                "B_f1_50ms",
-                "B_f1_100ms",
-            ]:
-                f.write(f"{key}: {combined_summary[key]:.4f}\n")
+            for key in CHORAL_RESULT_KEYS:
+                f.write(
+                    f"{key}: {format_metric_value(key, combined_summary[key])}\n"
+                )
             if presence_summary:
                 f.write("\nVoice presence evaluation:\n")
                 for key in [
@@ -344,6 +453,7 @@ def main():
         return
 
     results = []
+    validated_identity = None
     combos = list(product(frame_thresholds, onset_thresholds, offset_thresholds))
     for idx, (frame_th, onset_th, offset_th) in enumerate(combos, start=1):
         with initialize_config_dir(config_dir=os.path.abspath(args.config_dir), job_name=f"threshold_search_{idx}", version_base=None):
@@ -358,7 +468,15 @@ def main():
                     ],
                 ),
             )
-        stats = calculator_cls(cfg).metrics()
+        calculator = calculator_cls(cfg)
+        stats = calculator.metrics()
+        current_identity = artifact_identity(calculator)
+        if validated_identity is None:
+            validated_identity = current_identity
+        elif current_identity != validated_identity:
+            raise RuntimeError(
+                "Probability artifact identity changed during threshold search"
+            )
         require_metric_values(
             stats,
             context=f"threshold search, test_set={args.test_set}, probs_dir={probs_dir}",
@@ -409,6 +527,7 @@ def main():
         os.makedirs(output_dir, exist_ok=True)
     with open(args.output_txt, "w", encoding="utf-8") as f:
         f.write(f"checkpoint: {args.ckpt_iteration}\n")
+        write_artifact_identity(f, validated_identity or {})
         f.write(f"test_set: {args.test_set}\n")
         f.write(f"selection_split: {args.split}\n")
         f.write(f"model_name: {model_name}\n")
@@ -421,34 +540,20 @@ def main():
         f.write(f"Top results sorted by {objective_key}:\n")
         if args.choral_enable:
             f.write(
-                "rank\tframe_th\tonset_th\toffset_th\tmean_satb_note_f1\tmean_satb_note_f1_50ms\tmean_satb_note_f1_100ms\tmin_satb_note_f1\tharmonic_satb_note_f1\tbalanced_satb_note_f1\tsatb_f1_std\tS_f1\tS_f1_50ms\tS_f1_100ms\tA_f1\tA_f1_50ms\tA_f1_100ms\tT_f1\tT_f1_50ms\tT_f1_100ms\tB_f1\tB_f1_50ms\tB_f1_100ms\n"
+                "\t".join(
+                    ("rank", "frame_th", "onset_th", "offset_th", *CHORAL_RESULT_KEYS)
+                )
+                + "\n"
             )
             for rank, item in enumerate(results, start=1):
-                f.write(
-                    f"{rank}\t"
-                    f"{item['frame_threshold']:.4f}\t"
-                    f"{item['onset_threshold']:.4f}\t"
-                    f"{item['offset_threshold']:.4f}\t"
-                    f"{item['mean_satb_note_f1']:.4f}\t"
-                    f"{item['mean_satb_note_f1_50ms']:.4f}\t"
-                    f"{item['mean_satb_note_f1_100ms']:.4f}\t"
-                    f"{item['min_satb_note_f1']:.4f}\t"
-                    f"{item['harmonic_satb_note_f1']:.4f}\t"
-                    f"{item['balanced_satb_note_f1']:.4f}\t"
-                    f"{item['satb_f1_std']:.4f}\t"
-                    f"{item['S_f1']:.4f}\t"
-                    f"{item['S_f1_50ms']:.4f}\t"
-                    f"{item['S_f1_100ms']:.4f}\t"
-                    f"{item['A_f1']:.4f}\t"
-                    f"{item['A_f1_50ms']:.4f}\t"
-                    f"{item['A_f1_100ms']:.4f}\t"
-                    f"{item['T_f1']:.4f}\t"
-                    f"{item['T_f1_50ms']:.4f}\t"
-                    f"{item['T_f1_100ms']:.4f}\t"
-                    f"{item['B_f1']:.4f}\t"
-                    f"{item['B_f1_50ms']:.4f}\t"
-                    f"{item['B_f1_100ms']:.4f}\n"
-                )
+                values = [
+                    str(rank),
+                    f"{item['frame_threshold']:.4f}",
+                    f"{item['onset_threshold']:.4f}",
+                    f"{item['offset_threshold']:.4f}",
+                    *(format_metric_value(key, item[key]) for key in CHORAL_RESULT_KEYS),
+                ]
+                f.write("\t".join(values) + "\n")
         else:
             f.write(
                 "rank\tframe_th\tonset_th\toffset_th\tnote_f1\tnote_prec\tnote_rec\tnote_off_f1\tframe_f1\tframe_prec\tframe_rec\n"

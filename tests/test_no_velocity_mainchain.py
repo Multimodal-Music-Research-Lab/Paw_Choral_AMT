@@ -41,7 +41,7 @@ class NoVelocityMainchainTest(unittest.TestCase):
     def make_model_cfg(self, *, mode=None, model_type=None):
         return SimpleNamespace(
             model=SimpleNamespace(
-                arch="hpt",
+                arch="pagct",
                 mode=mode,
                 type=model_type,
             )
@@ -115,10 +115,15 @@ class NoVelocityMainchainTest(unittest.TestCase):
         self.assertNotIn("velocity_mae", stats)
 
     def test_score_calculator_does_not_emit_velocity_metrics(self):
+        class _DiagnosticValidator:
+            def validate(self, *args, **kwargs):
+                return None
+
         calc = calculate_scores.ScoreCalculator.__new__(calculate_scores.ScoreCalculator)
         calc.cfg = self.make_score_cfg()
         calc.spec = SimpleNamespace(offset=True, pedal=False)
         calc.post_processor = _DummyPostProcessor()
+        calc.artifact_validator = _DiagnosticValidator()
 
         with tempfile.TemporaryDirectory() as tmpdir:
             calc.probs_dir = tmpdir

@@ -32,10 +32,11 @@ def note_detection_with_onset_offset_regress(frame_output, onset_output,
     frame_disappear = None
     offset_occur = None
 
-    for i in range(onset_output.shape[0]):
+    frames_num = onset_output.shape[0]
+    for i in range(frames_num):
         if onset_output[i] == 1:
             """Onset detected"""
-            if bgn:
+            if bgn is not None:
                 """Consecutive onsets. E.g., pedal is not released, but two
                 consecutive notes being played."""
                 fin = max(i - 1, 0)
@@ -44,18 +45,18 @@ def note_detection_with_onset_offset_regress(frame_output, onset_output,
                 frame_disappear, offset_occur = None, None
             bgn = i
 
-        if bgn and i > bgn:
+        if bgn is not None and i > bgn:
             """If onset found, then search offset"""
-            if frame_output[i] <= frame_threshold and not frame_disappear:
+            if frame_output[i] <= frame_threshold and frame_disappear is None:
                 """Frame disappear detected"""
                 frame_disappear = i
 
-            if offset_output[i] == 1 and not offset_occur:
+            if offset_output[i] == 1 and offset_occur is None:
                 """Offset detected"""
                 offset_occur = i
 
-            if frame_disappear:
-                if offset_occur and offset_occur - bgn > frame_disappear - offset_occur:
+            if frame_disappear is not None:
+                if offset_occur is not None and offset_occur - bgn > frame_disappear - offset_occur:
                     """bgn --------- offset_occur --- frame_disappear"""
                     fin = offset_occur
                 else:
@@ -65,12 +66,21 @@ def note_detection_with_onset_offset_regress(frame_output, onset_output,
                     offset_shift_output[fin], velocity_output[bgn]])
                 bgn, frame_disappear, offset_occur = None, None, None
 
-            if bgn and (i - bgn >= 600 or i == onset_output.shape[0] - 1):
-                """Offset not detected"""
+            if bgn is not None and i - bgn >= 600:
+                """Maximum note duration reached."""
                 fin = i
                 output_tuples.append([bgn, fin, onset_shift_output[bgn],
                     offset_shift_output[fin], velocity_output[bgn]])
                 bgn, frame_disappear, offset_occur = None, None, None
+
+    # A held final chord ends at the final observed frame. An onset first seen
+    # on that boundary has no supported duration inside the audio and is
+    # discarded instead of emitting a zero-length or beyond-audio event.
+    if bgn is not None and frames_num > 0 and bgn < frames_num - 1:
+        fin = offset_occur if offset_occur is not None else frames_num - 1
+        offset_shift = offset_shift_output[fin] if offset_occur is not None else 0.0
+        output_tuples.append([bgn, fin, onset_shift_output[bgn],
+            offset_shift, velocity_output[bgn]])
 
     # Sort pairs by onsets
     output_tuples.sort(key=lambda pair: pair[0])
@@ -138,13 +148,19 @@ def pedal_detection_with_onset_offset_regress(frame_output, offset_output,
 ###### Google's onsets and frames post processing. Only used for comparison ######
 def onsets_frames_note_detection(frame_output, onset_output, offset_output,
     velocity_output, threshold):
-    """Process pedal prediction matrices to note events information. onset_ouput
-    is used to detect the presence of notes. frame_output is used to detect the
-    offset of notes.
+    """Process note prediction matrices into note events.
+
+    ``onset_output`` starts a note. A subsequent nonzero ``offset_output`` or a
+    frame probability at or below ``threshold`` ends it, whichever occurs
+    first. A repeated onset closes the previous note at the repeated onset. A
+    held note closes on the final observed frame; an onset first detected on
+    that boundary is discarded because it has no supported positive duration.
 
     Args:
       frame_output: (frames_num,)
       onset_output: (frames_num,)
+      offset_output: (frames_num,), binarized offset pulses. May be all zero.
+      velocity_output: (frames_num,)
       threshold: float
 
     Returns:
@@ -156,17 +172,22 @@ def onsets_frames_note_detection(frame_output, onset_output, offset_output,
     output_tuples = []
 
     loct = None
-    for i in range(onset_output.shape[0]):
+    frames_num = onset_output.shape[0]
+    for i in range(frames_num):
         # Use onset_output is used to detect the presence of notes
         if onset_output[i] > threshold:
-            if loct:
+            if loct is not None:
                 output_tuples.append([loct, i, velocity_output[loct]])
             loct = i
-        if loct and i > loct:
-            # Use frame_output is used to detect the offset of notes
-            if frame_output[i] <= threshold:
+        if loct is not None and i > loct:
+            frame_ended = frame_output[i] <= threshold
+            explicit_offset = offset_output is not None and offset_output[i] > 0
+            if explicit_offset or frame_ended:
                 output_tuples.append([loct, i, velocity_output[loct]])
                 loct = None
+
+    if loct is not None and frames_num > 0 and loct < frames_num - 1:
+        output_tuples.append([loct, frames_num - 1, velocity_output[loct]])
 
     output_tuples.sort(key=lambda pair: pair[0])
 

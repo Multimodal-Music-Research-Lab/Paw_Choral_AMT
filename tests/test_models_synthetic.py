@@ -36,7 +36,7 @@ def make_cfg():
             classes_num=12,
             begin_note=48,
         ),
-        model=SimpleNamespace(arch="hpt", mode="frame_onset_offset", type=None),
+        model=SimpleNamespace(arch="pawct", mode="frame_onset_offset", type=None),
         choral=SimpleNamespace(
             enable=True,
             num_voices=4,
@@ -62,7 +62,7 @@ class PawCTSyntheticTest(unittest.TestCase):
             "get_feature_extractor_and_bins",
             return_value=(DummyFeatureExtractor(), 16),
         ):
-            model = models.FlexibleHPTChoralStream(cfg)
+            model = models.PawCT(cfg)
 
         waveform = torch.linspace(-1.0, 1.0, 320).reshape(2, 160)
         output = model(waveform)

@@ -1,0 +1,152 @@
+import contextlib
+import io
+import json
+import pickle
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+
+REPO_DIR = Path(__file__).resolve().parents[1]
+for source_dir in (REPO_DIR / 'src', REPO_DIR / 'tools'):
+    if str(source_dir) not in sys.path:
+        sys.path.insert(0, str(source_dir))
+
+import audit_choral_targets
+
+
+def note(pitch, onset=0.0, offset=1.0):
+    return [pitch, 0, 0, onset, offset]
+
+
+class AuditChoralTargetsTest(unittest.TestCase):
+    def write_note_file(self, dataset_dir, recording_id, note_bars):
+        note_path = dataset_dir / 'note' / f'{recording_id}.pkl'
+        with note_path.open('wb') as handle:
+            pickle.dump(note_bars, handle)
+
+    def make_dataset(self, root):
+        dataset_dir = root / 'TinyChoral'
+        (dataset_dir / 'note').mkdir(parents=True)
+        (dataset_dir / 'train.json').write_text(
+            json.dumps(['song_b', 'song_a']),
+            encoding='utf-8',
+        )
+        (dataset_dir / 'valid.json').write_text(json.dumps(['song_valid']), encoding='utf-8')
+        (dataset_dir / 'test.json').write_text(json.dumps(['song_test']), encoding='utf-8')
+
+        self.write_note_file(dataset_dir, 'song_a', [{
+            'S1': [note(45)],
+            'S2': [note(74)],
+            'A': [note(69)],
+            'T': [note(60)],
+            'B': [note(48)],
+            'unknown': [note(80), note(55, onset=1.0)],
+        }])
+        self.write_note_file(dataset_dir, 'song_b', [{
+            'S': [note(80)],
+            'B': [note(40)],
+        }])
+        self.write_note_file(dataset_dir, 'song_valid', [{'A': [note(65)]}])
+        self.write_note_file(dataset_dir, 'song_test', [{'T': [note(58)]}])
+        return dataset_dir
+
+    def test_audit_reports_label_group_divisi_and_assignment_metrics(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dataset_dir = self.make_dataset(Path(temp_dir))
+            result = audit_choral_targets.audit_dataset(dataset_dir, 'train')
+
+        self.assertEqual(result['notes']['total'], 9)
+        self.assertEqual(result['notes']['canonical_known'], 7)
+        self.assertEqual(result['notes']['canonical_unknown_or_ambiguous'], 2)
+        self.assertEqual(
+            result['notes']['canonical_distribution'],
+            {'S': 3, 'A': 1, 'T': 1, 'B': 2},
+        )
+        self.assertEqual(
+            result['notes']['canonical_pitch_statistics']['S']['min'],
+            45,
+        )
+        self.assertEqual(
+            result['notes']['canonical_pitch_statistics']['S']['max'],
+            80,
+        )
+        self.assertEqual(
+            result['notes']['canonical_pitch_statistics']['A']['median'],
+            69.0,
+        )
+        self.assertEqual(result['onset_groups']['total'], 3)
+        self.assertEqual(result['onset_groups']['more_than_four']['count'], 1)
+        self.assertAlmostEqual(result['onset_groups']['more_than_four']['ratio'], 1 / 3)
+        duplicate = result['onset_groups']['duplicate_canonical_voice']
+        self.assertEqual(duplicate['group_count'], 1)
+        self.assertAlmostEqual(duplicate['group_ratio'], 1 / 3)
+        self.assertEqual(duplicate['participating_note_count'], 2)
+        self.assertAlmostEqual(duplicate['participating_note_ratio'], 2 / 7)
+        self.assertEqual(duplicate['excess_note_count'], 1)
+
+        for method in ('range_prior', 'ordered_continuity'):
+            metrics = result['assignments'][method]
+            self.assertEqual(metrics['known_labels'], 7)
+            self.assertEqual(metrics['retained_known_labels'], 7)
+            self.assertEqual(metrics['changed_known_labels'], 0)
+            self.assertEqual(metrics['retention_ratio'], 1.0)
+            self.assertEqual(metrics['confusion']['S']['S'], 3)
+            self.assertEqual(metrics['confusion']['B']['B'], 2)
+
+        self.assertGreater(
+            result['assignments']['legacy_range_prior']['changed_known_labels'],
+            0,
+        )
+        self.assertGreater(
+            result['assignments']['legacy_ordered_continuity']['changed_known_labels'],
+            0,
+        )
+        self.assertEqual(
+            list(result['assignments']['range_prior']['confusion']),
+            ['S', 'A', 'T', 'B'],
+        )
+
+    def test_validation_split_accepts_valid_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            dataset_dir = self.make_dataset(Path(temp_dir))
+            result = audit_choral_targets.audit_dataset(dataset_dir, 'validation')
+
+        self.assertEqual(result['dataset']['split_files'], {'validation': 'valid.json'})
+        self.assertEqual(result['dataset']['recordings'], 1)
+        self.assertEqual(result['notes']['canonical_distribution']['A'], 1)
+
+    def test_all_split_output_is_deterministic_and_cli_can_write_json(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            output_path = root / 'outputs' / 'audit.json'
+
+            first = audit_choral_targets.audit_dataset(dataset_dir, 'all')
+            second = audit_choral_targets.audit_dataset(dataset_dir, 'all')
+            self.assertEqual(first, second)
+            self.assertEqual(first['dataset']['recordings'], 4)
+
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                return_code = audit_choral_targets.main([
+                    '--dataset-dir',
+                    str(dataset_dir),
+                    '--split',
+                    'all',
+                    '--output-json',
+                    str(output_path),
+                ])
+
+            self.assertEqual(return_code, 0)
+            self.assertEqual(json.loads(stdout.getvalue()), first)
+            self.assertEqual(json.loads(output_path.read_text(encoding='utf-8')), first)
+            self.assertEqual(
+                output_path.read_text(encoding='utf-8'),
+                f'{json.dumps(first, indent=2, sort_keys=True)}\n',
+            )
+
+
+if __name__ == '__main__':
+    unittest.main()

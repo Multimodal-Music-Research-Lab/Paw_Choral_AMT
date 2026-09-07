@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import pickle
 import sys
 import time
+import uuid
+from collections.abc import Mapping
 from copy import deepcopy
-from itertools import combinations
 
 import h5py
 import numpy as np
@@ -16,7 +18,26 @@ import torch
 from hydra import compose, initialize
 from tqdm import tqdm
 
+from checkpointing import (
+    checkpoint_target_semantics,
+    checkpoint_data_target_semantics,
+    checkpoint_compatibility_allowlists,
+    format_checkpoint_load_report,
+    load_model_checkpoint,
+    validate_checkpoint_behavior,
+)
+from canonical_union import build_canonical_union_rolls, canonical_union_events
+from choral_targets import (
+    build_choral_target_dict,
+    require_complete_satb_reference,
+    resolve_target_assignment,
+)
 from models import build_model
+from probability_artifacts import (
+    CANONICAL_VOICE_NAMES,
+    resolve_inference_checkpoint_path,
+    sha256_file,
+)
 from utilities import (
     build_target_masks,
     forward,
@@ -36,7 +57,6 @@ from utilities import (
 )
 
 
-
 def build_post_processor(cfg):
     post_type = resolve_post_processor_type(cfg)
     if post_type == 'regression':
@@ -44,6 +64,66 @@ def build_post_processor(cfg):
     if post_type in {'onsets_frames', 'onf'}:
         return OnsetsFramesPostProcessor(cfg)
     raise ValueError(f'Unsupported post.post_processor_type: {post_type}')
+
+
+def select_split_hdf5_paths(hdf5_paths, eval_split: str) -> list[str]:
+    """Return deterministic packed examples belonging to one evaluation split."""
+
+    selected = []
+    for hdf5_path in sorted(hdf5_paths):
+        with h5py.File(hdf5_path, 'r') as hf:
+            if decode_hdf5_attr(hf.attrs['split']) == eval_split:
+                selected.append(hdf5_path)
+    stems = [get_filename(path) for path in selected]
+    if len(stems) != len(set(stems)):
+        duplicates = sorted(stem for stem in set(stems) if stems.count(stem) > 1)
+        raise RuntimeError(
+            f'Packed evaluation split contains duplicate recording stems: {duplicates[:10]}'
+        )
+    return selected
+
+
+def reject_stale_probability_files(probs_dir: str, expected_stems) -> None:
+    """Fail rather than silently mix outputs from an older split/manifest."""
+
+    expected = {str(stem) for stem in expected_stems}
+    existing = {
+        os.path.splitext(name)[0]
+        for name in os.listdir(probs_dir)
+        if name.endswith('.pkl')
+    }
+    unexpected = sorted(existing - expected)
+    if unexpected:
+        preview = unexpected[:10]
+        raise RuntimeError(
+            f'Probability directory contains {len(unexpected)} stale file(s) '
+            f'not present in the current {len(expected)}-recording split: {preview}. '
+            'Use a fresh workspace/output directory before inference.'
+        )
+
+
+def read_checkpoint_snapshot(checkpoint_path: str) -> tuple[bytes, str]:
+    """Read once so deserialization and provenance refer to identical bytes."""
+
+    with open(checkpoint_path, 'rb') as checkpoint_file:
+        snapshot = checkpoint_file.read()
+    return snapshot, hashlib.sha256(snapshot).hexdigest()
+
+
+def reject_missing_checkpoint_parameters(model, load_report) -> None:
+    """Do not let an allowlist turn random model initialization into inference."""
+
+    parameter_names = {name for name, _ in model.named_parameters()}
+    missing_parameters = tuple(
+        key for key in load_report.missing_keys if key in parameter_names
+    )
+    if missing_parameters:
+        raise RuntimeError(
+            'Formal inference refuses checkpoint-missing model parameters, even '
+            'when a compatibility allowlist matches them, because their retained '
+            'initial values are not checkpoint-bound: '
+            f'{list(missing_parameters)}'
+        )
 
 
 def _get_choral_note_dir(cfg):
@@ -59,317 +139,42 @@ def _get_choral_note_dir(cfg):
     return None
 
 
-class _ChoralTargetBuilder:
-    def __init__(self, cfg, segment_seconds: float, start_time: float):
-        self.cfg = cfg
-        self.segment_seconds = float(segment_seconds)
-        self.start_time = float(start_time)
-        self.frames_per_second = cfg.feature.frames_per_second
-        self.frames_num = int(round(self.segment_seconds * self.frames_per_second)) + 1
-        self.begin_note = cfg.feature.begin_note
-        self.classes_num = cfg.feature.classes_num
-        self.num_voices = int(getattr(cfg.choral, 'num_voices', 4))
-        self.voice_names = list(getattr(cfg.choral, 'voice_names', ['S', 'A', 'T', 'B']))
-        self.voice_assignment_method = str(getattr(cfg.choral, 'voice_assignment_method', 'part_name')).strip()
-        self.voice_assignment_part_penalty = float(getattr(cfg.choral, 'voice_assignment_part_penalty', 2.0))
-        self.voice_assignment_continuity_weight = float(getattr(cfg.choral, 'voice_assignment_continuity_weight', 0.35))
-        self.voice_assignment_overlap_penalty = float(getattr(cfg.choral, 'voice_assignment_overlap_penalty', 4.0))
-        self.voice_assignment_range_mins = self._normalize_voice_setting(
-            getattr(cfg.choral, 'voice_assignment_range_mins', [60, 55, 48, 40]),
-            [60, 55, 48, 40],
-        )
-        self.voice_assignment_range_maxs = self._normalize_voice_setting(
-            getattr(cfg.choral, 'voice_assignment_range_maxs', [88, 79, 72, 67]),
-            [88, 79, 72, 67],
-        )
-        self.voice_assignment_range_margin = float(getattr(cfg.choral, 'voice_assignment_range_margin', 2.0))
-        self.voice_assignment_mask_penalty = float(getattr(cfg.choral, 'voice_assignment_mask_penalty', 8.0))
+def resolve_evaluation_reference_assignment(cfg) -> str:
+    """Resolve the immutable assignment used by formal reference rolls."""
 
-    def _normalize_voice_setting(self, values, default_values):
-        values = default_values if values is None else list(values)
-        if len(values) != self.num_voices:
+    if bool(getattr(cfg.choral, 'enable', False)):
+        voice_names = tuple(
+            getattr(cfg.choral, 'voice_names', CANONICAL_VOICE_NAMES)
+        )
+        if voice_names != CANONICAL_VOICE_NAMES:
             raise ValueError(
-                f'voice assignment config expects {self.num_voices} values, got {len(values)}'
+                "Formal PawCT inference requires choral.voice_names=['S','A','T','B']; "
+                f'received {list(voice_names)!r}'
             )
-        return [float(v) for v in values]
 
-    def _voice_index(self, part_name: str):
-        if not part_name:
-            return None
-        part_head = part_name[0].upper()
-        if part_head not in self.voice_names:
-            return None
-        return self.voice_names.index(part_head)
-
-    def _bars_to_note_events(self, note_bars):
-        events = []
-        for bar in note_bars:
-            if not isinstance(bar, dict):
-                continue
-            for part_name, note_list in bar.items():
-                if part_name == 'measure' or not isinstance(note_list, list):
-                    continue
-                for note in note_list:
-                    if len(note) < 5:
-                        continue
-                    midi_note = int(note[0])
-                    onset_time = float(note[3])
-                    offset_time = float(note[4])
-                    if offset_time <= onset_time:
-                        offset_time = onset_time + 1e-4
-                    if self.begin_note <= midi_note < self.begin_note + self.classes_num:
-                        events.append(
-                            {
-                                'part_name': part_name,
-                                'part_voice_idx': self._voice_index(part_name),
-                                'midi_note': midi_note,
-                                'onset_time': onset_time,
-                                'offset_time': offset_time,
-                            }
-                        )
-        events.sort(key=lambda x: (x['onset_time'], -x['midi_note'], x['offset_time']))
-        return events
-
-    def _range_cost(self, midi_note: int, voice_idx: int):
-        low = self.voice_assignment_range_mins[voice_idx]
-        high = self.voice_assignment_range_maxs[voice_idx]
-        center = 0.5 * (low + high)
-        below = max(0.0, low - midi_note)
-        above = max(0.0, midi_note - high)
-        return below + above + 0.25 * abs(midi_note - center) / 12.0
-
-    def _voice_in_masked_range(self, midi_note: int, voice_idx: int):
-        low = self.voice_assignment_range_mins[voice_idx] - self.voice_assignment_range_margin
-        high = self.voice_assignment_range_maxs[voice_idx] + self.voice_assignment_range_margin
-        return low <= midi_note <= high
-
-    def _assignment_cost(self, event, voice_idx: int, last_pitch_by_voice=None, last_offset_by_voice=None):
-        cost = self._range_cost(event['midi_note'], voice_idx)
-        if event.get('part_voice_idx') is not None and event['part_voice_idx'] != voice_idx:
-            cost += self.voice_assignment_part_penalty
-        if last_pitch_by_voice is not None and voice_idx in last_pitch_by_voice:
-            cost += self.voice_assignment_continuity_weight * abs(
-                event['midi_note'] - last_pitch_by_voice[voice_idx]
-            ) / 12.0
-        if (
-            last_offset_by_voice is not None
-            and voice_idx in last_offset_by_voice
-            and event['onset_time'] < last_offset_by_voice[voice_idx]
-        ):
-            cost += self.voice_assignment_overlap_penalty
-        return cost
-
-    def _masked_assignment_cost(self, event, voice_idx: int, last_pitch_by_voice=None, last_offset_by_voice=None):
-        cost = self._assignment_cost(
-            event,
-            voice_idx,
-            last_pitch_by_voice=last_pitch_by_voice,
-            last_offset_by_voice=last_offset_by_voice,
+    reference_assignment = str(
+        getattr(cfg.choral, 'evaluation_reference_assignment', 'part_name')
+    ).strip().lower().replace('-', '_')
+    if reference_assignment != 'part_name':
+        raise ValueError(
+            'Formal evaluation requires choral.evaluation_reference_assignment=part_name; '
+            'training RP/OC assignments cannot be used to rewrite references.'
         )
-        if not self._voice_in_masked_range(event['midi_note'], voice_idx):
-            cost += self.voice_assignment_mask_penalty
-        return cost
-
-    def _events_to_voice_tuples(self, assigned_events):
-        return [
-            (voice_idx, event['midi_note'], event['onset_time'], event['offset_time'])
-            for voice_idx, event in assigned_events
-        ]
-
-    def _assign_events_part_name(self, note_events):
-        assigned_events = []
-        for event in note_events:
-            voice_idx = event.get('part_voice_idx')
-            if voice_idx is None:
-                continue
-            assigned_events.append((voice_idx, event))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _assign_events_range_prior(self, note_events):
-        assigned_events = []
-        for event in note_events:
-            best_voice_idx = min(
-                range(self.num_voices),
-                key=lambda voice_idx: self._assignment_cost(event, voice_idx),
-            )
-            assigned_events.append((best_voice_idx, event))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _group_by_onset_frame(self, note_events):
-        grouped = {}
-        for event in note_events:
-            onset_frame = int(np.round(event['onset_time'] * self.frames_per_second))
-            grouped.setdefault(onset_frame, []).append(event)
-        return [grouped[key] for key in sorted(grouped)]
-
-    def _assign_group_ordered_continuity(self, group, last_pitch_by_voice, last_offset_by_voice):
-        group = sorted(group, key=lambda x: (-x['midi_note'], x['onset_time'], x['offset_time']))
-        if len(group) > self.num_voices:
-            return [
-                (
-                    min(
-                        range(self.num_voices),
-                        key=lambda voice_idx: self._assignment_cost(
-                            event,
-                            voice_idx,
-                            last_pitch_by_voice=last_pitch_by_voice,
-                            last_offset_by_voice=last_offset_by_voice,
-                        ),
-                    ),
-                    event,
-                )
-                for event in group
-            ]
-
-        best_assignment = None
-        best_cost = float('inf')
-        for voice_combo in combinations(range(self.num_voices), len(group)):
-            cost = 0.0
-            candidate = []
-            for event, voice_idx in zip(group, voice_combo):
-                cost += self._assignment_cost(
-                    event,
-                    voice_idx,
-                    last_pitch_by_voice=last_pitch_by_voice,
-                    last_offset_by_voice=last_offset_by_voice,
-                )
-                candidate.append((voice_idx, event))
-            if cost < best_cost:
-                best_cost = cost
-                best_assignment = candidate
-        return best_assignment or []
-
-    def _assign_events_ordered_continuity(self, note_events):
-        last_pitch_by_voice = {}
-        last_offset_by_voice = {}
-        assigned_events = []
-        for group in self._group_by_onset_frame(note_events):
-            group_assignment = self._assign_group_ordered_continuity(
-                group,
-                last_pitch_by_voice,
-                last_offset_by_voice,
-            )
-            for voice_idx, event in group_assignment:
-                last_pitch_by_voice[voice_idx] = event['midi_note']
-                last_offset_by_voice[voice_idx] = event['offset_time']
-                assigned_events.append((voice_idx, event))
-        assigned_events.sort(key=lambda x: (x[1]['onset_time'], x[0], x[1]['midi_note']))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _assign_group_range_masked_continuity(self, group, last_pitch_by_voice, last_offset_by_voice):
-        group = sorted(group, key=lambda x: (-x['midi_note'], x['onset_time'], x['offset_time']))
-        if len(group) > self.num_voices:
-            return [
-                (
-                    min(
-                        range(self.num_voices),
-                        key=lambda voice_idx: self._masked_assignment_cost(
-                            event,
-                            voice_idx,
-                            last_pitch_by_voice=last_pitch_by_voice,
-                            last_offset_by_voice=last_offset_by_voice,
-                        ),
-                    ),
-                    event,
-                )
-                for event in group
-            ]
-
-        best_assignment = None
-        best_cost = float('inf')
-        for voice_combo in combinations(range(self.num_voices), len(group)):
-            cost = 0.0
-            candidate = []
-            for event, voice_idx in zip(group, voice_combo):
-                cost += self._masked_assignment_cost(
-                    event,
-                    voice_idx,
-                    last_pitch_by_voice=last_pitch_by_voice,
-                    last_offset_by_voice=last_offset_by_voice,
-                )
-                candidate.append((voice_idx, event))
-            if cost < best_cost:
-                best_cost = cost
-                best_assignment = candidate
-        return best_assignment or []
-
-    def _assign_events_range_masked_continuity(self, note_events):
-        last_pitch_by_voice = {}
-        last_offset_by_voice = {}
-        assigned_events = []
-        for group in self._group_by_onset_frame(note_events):
-            group_assignment = self._assign_group_range_masked_continuity(
-                group,
-                last_pitch_by_voice,
-                last_offset_by_voice,
-            )
-            for voice_idx, event in group_assignment:
-                last_pitch_by_voice[voice_idx] = event['midi_note']
-                last_offset_by_voice[voice_idx] = event['offset_time']
-                assigned_events.append((voice_idx, event))
-        assigned_events.sort(key=lambda x: (x[1]['onset_time'], x[0], x[1]['midi_note']))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _bars_to_voice_events(self, note_bars):
-        note_events = self._bars_to_note_events(note_bars)
-        method = self.voice_assignment_method
-        if method == 'part_name':
-            return self._assign_events_part_name(note_events)
-        if method == 'range_prior':
-            return self._assign_events_range_prior(note_events)
-        if method == 'ordered_continuity':
-            return self._assign_events_ordered_continuity(note_events)
-        if method == 'range_masked_continuity':
-            return self._assign_events_range_masked_continuity(note_events)
-        raise ValueError(f'Unsupported choral.voice_assignment_method: {method}')
-
-    def build(self, note_bars, frame_mask_roll=None, onset_mask_roll=None, offset_mask_roll=None):
-        voice_frame_roll = np.zeros((self.frames_num, self.num_voices, self.classes_num), dtype=np.float32)
-        voice_onset_roll = np.zeros_like(voice_frame_roll)
-        voice_offset_roll = np.zeros_like(voice_frame_roll)
-        voice_presence = np.zeros((self.num_voices,), dtype=np.float32)
-
-        segment_end = self.start_time + self.segment_seconds
-        events = self._bars_to_voice_events(note_bars)
-
-        for voice_idx, midi_note, onset_time, offset_time in events:
-            if offset_time <= self.start_time or onset_time >= segment_end:
-                continue
-
-            note_idx = midi_note - self.begin_note
-            local_onset = max(onset_time, self.start_time)
-            local_offset = min(offset_time, segment_end)
-
-            onset_frame = int(np.clip(np.round((local_onset - self.start_time) * self.frames_per_second), 0, self.frames_num - 1))
-            offset_frame = int(np.clip(np.round((local_offset - self.start_time) * self.frames_per_second), 0, self.frames_num - 1))
-            if offset_frame < onset_frame:
-                offset_frame = onset_frame
-
-            voice_frame_roll[onset_frame : offset_frame + 1, voice_idx, note_idx] = 1.0
-            if self.start_time <= onset_time < segment_end:
-                true_onset_frame = int(np.clip(np.round((onset_time - self.start_time) * self.frames_per_second), 0, self.frames_num - 1))
-                voice_onset_roll[true_onset_frame, voice_idx, note_idx] = 1.0
-            if self.start_time <= offset_time < segment_end:
-                true_offset_frame = int(np.clip(np.round((offset_time - self.start_time) * self.frames_per_second), 0, self.frames_num - 1))
-                voice_offset_roll[true_offset_frame, voice_idx, note_idx] = 1.0
-            voice_presence[voice_idx] = 1.0
-
-        frame_mask_roll = np.ones((self.frames_num, self.classes_num), dtype=np.float32) if frame_mask_roll is None else frame_mask_roll
-        onset_mask_roll = np.ones((self.frames_num, self.classes_num), dtype=np.float32) if onset_mask_roll is None else onset_mask_roll
-        offset_mask_roll = np.ones((self.frames_num, self.classes_num), dtype=np.float32) if offset_mask_roll is None else offset_mask_roll
-
-        return {
-            'voice_frame_roll': voice_frame_roll,
-            'voice_onset_roll': voice_onset_roll,
-            'voice_offset_roll': voice_offset_roll,
-            'voice_presence': voice_presence,
-            'voice_frame_mask_roll': np.repeat(frame_mask_roll[:, None, :], self.num_voices, axis=1),
-            'voice_onset_mask_roll': np.repeat(onset_mask_roll[:, None, :], self.num_voices, axis=1),
-            'voice_offset_mask_roll': np.repeat(offset_mask_roll[:, None, :], self.num_voices, axis=1),
-        }
+    return reference_assignment
 
 
-def build_choral_target_dict(
+def _evaluation_reference_cfg(cfg, reference_assignment: str):
+    reference_cfg = deepcopy(cfg)
+    if hasattr(reference_cfg.choral, 'target_assignment'):
+        reference_cfg.choral.target_assignment = reference_assignment
+    else:
+        reference_cfg.choral.voice_assignment_method = reference_assignment
+    if resolve_target_assignment(reference_cfg) != 'part_name':
+        raise RuntimeError('Evaluation reference configuration did not resolve to part_name')
+    return reference_cfg
+
+
+def build_evaluation_choral_target_dict(
     cfg,
     note_bars,
     segment_seconds,
@@ -378,16 +183,180 @@ def build_choral_target_dict(
     onset_mask_roll=None,
     offset_mask_roll=None,
 ):
-    builder = _ChoralTargetBuilder(cfg=cfg, segment_seconds=segment_seconds, start_time=start_time)
-    return builder.build(
-        note_bars,
-        frame_mask_roll=frame_mask_roll,
-        onset_mask_roll=onset_mask_roll,
-        offset_mask_roll=offset_mask_roll,
+    """Build formal SATB reference rolls and masks solely from ``note.pkl``."""
+
+    reference_assignment = resolve_evaluation_reference_assignment(cfg)
+    reference_cfg = _evaluation_reference_cfg(cfg, reference_assignment)
+    # Packed MIDI masks describe the independently packed MIDI stream. They
+    # cannot censor a valid canonical SATB annotation during formal scoring.
+    del frame_mask_roll, onset_mask_roll, offset_mask_roll
+    reference_targets = build_choral_target_dict(
+        cfg=reference_cfg,
+        note_bars=note_bars,
+        segment_seconds=segment_seconds,
+        start_time=start_time,
     )
+    spec = get_task_spec(reference_cfg)
+    union_targets = build_canonical_union_rolls(
+        note_bars,
+        start_time=start_time,
+        segment_seconds=segment_seconds,
+        frames_per_second=float(reference_cfg.feature.frames_per_second),
+        begin_note=int(reference_cfg.feature.begin_note),
+        classes_num=int(reference_cfg.feature.classes_num),
+    )
+    canonical_mask = union_targets['frame_mask_roll']
+    onset_mask = canonical_mask if spec.onset else np.zeros_like(canonical_mask)
+    offset_mask = canonical_mask if spec.offset else np.zeros_like(canonical_mask)
+    union_targets['onset_mask_roll'] = onset_mask.copy()
+    union_targets['offset_mask_roll'] = offset_mask.copy()
+    reference_targets.update(union_targets)
+    reference_targets.update({
+        'voice_frame_mask_roll': np.repeat(
+            canonical_mask[:, None, :], len(CANONICAL_VOICE_NAMES), axis=1
+        ),
+        'voice_onset_mask_roll': np.repeat(
+            onset_mask[:, None, :], len(CANONICAL_VOICE_NAMES), axis=1
+        ),
+        'voice_offset_mask_roll': np.repeat(
+            offset_mask[:, None, :], len(CANONICAL_VOICE_NAMES), axis=1
+        ),
+    })
+    return reference_targets
 
 
-def build_total_dict(output_dict, target_dict, ref_on_off_pairs, ref_midi_notes, ref_pedal_on_off_pairs):
+def build_inference_provenance(cfg, transcriber, evaluation_reference_assignment: str):
+    """Summarize checkpoint and label semantics embedded in every probs file."""
+
+    choral_enabled = bool(getattr(cfg.choral, 'enable', False))
+    runtime_target_assignment = (
+        resolve_target_assignment(cfg) if choral_enabled else 'part_agnostic'
+    )
+    runtime_target_semantics = (
+        checkpoint_target_semantics(cfg)
+        if choral_enabled
+        else {'method': 'part_agnostic'}
+    )
+    return {
+        'dataset_name': str(cfg.dataset.test_set),
+        'model_name': get_model_name(cfg),
+        'evaluation_split': str(getattr(cfg.dataset, 'eval_split', 'validation')),
+        'evaluation_reference_assignment': evaluation_reference_assignment,
+        'inference_run_id': uuid.uuid4().hex,
+        'checkpoint_identity': deepcopy(transcriber.checkpoint_identity),
+        'checkpoint_model_input_identity': deepcopy(
+            getattr(transcriber, 'checkpoint_model_input_identity', None)
+        ),
+        'checkpoint_load_report': transcriber.checkpoint_load_report.as_dict(),
+        'data_target_semantics': {
+            'runtime': checkpoint_data_target_semantics(cfg),
+            'checkpoint': deepcopy(
+                getattr(transcriber, 'checkpoint_data_target_semantics', None)
+            ),
+        },
+        'runtime_model_behavior': {
+            'num_voices': int(getattr(cfg.choral, 'num_voices', 4)),
+            'use_presence_head': bool(
+                getattr(cfg.choral, 'use_presence_head', True)
+            ),
+            'apply_presence_gate': bool(
+                getattr(cfg.choral, 'apply_presence_gate', True)
+            ),
+            'assignment_module': str(
+                getattr(cfg.choral, 'assignment_module', 'heads')
+            ).strip(),
+            'assignment_temperature': float(
+                getattr(cfg.choral, 'assignment_temperature', 1.0)
+            ),
+            'assignment_hidden_channels': int(
+                getattr(cfg.choral, 'assignment_hidden_channels', 64)
+            ),
+            'assignment_rnn_hidden_size': int(
+                getattr(cfg.choral, 'assignment_rnn_hidden_size', 128)
+            ),
+            'voice_interaction_module': str(
+                getattr(cfg.choral, 'voice_interaction_module', 'none')
+            ).strip(),
+            'voice_interaction_dim': int(
+                getattr(cfg.choral, 'voice_interaction_dim', 256)
+            ),
+            'voice_interaction_heads': int(
+                getattr(cfg.choral, 'voice_interaction_heads', 4)
+            ),
+            'voice_interaction_layers': int(
+                getattr(cfg.choral, 'voice_interaction_layers', 1)
+            ),
+            'voice_interaction_dropout': float(
+                getattr(cfg.choral, 'voice_interaction_dropout', 0.1)
+            ),
+            'voice_names': list(
+                getattr(cfg.choral, 'voice_names', ['S', 'A', 'T', 'B'])
+            ),
+            'allow_checkpoint_behavior_mismatch': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_checkpoint_behavior_mismatch',
+                    False,
+                )
+            ),
+            'allow_legacy_checkpoint_model_identity': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_legacy_checkpoint_model_identity',
+                    False,
+                )
+            ),
+            'allow_unsafe_legacy_checkpoint_load': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_unsafe_legacy_checkpoint_load',
+                    False,
+                )
+            ),
+            'allow_legacy_canonical_union_semantics': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_legacy_canonical_union_semantics',
+                    False,
+                )
+            ),
+            'allow_unknown_checkpoint_target_assignment': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_unknown_checkpoint_target_assignment',
+                    False,
+                )
+            ),
+            'allow_checkpoint_target_assignment_mismatch': bool(
+                getattr(
+                    getattr(cfg, 'exp', None),
+                    'allow_checkpoint_target_assignment_mismatch',
+                    False,
+                )
+            ),
+        },
+        'target_assignment': {
+            'runtime_training_method': runtime_target_assignment,
+            'runtime_semantics': runtime_target_semantics,
+            'preserve_known_part_labels': bool(
+                getattr(cfg.choral, 'preserve_known_part_labels', True)
+            ),
+            'model_assignment_module': str(
+                getattr(cfg.choral, 'assignment_module', 'heads')
+            ).strip(),
+            'checkpoint_metadata': deepcopy(transcriber.checkpoint_target_assignment),
+        },
+    }
+
+
+def build_total_dict(
+    output_dict,
+    target_dict,
+    ref_on_off_pairs,
+    ref_midi_notes,
+    ref_pedal_on_off_pairs,
+    provenance=None,
+):
     total_dict = {key: output_dict[key] for key in output_dict.keys()}
     total_dict.update(
         {
@@ -416,10 +385,12 @@ def build_total_dict(output_dict, target_dict, ref_on_off_pairs, ref_midi_notes,
     ):
         if key in target_dict:
             total_dict[key] = target_dict[key]
+    if provenance is not None:
+        total_dict['provenance'] = deepcopy(provenance)
     return total_dict
 
 
-class PianoTranscriber:
+class ChoralAMTTranscriber:
     def __init__(self, cfg, checkpoint_path):
         self.cfg = cfg
         self.spec = get_task_spec(cfg)
@@ -428,9 +399,52 @@ class PianoTranscriber:
         self.segment_frames = int(round(cfg.feature.frames_per_second * cfg.feature.segment_seconds)) + 1
         self.model = build_model(cfg)
 
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
-        state_dict = checkpoint['model'] if 'model' in checkpoint else checkpoint
-        self.model.load_state_dict(state_dict, strict=False)
+        allowed_missing_keys, allowed_unexpected_keys = checkpoint_compatibility_allowlists(cfg)
+        checkpoint_snapshot, checkpoint_sha256 = read_checkpoint_snapshot(
+            checkpoint_path
+        )
+        checkpoint, load_report = load_model_checkpoint(
+            self.model,
+            checkpoint_snapshot,
+            map_location=self.device,
+            allowed_missing_keys=allowed_missing_keys,
+            allowed_unexpected_keys=allowed_unexpected_keys,
+            allow_unsafe_legacy_load=bool(
+                getattr(
+                    cfg.exp,
+                    'allow_unsafe_legacy_checkpoint_load',
+                    False,
+                )
+            ),
+        )
+        del checkpoint_snapshot
+        reject_missing_checkpoint_parameters(self.model, load_report)
+        validate_checkpoint_behavior(cfg, checkpoint)
+        self.checkpoint_load_report = load_report
+        checkpoint_iteration = checkpoint.get('iteration')
+        if isinstance(checkpoint_iteration, torch.Tensor) and checkpoint_iteration.numel() == 1:
+            checkpoint_iteration = checkpoint_iteration.item()
+        if isinstance(checkpoint_iteration, np.generic):
+            checkpoint_iteration = checkpoint_iteration.item()
+        self.checkpoint_identity = {
+            'filename': os.path.basename(checkpoint_path),
+            'sha256': checkpoint_sha256,
+            'iteration': checkpoint_iteration,
+            'schema_version': checkpoint.get('schema_version'),
+        }
+        self.checkpoint_model_input_identity = deepcopy(
+            checkpoint.get('model_input_identity')
+        )
+        checkpoint_target_assignment = checkpoint.get('target_assignment')
+        self.checkpoint_target_assignment = (
+            deepcopy(checkpoint_target_assignment)
+            if isinstance(checkpoint_target_assignment, Mapping)
+            else checkpoint_target_assignment
+        )
+        self.checkpoint_data_target_semantics = deepcopy(
+            checkpoint.get('data_target_semantics')
+        )
+        print(f'Checkpoint load audit: {format_checkpoint_load_report(load_report)}')
         self.model.to(self.device)
         self.post_processor = build_post_processor(cfg)
 
@@ -449,6 +463,10 @@ class PianoTranscriber:
     def deframe(self, x: np.ndarray) -> np.ndarray:
         if x.shape[0] == 1:
             return x[0]
+        # Adjacent windows share their endpoint frame. Drop every duplicated
+        # endpoint while overlap-cropping, then restore the recording's one
+        # genuine final endpoint from the last window.
+        final_endpoint = x[-1, -1:, ...]
         x = x[:, :-1, ...]
         segment_frames = x.shape[1]
         assert segment_frames % 4 == 0
@@ -456,12 +474,19 @@ class PianoTranscriber:
         for i in range(1, x.shape[0] - 1):
             y.append(x[i, int(segment_frames * 0.25) : int(segment_frames * 0.75)])
         y.append(x[-1, int(segment_frames * 0.25) :])
+        y.append(final_endpoint)
         return np.concatenate(y, axis=0)
 
     def stitch_output(self, x: np.ndarray, valid_frames: int) -> np.ndarray:
         # Frame-like outputs are segment x time x ... and need overlap-add deframing.
         if x.ndim >= 3 and x.shape[1] == self.segment_frames:
-            return self.deframe(x)[:valid_frames]
+            stitched = self.deframe(x)
+            if stitched.shape[0] < valid_frames:
+                raise RuntimeError(
+                    'Deframed model output is shorter than the audio-derived frame '
+                    f'count: output={stitched.shape[0]}, required={valid_frames}'
+                )
+            return stitched[:valid_frames]
 
         # Segment-level outputs (e.g. voice presence logits) are aggregated to song-level.
         if x.ndim >= 2:
@@ -496,15 +521,29 @@ class PianoTranscriber:
         }
 
 
-
 def infer(cfg):
     model_name = get_model_name(cfg)
     eval_split = str(getattr(cfg.dataset, 'eval_split', 'validation'))
     if eval_split not in {'validation', 'test'}:
         raise ValueError("dataset.eval_split must be 'validation' or 'test'")
-    checkpoint_path = os.path.join(cfg.exp.workspace, 'checkpoints', model_name, f'{cfg.exp.ckpt_iteration}_iteration.pth')
+    evaluation_reference_assignment = resolve_evaluation_reference_assignment(cfg)
+    checkpoints_dir = os.path.join(cfg.exp.workspace, 'checkpoints', model_name)
+    checkpoint_path = resolve_inference_checkpoint_path(
+        checkpoints_dir,
+        cfg.exp.ckpt_iteration,
+    )
     hdf5s_dir = get_dataset_hdf5s_dir(cfg, cfg.dataset.test_set)
+    choral_note_dir = _get_choral_note_dir(cfg)
+    if getattr(cfg.choral, 'enable', False) and choral_note_dir is None:
+        raise ValueError(
+            f'No SATB note-directory mapping for dataset={cfg.dataset.test_set}'
+        )
     _, hdf5_paths = traverse_folder(hdf5s_dir)
+    hdf5_paths = select_split_hdf5_paths(hdf5_paths, eval_split)
+    if not hdf5_paths:
+        raise RuntimeError(
+            f'No packed recordings found for split={eval_split} in {hdf5s_dir}'
+        )
 
     probs_dir = os.path.join(
         cfg.exp.workspace,
@@ -515,15 +554,23 @@ def infer(cfg):
         f'{cfg.exp.ckpt_iteration}_iteration',
     )
     create_folder(probs_dir)
+    reject_stale_probability_files(
+        probs_dir,
+        (get_filename(path) for path in hdf5_paths),
+    )
 
-    transcriber = PianoTranscriber(cfg, checkpoint_path)
+    transcriber = ChoralAMTTranscriber(cfg, checkpoint_path)
+    provenance = build_inference_provenance(
+        cfg,
+        transcriber,
+        evaluation_reference_assignment=evaluation_reference_assignment,
+    )
 
     progress_bar = tqdm(hdf5_paths, desc=f'Infer {cfg.exp.ckpt_iteration}', unit='file', ncols=90)
     for hdf5_path in progress_bar:
+        note_path = None
+        note_bars = None
         with h5py.File(hdf5_path, 'r') as hf:
-            if decode_hdf5_attr(hf.attrs['split']) != eval_split:
-                continue
-
             audio = int16_to_float32(hf['waveform'][:])
             midi_events = [e.decode() for e in hf['midi_event'][:]]
             midi_events_time = hf['midi_event_time'][:]
@@ -537,31 +584,87 @@ def infer(cfg):
             extend_pedal=True,
         )
         target_dict = build_target_masks(cfg, target_dict)
-        if getattr(cfg.choral, 'enable', False):
-            note_dir = _get_choral_note_dir(cfg)
-            if note_dir is not None:
-                note_path = os.path.join(note_dir, f'{get_filename(hdf5_path)}.pkl')
-                if os.path.exists(note_path):
-                    with open(note_path, 'rb') as f:
-                        note_bars = pickle.load(f)
-                    target_dict.update(
-                        build_choral_target_dict(
-                            cfg=cfg,
-                            note_bars=note_bars,
-                            segment_seconds=segment_seconds,
-                            start_time=0.0,
-                            frame_mask_roll=target_dict['frame_mask_roll'],
-                            onset_mask_roll=target_dict['onset_mask_roll'],
-                            offset_mask_roll=target_dict['offset_mask_roll'],
-                        )
-                    )
+        if choral_note_dir is not None:
+            note_path = os.path.join(
+                choral_note_dir,
+                f'{get_filename(hdf5_path)}.pkl',
+            )
+            if not os.path.exists(note_path):
+                raise FileNotFoundError(
+                    f'Missing canonical choral reference annotation: {note_path}'
+                )
+            with open(note_path, 'rb') as f:
+                note_bars = pickle.load(f)
+            require_complete_satb_reference(
+                note_bars,
+                note_path,
+                begin_note=int(cfg.feature.begin_note),
+                classes_num=int(cfg.feature.classes_num),
+                recording_duration=segment_seconds,
+            )
+            canonical_targets = build_canonical_union_rolls(
+                note_bars,
+                start_time=0.0,
+                segment_seconds=segment_seconds,
+                frames_per_second=float(cfg.feature.frames_per_second),
+                begin_note=int(cfg.feature.begin_note),
+                classes_num=int(cfg.feature.classes_num),
+            )
+            spec = get_task_spec(cfg)
+            if not spec.onset:
+                canonical_targets['onset_mask_roll'].fill(0.0)
+            if not spec.offset:
+                canonical_targets['offset_mask_roll'].fill(0.0)
+            target_dict.update(canonical_targets)
 
-        ref_on_off_pairs = np.array([[event['onset_time'], event['offset_time']] for event in note_events], dtype=np.float32)
-        ref_midi_notes = np.array([event['midi_note'] for event in note_events], dtype=np.int32)
+            if getattr(cfg.choral, 'enable', False):
+                target_dict.update(build_evaluation_choral_target_dict(
+                    cfg=cfg,
+                    note_bars=note_bars,
+                    segment_seconds=segment_seconds,
+                    start_time=0.0,
+                ))
+
+        if note_bars is not None:
+            union_events = canonical_union_events(
+                note_bars,
+                float(cfg.feature.frames_per_second),
+                begin_note=int(cfg.feature.begin_note),
+                classes_num=int(cfg.feature.classes_num),
+            )
+            ref_on_off_pairs = np.asarray(
+                [[onset, offset] for _, onset, offset in union_events],
+                dtype=np.float32,
+            ).reshape(-1, 2)
+            ref_midi_notes = np.asarray(
+                [pitch for pitch, _, _ in union_events],
+                dtype=np.int32,
+            )
+        else:
+            ref_on_off_pairs = np.asarray(
+                [
+                    [event['onset_time'], event['offset_time']]
+                    for event in note_events
+                ],
+                dtype=np.float32,
+            ).reshape(-1, 2)
+            ref_midi_notes = np.asarray(
+                [event['midi_note'] for event in note_events],
+                dtype=np.int32,
+            )
         ref_pedal_on_off_pairs = np.array([[event['onset_time'], event['offset_time']] for event in pedal_events], dtype=np.float32)
 
         transcribed_dict = transcriber.transcribe(audio, midi_path=None)
         output_dict = transcribed_dict['output_dict']
+
+        file_provenance = deepcopy(provenance)
+        file_provenance['source_artifacts'] = {
+            'recording_stem': get_filename(hdf5_path),
+            'hdf5_sha256': sha256_file(hdf5_path),
+            'reference_note_sha256': (
+                sha256_file(note_path) if note_path is not None else None
+            ),
+        }
 
         total_dict = build_total_dict(
             output_dict=output_dict,
@@ -569,11 +672,15 @@ def infer(cfg):
             ref_on_off_pairs=ref_on_off_pairs,
             ref_midi_notes=ref_midi_notes,
             ref_pedal_on_off_pairs=ref_pedal_on_off_pairs,
+            provenance=file_provenance,
         )
 
         prob_path = os.path.join(probs_dir, f'{get_filename(hdf5_path)}.pkl')
         with open(prob_path, 'wb') as fw:
             pickle.dump(total_dict, fw)
+
+# Historical public import retained for downstream scripts.
+PianoTranscriber = ChoralAMTTranscriber
 
 
 if __name__ == '__main__':

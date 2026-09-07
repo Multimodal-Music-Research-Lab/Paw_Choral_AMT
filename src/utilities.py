@@ -16,6 +16,8 @@ from typing import Dict
 import soundfile as sf
 import torch
 
+from choral_targets import resolve_target_assignment
+
 try:
     from mido import MidiFile, merge_tracks
 except Exception:
@@ -64,8 +66,8 @@ class TaskSpec:
 
 
 def resolve_model_arch(cfg) -> str:
-    arch = str(getattr(cfg.model, 'arch', 'hpt')).lower()
-    if arch not in {'hpt', 'onf'}:
+    arch = str(getattr(cfg.model, 'arch', 'pagct')).lower()
+    if arch not in {'pagct', 'pawct', 'hpt', 'onf'}:
         raise ValueError(f'Unsupported model.arch: {arch}')
     return arch
 
@@ -208,7 +210,8 @@ def traverse_folder(folder):
     names = []
 
     for root, dirs, files in os.walk(folder):
-        for name in files:
+        dirs.sort()
+        for name in sorted(files):
             filepath = os.path.join(root, name)
             names.append(name)
             paths.append(filepath)
@@ -472,16 +475,20 @@ class TargetProcessor(object):
         """
 
         # ------ 1. Parse MIDI events ------
-        # Search the begin index of a segment
-        for bgn_idx, event_time in enumerate(midi_events_time):
-            if event_time > start_time:
-                break
+        # Search the half-open event-index bounds explicitly. ``searchsorted``
+        # returns ``len(midi_events_time)`` when there is no later event, unlike
+        # the former ``for`` loop which left ``fin_idx`` pointing at (and then
+        # excluded) the final event.
+        event_times = np.asarray(midi_events_time)
+        bgn_idx = int(np.searchsorted(event_times, start_time, side='right'))
         """E.g., start_time: 709.0, bgn_idx: 18003, event_time: 709.0146"""
 
         # Search the end index of a segment
-        for fin_idx, event_time in enumerate(midi_events_time):
-            if event_time > start_time + self.segment_seconds:
-                break
+        fin_idx = int(np.searchsorted(
+            event_times,
+            start_time + self.segment_seconds,
+            side='right',
+        ))
         """E.g., start_time: 709.0, bgn_idx: 18196, event_time: 719.0115"""
 
         note_events = []
@@ -744,7 +751,7 @@ class TargetProcessor(object):
                     output[t] = step * (t - locts[i]) - input[locts[i]]
 
                 for t in range((locts[i] + locts[i + 1]) // 2, locts[i + 1]):
-                    output[t] = step * (t - locts[i + 1]) - input[locts[i]]
+                    output[t] = step * (t - locts[i + 1]) - input[locts[i + 1]]
 
             for t in range(locts[-1], len(input)):
                 output[t] = step * (t - locts[-1]) - input[locts[-1]]
@@ -929,6 +936,22 @@ class RegressionPostProcessor(object):
 
         for k in range(classes_num):
             x = reg_output[:, k]
+            if frames_num == 0:
+                continue
+            if frames_num == 1:
+                if x[0] > threshold:
+                    binary_output[0, k] = 1
+                continue
+
+            # The regular neighbourhood test below cannot visit boundary
+            # frames. Treat a boundary as a peak only when the available side
+            # moves monotonically away from it; sub-frame shift is unknown at
+            # a one-sided boundary and remains zero.
+            left_width = min(neighbour, frames_num - 1)
+            left_steps = x[:left_width] - x[1:left_width + 1]
+            if x[0] > threshold and np.all(left_steps >= 0) and np.any(left_steps > 0):
+                binary_output[0, k] = 1
+
             for n in range(neighbour, frames_num - neighbour):
                 if x[n] > threshold and self.is_monotonic_neighbour(x, n, neighbour):
                     binary_output[n, k] = 1
@@ -937,6 +960,11 @@ class RegressionPostProcessor(object):
                     else:
                         shift = (x[n + 1] - x[n - 1]) / (x[n] - x[n - 1]) / 2
                     shift_output[n, k] = shift
+
+            right_width = min(neighbour, frames_num - 1)
+            right_steps = x[-right_width:] - x[-right_width - 1:-1]
+            if x[-1] > threshold and np.all(right_steps >= 0) and np.any(right_steps > 0):
+                binary_output[-1, k] = 1
 
         return binary_output, shift_output
 
@@ -1066,10 +1094,20 @@ class OnsetsFramesPostProcessor(object):
     def sharp_output(self, x, threshold):
         frames_num, classes_num = x.shape
         y = np.zeros_like(x)
+        if frames_num == 0:
+            return y
         for piano_note in range(classes_num):
+            if frames_num == 1:
+                if x[0, piano_note] > threshold:
+                    y[0, piano_note] = 1
+                continue
+            if x[0, piano_note] > threshold and x[0, piano_note] > x[1, piano_note]:
+                y[0, piano_note] = 1
             for i in range(1, frames_num - 1):
                 if x[i, piano_note] > threshold and x[i, piano_note] > x[i - 1, piano_note] and x[i, piano_note] > x[i + 1, piano_note]:
                     y[i, piano_note] = 1
+            if x[-1, piano_note] > threshold and x[-1, piano_note] > x[-2, piano_note]:
+                y[-1, piano_note] = 1
         return y
 
     def output_dict_to_detected_notes(self, output_dict):
@@ -1164,9 +1202,26 @@ def get_model_name(cfg):
     if name_suffix:
         suffixes.append(name_suffix)
     if getattr(cfg.choral, 'enable', False) and getattr(cfg.choral, 'append_assignment_to_name', True):
-        assignment_method = str(getattr(cfg.choral, 'voice_assignment_method', 'part_name')).strip()
-        if assignment_method and assignment_method != 'part_name':
-            suffixes.append(f'va_{assignment_method}')
+        configured_assignment = getattr(cfg.choral, 'target_assignment', None)
+        legacy_assignment = getattr(cfg.choral, 'voice_assignment_method', None)
+        uses_legacy_assignment_key = (
+            configured_assignment is None or not str(configured_assignment).strip()
+        ) and legacy_assignment is not None and str(legacy_assignment).strip()
+        assignment_method = resolve_target_assignment(cfg)
+        if uses_legacy_assignment_key and str(legacy_assignment).strip() != 'part_name':
+            # Preserve historical checkpoint-directory names exactly when an
+            # old resolved config/CLI uses the deprecated key.
+            suffixes.append(f'va_{str(legacy_assignment).strip()}')
+        elif assignment_method and assignment_method != 'part_name':
+            assignment_tags = {
+                'range_prior': 'rp',
+                'ordered_continuity': 'oc',
+                'range_masked_continuity': 'rmc',
+                'legacy_range_prior': 'legacy_rp',
+                'legacy_ordered_continuity': 'legacy_oc',
+                'legacy_range_masked_continuity': 'legacy_rmc',
+            }
+            suffixes.append(assignment_tags.get(assignment_method, f'target_{assignment_method}'))
         assignment_module = str(getattr(cfg.choral, 'assignment_module', 'heads')).strip()
         if assignment_module and assignment_module != 'heads':
             suffixes.append(f'vamod_{assignment_module}')

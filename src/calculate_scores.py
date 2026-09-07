@@ -31,20 +31,114 @@ from utilities import (
     resolve_post_processor_type,
     OnsetsFramesPostProcessor,
     RegressionPostProcessor,
-    get_dataset_hdf5s_dir,
     get_filename,
     get_model_name,
     note_to_freq,
-    traverse_folder,
-    decode_hdf5_attr,
 )
+from canonical_union import build_canonical_union_rolls, canonical_union_events
+from choral_targets import require_complete_satb_reference
+from probability_artifacts import ProbabilityArtifactValidator
 
 
 FIXED_ONSET_TOLERANCES = (0.05, 0.10)
+CHORAL_DATASETS = frozenset({'youchorale', 'youchorale_pro', 'csd', 'cantoria'})
 
 
 def tolerance_tag(onset_tolerance: float) -> str:
     return f"{int(round(onset_tolerance * 1000.0))}ms"
+
+
+def _choral_reference_path(cfg, recording_stem: str) -> str | None:
+    """Resolve the canonical note annotation used by choral PagCT scoring."""
+
+    if cfg is None or not hasattr(cfg, 'dataset'):
+        return None
+    dataset_name = str(cfg.dataset.test_set)
+    if dataset_name not in CHORAL_DATASETS:
+        return None
+    if dataset_name == 'youchorale':
+        note_dir = os.path.join(cfg.dataset.youchorale_dir, 'note')
+    elif dataset_name == 'youchorale_pro':
+        note_dir = os.path.join(cfg.dataset.youchorale_pro_dir, 'note')
+    elif dataset_name == 'csd':
+        note_dir = os.path.join(cfg.dataset.csd_dir, 'note')
+    else:
+        note_dir = os.path.join(
+            cfg.dataset.cantoria_dir,
+            f'note_{cfg.dataset.cantoria_f0_source}',
+        )
+    note_path = os.path.join(note_dir, f'{recording_stem}.pkl')
+    if not os.path.isfile(note_path):
+        raise FileNotFoundError(
+            f'Missing canonical choral reference for {recording_stem}: {note_path}'
+        )
+    return note_path
+
+
+def _canonical_choral_reference(cfg, hdf5_path, note_path, total_dict):
+    """Rebuild and verify formal PagCT ground truth from immutable annotations."""
+
+    with h5py.File(hdf5_path, 'r') as hdf5_file:
+        if 'waveform' not in hdf5_file:
+            raise RuntimeError(f'Packed recording has no waveform: {hdf5_path}')
+        duration = hdf5_file['waveform'].shape[0] / float(cfg.feature.sample_rate)
+    with open(note_path, 'rb') as note_file:
+        note_bars = pickle.load(note_file)
+    require_complete_satb_reference(
+        note_bars,
+        note_path,
+        begin_note=int(cfg.feature.begin_note),
+        classes_num=int(cfg.feature.classes_num),
+        recording_duration=duration,
+    )
+
+    union_events = canonical_union_events(
+        note_bars,
+        float(cfg.feature.frames_per_second),
+        begin_note=int(cfg.feature.begin_note),
+        classes_num=int(cfg.feature.classes_num),
+    )
+    reference = build_canonical_union_rolls(
+        note_bars,
+        start_time=0.0,
+        segment_seconds=duration,
+        frames_per_second=float(cfg.feature.frames_per_second),
+        begin_note=int(cfg.feature.begin_note),
+        classes_num=int(cfg.feature.classes_num),
+    )
+    reference['ref_on_off_pairs'] = np.asarray(
+        [[onset, offset] for _, onset, offset in union_events],
+        dtype=np.float32,
+    ).reshape(-1, 2)
+    reference['ref_midi_notes'] = np.asarray(
+        [pitch for pitch, _, _ in union_events],
+        dtype=np.int32,
+    )
+
+    # Formal artifacts are caches, not authorities. Reject a cache whose
+    # embedded ground truth disagrees with the source annotation so corruption
+    # cannot silently change a paper metric.
+    for key in (
+        'ref_on_off_pairs',
+        'ref_midi_notes',
+        'frame_roll',
+        'onset_roll',
+        'offset_roll',
+        'frame_mask_roll',
+    ):
+        if key not in total_dict:
+            raise RuntimeError(
+                f'Probability artifact is missing canonical reference field {key}: '
+                f'{hdf5_path}'
+            )
+        observed = np.asarray(total_dict[key])
+        expected = np.asarray(reference[key])
+        if observed.shape != expected.shape or not np.array_equal(observed, expected):
+            raise RuntimeError(
+                f'Probability artifact canonical reference mismatch for {key}: '
+                f'{hdf5_path}. Re-run inference from the current source annotations.'
+            )
+    return reference
 
 
 
@@ -64,8 +158,6 @@ class ScoreCalculator(object):
         self.eval_split = str(getattr(cfg.dataset, 'eval_split', 'validation'))
         if self.eval_split not in {'validation', 'test'}:
             raise ValueError("dataset.eval_split must be 'validation' or 'test'")
-        self.hdf5s_dir = get_dataset_hdf5s_dir(cfg, cfg.dataset.test_set)
-        _, self.hdf5_paths = traverse_folder(self.hdf5s_dir)
         model_name = get_model_name(cfg)
         self.probs_dir = os.path.join(
             cfg.exp.workspace,
@@ -76,13 +168,15 @@ class ScoreCalculator(object):
             f'{cfg.exp.ckpt_iteration}_iteration',
         )
         self.post_processor = build_post_processor(cfg)
+        self.artifact_validator = ProbabilityArtifactValidator(
+            cfg,
+            probs_dir=self.probs_dir,
+            eval_split=self.eval_split,
+        )
+        self.hdf5_paths = tuple(self.artifact_validator.hdf5_by_stem.values())
 
     def metrics(self):
-        list_args = []
-        for n, hdf5_path in enumerate(self.hdf5_paths):
-            with h5py.File(hdf5_path, 'r') as hf:
-                if decode_hdf5_attr(hf.attrs['split']) == self.eval_split:
-                    list_args.append([n, hdf5_path])
+        list_args = [[n, hdf5_path] for n, hdf5_path in enumerate(self.hdf5_paths)]
         stats_list = [self.calculate_score_per_song(arg) for arg in list_args]
         if not stats_list:
             return {}
@@ -177,21 +271,45 @@ class ScoreCalculator(object):
         prob_path = os.path.join(self.probs_dir, f'{get_filename(hdf5_path)}.pkl')
         with open(prob_path, 'rb') as fr:
             total_dict = pickle.load(fr)
+        # Formal scoring must never silently fall back to unverified artifacts.
+        # Tests or downstream diagnostic callers that bypass ``__init__`` must
+        # install an explicit validator rather than accidentally disabling it.
+        reference_path = _choral_reference_path(
+            getattr(self, 'cfg', None),
+            get_filename(hdf5_path),
+        )
+        self.artifact_validator.validate(
+            total_dict,
+            prob_path,
+            hdf5_path=hdf5_path,
+            reference_path=reference_path,
+        )
+        canonical_reference = (
+            _canonical_choral_reference(
+                self.cfg,
+                hdf5_path,
+                reference_path,
+                total_dict,
+            )
+            if reference_path is not None
+            else None
+        )
         post_input = deepcopy(total_dict)
         est_note_events, est_pedal_events = self.post_processor.output_dict_to_midi_events(post_input)
         est_on_offs, est_midi_notes = self._safe_note_arrays(est_note_events)
 
+        reference_source = canonical_reference or total_dict
         ref_on_off_pairs, ref_midi_notes = self._safe_ref_arrays(
-            total_dict['ref_on_off_pairs'],
-            total_dict['ref_midi_notes'],
+            reference_source['ref_on_off_pairs'],
+            reference_source['ref_midi_notes'],
         )
         return_dict = {}
 
         if self.cfg.score.evaluate_frame and 'frame_output' in total_dict:
             for suffix, values in self._frame_metrics(
-                total_dict['frame_roll'],
+                reference_source['frame_roll'],
                 total_dict['frame_output'],
-                mask=total_dict.get('frame_mask_roll'),
+                mask=reference_source.get('frame_mask_roll'),
                 threshold=self.cfg.post.frame_threshold,
             ).items():
                 return_dict[f'frame_{suffix}'] = values

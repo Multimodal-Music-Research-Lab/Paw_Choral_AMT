@@ -200,7 +200,9 @@ class PedalCRNN(nn.Module, FeatureExtractorMixin):
         }
 
 
-class FlexibleHPT(nn.Module, FeatureExtractorMixin):
+class PagCT(nn.Module, FeatureExtractorMixin):
+    """Part-agnostic choral transcription model."""
+
     def __init__(self, cfg):
         super().__init__()
         self._init_feature_extractor(cfg)
@@ -252,7 +254,9 @@ class FlexibleHPT(nn.Module, FeatureExtractorMixin):
         return output_dict
 
 
-class FlexibleHPTChoralStream(nn.Module, FeatureExtractorMixin):
+class PawCT(nn.Module, FeatureExtractorMixin):
+    """Part-aware choral transcription model with SATB output heads."""
+
     def __init__(self, cfg):
         super().__init__()
         self._init_feature_extractor(cfg)
@@ -260,6 +264,10 @@ class FlexibleHPTChoralStream(nn.Module, FeatureExtractorMixin):
         self.spec = get_task_spec(cfg)
         self.num_voices = int(getattr(cfg.choral, 'num_voices', 4))
         self.use_presence_head = bool(getattr(cfg.choral, 'use_presence_head', True))
+        # Historical checkpoints used the clip-level presence probability as a
+        # hard multiplicative cap on every note probability.  New configs keep
+        # the head as an auxiliary task without suppressing note recall.
+        self.apply_presence_gate = bool(getattr(cfg.choral, 'apply_presence_gate', True))
         self.assignment_module_name = str(getattr(cfg.choral, 'assignment_module', 'heads')).strip()
         self.assignment_temperature = float(getattr(cfg.choral, 'assignment_temperature', 1.0))
         self.voice_interaction_module_name = str(getattr(cfg.choral, 'voice_interaction_module', 'none')).strip()
@@ -440,7 +448,7 @@ class FlexibleHPTChoralStream(nn.Module, FeatureExtractorMixin):
         )
 
         voice_presence_logits, presence_gate = self._presence_gate(hidden)
-        if presence_gate is not None:
+        if presence_gate is not None and self.apply_presence_gate:
             voice_onset_output = voice_onset_output * presence_gate
             voice_frame_output = voice_frame_output * presence_gate
             if voice_offset_output is not None:
@@ -711,14 +719,34 @@ class FlexibleOnsetsAndFrames(nn.Module, FeatureExtractorMixin):
         return output_dict
 
 
+# Backward-compatible API names for historical configs, imports, and serialized
+# model objects. New code should import ``PagCT`` and ``PawCT`` directly. The
+# aliases deliberately point to the same classes, so state-dict keys are
+# unchanged and historical checkpoints remain loadable.
+FlexibleHPT = PagCT
+FlexibleHPTChoralStream = PawCT
+
+
 def build_model(cfg) -> nn.Module:
     spec = get_task_spec(cfg)
-    if getattr(cfg.choral, 'enable', False):
-        if spec.arch != 'hpt':
-            raise ValueError('Choral stream mode currently supports only model.arch=hpt')
-        return FlexibleHPTChoralStream(cfg)
+    choral_enabled = bool(getattr(cfg.choral, 'enable', False))
+
+    if spec.arch == 'pawct':
+        if not choral_enabled:
+            raise ValueError("model.arch='pawct' requires choral.enable=true")
+        return PawCT(cfg)
+    if spec.arch == 'pagct':
+        if choral_enabled:
+            raise ValueError("model.arch='pagct' requires choral.enable=false")
+        return PagCT(cfg)
+
+    # ``hpt`` is the historical architecture selector. Keep this branch so old
+    # resolved configurations select the same model family without changing
+    # checkpoint parameter names.
     if spec.arch == 'hpt':
-        return FlexibleHPT(cfg)
+        return PawCT(cfg) if choral_enabled else PagCT(cfg)
     if spec.arch == 'onf':
+        if choral_enabled:
+            raise ValueError("model.arch='onf' requires choral.enable=false")
         return FlexibleOnsetsAndFrames(cfg)
     raise ValueError(f'Unsupported model.arch={spec.arch}')

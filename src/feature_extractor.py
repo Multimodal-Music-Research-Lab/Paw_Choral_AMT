@@ -222,7 +222,7 @@ class LogMelExtractor(nn.Module):
     Usage profiles:
         - ISMIR2024 (Narang): sr=44100, n_fft=1024, fps=86, mel_bins=128
         - BeatThis ISMIR2024: sr=22050, n_fft=1024, fps=86, mel_bins=128
-        - HPT (Kong et al. 2020): sr=16000, n_fft=2048, fps=100, mel_bins=229
+        - Upstream HPT (Kong et al. 2021): sr=16000, n_fft=2048, fps=100, mel_bins=229
     Notes:
         - "slaney" scale suits perceptual tasks (dynamics, timbre)
         - "htk" scale suits pitch/transcription tasks
@@ -237,7 +237,7 @@ class LogMelExtractor(nn.Module):
         self.mel_bins = 229
         # Alt settings:
         # sample_rate=22050, fft_size=1024, frames_per_second=86  # BeatThis
-        # sample_rate=16000, fft_size=2048, frames_per_second=100; self.mel_bins=229  # HPT
+        # sample_rate=16000, fft_size=2048, frames_per_second=100; self.mel_bins=229  # upstream configuration
         hop_size, fmin, fmax = int(sample_rate // frames_per_second), 30, int(sample_rate // 2)
         self.mel_spectrogram = torchaudio.transforms.MelSpectrogram(
             sample_rate=sample_rate, n_fft=fft_size, hop_length=hop_size, n_mels=self.mel_bins,

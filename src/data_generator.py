@@ -4,13 +4,14 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import logging
 import math
 import os
 import pickle
 import time
-from itertools import combinations
+from collections.abc import Mapping
 
 import h5py
 import librosa
@@ -22,6 +23,8 @@ try:
 except Exception:
     sox = None
 
+from canonical_union import build_canonical_union_rolls
+from choral_targets import ChoralTargetBuilder, require_complete_satb_reference
 from utilities import (
     TargetProcessor,
     build_target_masks,
@@ -42,6 +45,211 @@ from utilities import (
 
 def _sr_tag(cfg):
     return f"sr{int(cfg.feature.sample_rate)}"
+
+
+NUMPY_RANDOM_STATE_FORMAT_VERSION = 1
+
+
+def serialize_numpy_random_state(random_state):
+    """Encode ``RandomState`` using only restricted-unpickler-safe values."""
+
+    if isinstance(random_state, np.random.RandomState):
+        random_state = random_state.get_state()
+    if not isinstance(random_state, (list, tuple)) or len(random_state) != 5:
+        raise TypeError(
+            'random_state must be numpy.random.RandomState or its five-item state, got '
+            f'{type(random_state).__name__}'
+        )
+    algorithm, keys, position, has_gauss, cached_gaussian = random_state
+    return {
+        'format_version': NUMPY_RANDOM_STATE_FORMAT_VERSION,
+        'algorithm': str(algorithm),
+        'keys': [int(key) for key in np.asarray(keys, dtype=np.uint32)],
+        'position': int(position),
+        'has_gauss': int(has_gauss),
+        'cached_gaussian': float(cached_gaussian),
+    }
+
+
+def deserialize_numpy_random_state(state):
+    """Decode a safe RNG mapping or an already-loaded historical tuple."""
+
+    if isinstance(state, Mapping):
+        required = {
+            'format_version',
+            'algorithm',
+            'keys',
+            'position',
+            'has_gauss',
+            'cached_gaussian',
+        }
+        missing = sorted(required.difference(state))
+        if missing:
+            raise ValueError(f'NumPy RNG state is incomplete: missing {missing}')
+        version = state['format_version']
+        if isinstance(version, bool) or not isinstance(version, (int, np.integer)):
+            raise ValueError(f'NumPy RNG format_version must be an integer, got {version!r}')
+        if int(version) != NUMPY_RANDOM_STATE_FORMAT_VERSION:
+            raise ValueError(
+                'Unsupported NumPy RNG format_version '
+                f'{version!r}; expected {NUMPY_RANDOM_STATE_FORMAT_VERSION}'
+            )
+
+        keys = state['keys']
+        if not isinstance(keys, list) or not keys:
+            raise ValueError('NumPy RNG keys must be a non-empty list of uint32 integers')
+        normalized_keys = []
+        for key in keys:
+            if isinstance(key, bool) or not isinstance(key, (int, np.integer)):
+                raise ValueError('NumPy RNG keys must contain only uint32 integers')
+            key = int(key)
+            if key < 0 or key > np.iinfo(np.uint32).max:
+                raise ValueError(f'NumPy RNG key is outside uint32 range: {key}')
+            normalized_keys.append(key)
+
+        position = state['position']
+        has_gauss = state['has_gauss']
+        if isinstance(position, bool) or not isinstance(position, (int, np.integer)):
+            raise ValueError(f'NumPy RNG position must be an integer, got {position!r}')
+        if isinstance(has_gauss, bool) or not isinstance(has_gauss, (int, np.integer)):
+            raise ValueError(f'NumPy RNG has_gauss must be 0 or 1, got {has_gauss!r}')
+        has_gauss = int(has_gauss)
+        if has_gauss not in {0, 1}:
+            raise ValueError(f'NumPy RNG has_gauss must be 0 or 1, got {has_gauss!r}')
+        try:
+            cached_gaussian = float(state['cached_gaussian'])
+        except (TypeError, ValueError) as exc:
+            raise ValueError('NumPy RNG cached_gaussian must be numeric') from exc
+        if not math.isfinite(cached_gaussian):
+            raise ValueError('NumPy RNG cached_gaussian must be finite')
+
+        decoded = (
+            str(state['algorithm']),
+            np.asarray(normalized_keys, dtype=np.uint32),
+            int(position),
+            has_gauss,
+            cached_gaussian,
+        )
+    elif isinstance(state, (list, tuple)) and len(state) == 5:
+        # Historical tuples can only enter a file-backed resume after the
+        # caller explicitly opts into unsafe legacy checkpoint loading.
+        algorithm, keys, position, has_gauss, cached_gaussian = state
+        decoded = (
+            algorithm,
+            np.asarray(keys, dtype=np.uint32),
+            position,
+            has_gauss,
+            cached_gaussian,
+        )
+    else:
+        raise ValueError('NumPy RNG state must be a versioned mapping')
+
+    validator = np.random.RandomState()
+    try:
+        validator.set_state(decoded)
+    except (IndexError, OverflowError, TypeError, ValueError) as exc:
+        raise ValueError('Invalid NumPy RNG state') from exc
+    return validator.get_state()
+
+
+def segment_start_times(duration, segment_seconds, hop_seconds):
+    """Return deterministic segment starts with complete recording coverage.
+
+    Every non-negative duration produces at least the start at zero. Longer
+    recordings also include all regular hop starts that fit before the final
+    full-length segment and an exact tail-aligned start. This keeps short and
+    exactly-one-segment recordings in the dataset and avoids dropping a tail
+    when the hop does not land on it.
+    """
+
+    duration = float(duration)
+    segment_seconds = float(segment_seconds)
+    hop_seconds = float(hop_seconds)
+    if not math.isfinite(duration) or duration < 0:
+        raise ValueError(f'duration must be finite and non-negative, got {duration!r}')
+    if not math.isfinite(segment_seconds) or segment_seconds <= 0:
+        raise ValueError(
+            f'segment_seconds must be finite and positive, got {segment_seconds!r}'
+        )
+    if not math.isfinite(hop_seconds) or hop_seconds <= 0:
+        raise ValueError(f'hop_seconds must be finite and positive, got {hop_seconds!r}')
+
+    tail_start = max(0.0, duration - segment_seconds)
+    starts = [0.0]
+    regular_start = hop_seconds
+    while regular_start < tail_start:
+        starts.append(float(regular_start))
+        regular_start += hop_seconds
+
+    if tail_start > 0:
+        if math.isclose(starts[-1], tail_start, rel_tol=1e-9, abs_tol=1e-9):
+            starts[-1] = float(tail_start)
+        else:
+            starts.append(float(tail_start))
+    return starts
+
+
+def resolve_segment_bounds(
+    requested_start_time,
+    waveform_samples,
+    sample_rate,
+    segment_samples,
+):
+    """Resolve a requested segment to waveform bounds and its actual start."""
+
+    requested_start_time = float(requested_start_time)
+    waveform_samples = int(waveform_samples)
+    sample_rate = float(sample_rate)
+    segment_samples = int(segment_samples)
+    if not math.isfinite(requested_start_time) or requested_start_time < 0:
+        raise ValueError(
+            'requested_start_time must be finite and non-negative, '
+            f'got {requested_start_time!r}'
+        )
+    if waveform_samples < 0:
+        raise ValueError(f'waveform_samples must be non-negative, got {waveform_samples}')
+    if not math.isfinite(sample_rate) or sample_rate <= 0:
+        raise ValueError(f'sample_rate must be finite and positive, got {sample_rate!r}')
+    if segment_samples <= 0:
+        raise ValueError(f'segment_samples must be positive, got {segment_samples}')
+
+    requested_start_sample = int(round(requested_start_time * sample_rate))
+    maximum_start_sample = max(0, waveform_samples - segment_samples)
+    start_sample = min(requested_start_sample, maximum_start_sample)
+    end_sample = start_sample + segment_samples
+    actual_start_time = start_sample / sample_rate
+    return start_sample, end_sample, actual_start_time
+
+
+_FILE_SHA256_CACHE = {}
+
+
+def _file_sha256(path, chunk_size=1024 * 1024):
+    """Hash immutable sampler inputs without repeatedly rereading large HDF5s."""
+
+    stat_result = os.stat(path)
+    cache_key = (
+        os.path.realpath(path),
+        stat_result.st_dev,
+        stat_result.st_ino,
+        stat_result.st_size,
+        stat_result.st_mtime_ns,
+        stat_result.st_ctime_ns,
+    )
+    cached = _FILE_SHA256_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    digest = hashlib.sha256()
+    with open(path, 'rb') as file_handle:
+        while True:
+            chunk = file_handle.read(chunk_size)
+            if not chunk:
+                break
+            digest.update(chunk)
+    value = digest.hexdigest()
+    _FILE_SHA256_CACHE[cache_key] = value
+    return value
 
 
 
@@ -585,17 +793,18 @@ class BasePianoDataset:
             return 0
         return int(self.random_state.randint(-self.cfg.feature.max_note_shift, self.cfg.feature.max_note_shift + 1))
 
-    def __getitem__(self, meta):
+    def _load_base_item(self, meta):
         hdf5_path = self._get_hdf5_path(meta)
-        start_time = self._get_start_time(meta)
+        requested_start_time = self._get_start_time(meta)
         note_shift = self._get_note_shift()
 
         with h5py.File(hdf5_path, 'r') as hf:
-            start_sample = int(start_time * self.cfg.feature.sample_rate)
-            end_sample = start_sample + self.segment_samples
-            if end_sample >= hf['waveform'].shape[0]:
-                start_sample = max(0, hf['waveform'].shape[0] - self.segment_samples)
-                end_sample = start_sample + self.segment_samples
+            start_sample, end_sample, actual_start_time = resolve_segment_bounds(
+                requested_start_time=requested_start_time,
+                waveform_samples=hf['waveform'].shape[0],
+                sample_rate=self.cfg.feature.sample_rate,
+                segment_samples=self.segment_samples,
+            )
 
             waveform = int16_to_float32(hf['waveform'][start_sample:end_sample])
             waveform = pad_truncate_sequence(waveform, self.segment_samples).astype(np.float32)
@@ -615,7 +824,7 @@ class BasePianoDataset:
             midi_events = [e.decode() for e in hf['midi_event'][:]]
             midi_events_time = hf['midi_event_time'][:]
             target_dict, note_events, _ = self.target_processor.process(
-                start_time,
+                actual_start_time,
                 midi_events_time,
                 midi_events,
                 extend_pedal=True,
@@ -627,9 +836,13 @@ class BasePianoDataset:
         data_dict.update(target_dict)
 
         if self.cfg.exp.debug:
-            plot_waveform_midi_targets(data_dict, start_time, note_events, self.cfg)
+            plot_waveform_midi_targets(data_dict, actual_start_time, note_events, self.cfg)
             raise SystemExit
 
+        return data_dict, actual_start_time
+
+    def __getitem__(self, meta):
+        data_dict, _ = self._load_base_item(meta)
         return data_dict
 
 
@@ -648,36 +861,32 @@ class SMD_Dataset(BasePianoDataset):
         super().__init__(cfg, 'smd', is_training)
 
 
-class ChoralSATBDataset(BasePianoDataset):
-    def __init__(self, cfg, dataset_name: str, is_training: bool = True):
+class ChoralUnionDataset(BasePianoDataset):
+    """Use ``note.pkl`` as the single canonical source for choral note targets.
+
+    The packed merged MIDI is retained for backwards-compatible audio storage,
+    but it cannot represent overlapping same-pitch notes from different parts:
+    the historical event parser keyed active notes by pitch and overwrote one
+    voice with another.  Both PagCT and PawCT therefore build their shared
+    part-agnostic targets from the complete, track-aware note annotations.
+    """
+
+    def __init__(
+        self,
+        cfg,
+        dataset_name: str,
+        is_training: bool = True,
+        formal_evaluation: bool = False,
+    ):
         super().__init__(cfg, dataset_name, is_training)
+        self.formal_evaluation = bool(formal_evaluation)
         if int(getattr(cfg.feature, 'max_note_shift', 0)) != 0:
             raise ValueError(
-                'Online note shifting is disabled for ChoralSATBDataset because the current '
-                'voice-target builder does not shift SATB labels. Use a pre-generated, '
-                'synchronously transposed dataset or implement and test label shifting first.'
+                'Online note shifting is disabled for choral datasets because waveform '
+                'pitch shifting is not yet paired with an identical transformation of '
+                'note.pkl targets. Use a pre-generated, synchronously transposed dataset.'
             )
         self.note_dir = _get_choral_note_dir(cfg, dataset_name)
-        self.frames_per_second = cfg.feature.frames_per_second
-        self.frames_num = int(round(cfg.feature.segment_seconds * self.frames_per_second)) + 1
-        self.begin_note = cfg.feature.begin_note
-        self.classes_num = cfg.feature.classes_num
-        self.num_voices = int(getattr(cfg.choral, 'num_voices', 4))
-        self.voice_names = list(getattr(cfg.choral, 'voice_names', ['S', 'A', 'T', 'B']))
-        self.voice_assignment_method = str(getattr(cfg.choral, 'voice_assignment_method', 'part_name')).strip()
-        self.voice_assignment_part_penalty = float(getattr(cfg.choral, 'voice_assignment_part_penalty', 2.0))
-        self.voice_assignment_continuity_weight = float(getattr(cfg.choral, 'voice_assignment_continuity_weight', 0.35))
-        self.voice_assignment_overlap_penalty = float(getattr(cfg.choral, 'voice_assignment_overlap_penalty', 4.0))
-        self.voice_assignment_range_mins = self._normalize_voice_setting(
-            getattr(cfg.choral, 'voice_assignment_range_mins', [60, 55, 48, 40]),
-            [60, 55, 48, 40],
-        )
-        self.voice_assignment_range_maxs = self._normalize_voice_setting(
-            getattr(cfg.choral, 'voice_assignment_range_maxs', [88, 79, 72, 67]),
-            [88, 79, 72, 67],
-        )
-        self.voice_assignment_range_margin = float(getattr(cfg.choral, 'voice_assignment_range_margin', 2.0))
-        self.voice_assignment_mask_penalty = float(getattr(cfg.choral, 'voice_assignment_mask_penalty', 8.0))
         self.note_cache = {}
 
     def _get_stem(self, meta):
@@ -693,305 +902,96 @@ class ChoralSATBDataset(BasePianoDataset):
                 )
             with open(note_path, 'rb') as f:
                 self.note_cache[stem] = pickle.load(f)
+            if self.formal_evaluation:
+                require_complete_satb_reference(
+                    self.note_cache[stem],
+                    note_path,
+                    begin_note=int(self.cfg.feature.begin_note),
+                    classes_num=int(self.cfg.feature.classes_num),
+                )
         return self.note_cache[stem]
 
-    def _voice_index(self, part_name: str):
-        if not part_name:
-            return None
-        part_head = part_name[0].upper()
-        if part_head not in self.voice_names:
-            return None
-        return self.voice_names.index(part_head)
-
-    def _normalize_voice_setting(self, values, default_values):
-        values = default_values if values is None else list(values)
-        if len(values) != self.num_voices:
-            raise ValueError(
-                f'voice assignment config expects {self.num_voices} values, got {len(values)}'
-            )
-        return [float(v) for v in values]
-
-    def _bars_to_note_events(self, note_bars):
-        events = []
-        for bar in note_bars:
-            if not isinstance(bar, dict):
-                continue
-            for part_name, note_list in bar.items():
-                if part_name == 'measure':
-                    continue
-                if not isinstance(note_list, list):
-                    continue
-                for note in note_list:
-                    if len(note) < 5:
-                        continue
-                    midi_note = int(note[0])
-                    onset_time = float(note[3])
-                    offset_time = float(note[4])
-                    if offset_time <= onset_time:
-                        offset_time = onset_time + 1e-4
-                    if self.begin_note <= midi_note < self.begin_note + self.classes_num:
-                        events.append(
-                            {
-                                'part_name': part_name,
-                                'part_voice_idx': self._voice_index(part_name),
-                                'midi_note': midi_note,
-                                'onset_time': onset_time,
-                                'offset_time': offset_time,
-                            }
-                        )
-        events.sort(key=lambda x: (x['onset_time'], -x['midi_note'], x['offset_time']))
-        return events
-
-    def _range_cost(self, midi_note: int, voice_idx: int):
-        low = self.voice_assignment_range_mins[voice_idx]
-        high = self.voice_assignment_range_maxs[voice_idx]
-        center = 0.5 * (low + high)
-        below = max(0.0, low - midi_note)
-        above = max(0.0, midi_note - high)
-        return below + above + 0.25 * abs(midi_note - center) / 12.0
-
-    def _voice_in_masked_range(self, midi_note: int, voice_idx: int):
-        low = self.voice_assignment_range_mins[voice_idx] - self.voice_assignment_range_margin
-        high = self.voice_assignment_range_maxs[voice_idx] + self.voice_assignment_range_margin
-        return low <= midi_note <= high
-
-    def _assignment_cost(self, event, voice_idx: int, last_pitch_by_voice=None, last_offset_by_voice=None):
-        cost = self._range_cost(event['midi_note'], voice_idx)
-        if event.get('part_voice_idx') is not None and event['part_voice_idx'] != voice_idx:
-            cost += self.voice_assignment_part_penalty
-        if last_pitch_by_voice is not None and voice_idx in last_pitch_by_voice:
-            cost += self.voice_assignment_continuity_weight * abs(
-                event['midi_note'] - last_pitch_by_voice[voice_idx]
-            ) / 12.0
-        if (
-            last_offset_by_voice is not None
-            and voice_idx in last_offset_by_voice
-            and event['onset_time'] < last_offset_by_voice[voice_idx]
-        ):
-            cost += self.voice_assignment_overlap_penalty
-        return cost
-
-    def _masked_assignment_cost(self, event, voice_idx: int, last_pitch_by_voice=None, last_offset_by_voice=None):
-        cost = self._assignment_cost(
-            event,
-            voice_idx,
-            last_pitch_by_voice=last_pitch_by_voice,
-            last_offset_by_voice=last_offset_by_voice,
+    def _build_union_rolls(self, stem: str, start_time: float):
+        return build_canonical_union_rolls(
+            self._load_note_bars(stem),
+            start_time=start_time,
+            segment_seconds=float(self.cfg.feature.segment_seconds),
+            frames_per_second=float(self.cfg.feature.frames_per_second),
+            begin_note=int(self.cfg.feature.begin_note),
+            classes_num=int(self.cfg.feature.classes_num),
         )
-        if not self._voice_in_masked_range(event['midi_note'], voice_idx):
-            cost += self.voice_assignment_mask_penalty
-        return cost
-
-    def _events_to_voice_tuples(self, assigned_events):
-        return [
-            (voice_idx, event['midi_note'], event['onset_time'], event['offset_time'])
-            for voice_idx, event in assigned_events
-        ]
-
-    def _assign_events_part_name(self, note_events):
-        assigned_events = []
-        for event in note_events:
-            voice_idx = event.get('part_voice_idx')
-            if voice_idx is None:
-                continue
-            assigned_events.append((voice_idx, event))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _assign_events_range_prior(self, note_events):
-        assigned_events = []
-        for event in note_events:
-            best_voice_idx = min(
-                range(self.num_voices),
-                key=lambda voice_idx: self._assignment_cost(event, voice_idx),
-            )
-            assigned_events.append((best_voice_idx, event))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _group_by_onset_frame(self, note_events):
-        grouped = {}
-        for event in note_events:
-            onset_frame = int(np.round(event['onset_time'] * self.frames_per_second))
-            grouped.setdefault(onset_frame, []).append(event)
-        return [grouped[key] for key in sorted(grouped)]
-
-    def _assign_group_ordered_continuity(self, group, last_pitch_by_voice, last_offset_by_voice):
-        group = sorted(group, key=lambda x: (-x['midi_note'], x['onset_time'], x['offset_time']))
-        if len(group) > self.num_voices:
-            return [
-                (
-                    min(
-                        range(self.num_voices),
-                        key=lambda voice_idx: self._assignment_cost(
-                            event,
-                            voice_idx,
-                            last_pitch_by_voice=last_pitch_by_voice,
-                            last_offset_by_voice=last_offset_by_voice,
-                        ),
-                    ),
-                    event,
-                )
-                for event in group
-            ]
-
-        best_assignment = None
-        best_cost = float('inf')
-        for voice_combo in combinations(range(self.num_voices), len(group)):
-            cost = 0.0
-            candidate = []
-            for event, voice_idx in zip(group, voice_combo):
-                cost += self._assignment_cost(
-                    event,
-                    voice_idx,
-                    last_pitch_by_voice=last_pitch_by_voice,
-                    last_offset_by_voice=last_offset_by_voice,
-                )
-                candidate.append((voice_idx, event))
-            if cost < best_cost:
-                best_cost = cost
-                best_assignment = candidate
-        return best_assignment or []
-
-    def _assign_events_ordered_continuity(self, note_events):
-        last_pitch_by_voice = {}
-        last_offset_by_voice = {}
-        assigned_events = []
-
-        for group in self._group_by_onset_frame(note_events):
-            group_assignment = self._assign_group_ordered_continuity(
-                group,
-                last_pitch_by_voice,
-                last_offset_by_voice,
-            )
-            for voice_idx, event in group_assignment:
-                last_pitch_by_voice[voice_idx] = event['midi_note']
-                last_offset_by_voice[voice_idx] = event['offset_time']
-                assigned_events.append((voice_idx, event))
-
-        assigned_events.sort(key=lambda x: (x[1]['onset_time'], x[0], x[1]['midi_note']))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _assign_group_range_masked_continuity(self, group, last_pitch_by_voice, last_offset_by_voice):
-        group = sorted(group, key=lambda x: (-x['midi_note'], x['onset_time'], x['offset_time']))
-        if len(group) > self.num_voices:
-            return [
-                (
-                    min(
-                        range(self.num_voices),
-                        key=lambda voice_idx: self._masked_assignment_cost(
-                            event,
-                            voice_idx,
-                            last_pitch_by_voice=last_pitch_by_voice,
-                            last_offset_by_voice=last_offset_by_voice,
-                        ),
-                    ),
-                    event,
-                )
-                for event in group
-            ]
-
-        best_assignment = None
-        best_cost = float('inf')
-        for voice_combo in combinations(range(self.num_voices), len(group)):
-            cost = 0.0
-            candidate = []
-            for event, voice_idx in zip(group, voice_combo):
-                cost += self._masked_assignment_cost(
-                    event,
-                    voice_idx,
-                    last_pitch_by_voice=last_pitch_by_voice,
-                    last_offset_by_voice=last_offset_by_voice,
-                )
-                candidate.append((voice_idx, event))
-            if cost < best_cost:
-                best_cost = cost
-                best_assignment = candidate
-        return best_assignment or []
-
-    def _assign_events_range_masked_continuity(self, note_events):
-        last_pitch_by_voice = {}
-        last_offset_by_voice = {}
-        assigned_events = []
-
-        for group in self._group_by_onset_frame(note_events):
-            group_assignment = self._assign_group_range_masked_continuity(
-                group,
-                last_pitch_by_voice,
-                last_offset_by_voice,
-            )
-            for voice_idx, event in group_assignment:
-                last_pitch_by_voice[voice_idx] = event['midi_note']
-                last_offset_by_voice[voice_idx] = event['offset_time']
-                assigned_events.append((voice_idx, event))
-
-        assigned_events.sort(key=lambda x: (x[1]['onset_time'], x[0], x[1]['midi_note']))
-        return self._events_to_voice_tuples(assigned_events)
-
-    def _bars_to_voice_events(self, note_bars):
-        note_events = self._bars_to_note_events(note_bars)
-        method = self.voice_assignment_method
-
-        if method == 'part_name':
-            return self._assign_events_part_name(note_events)
-        if method == 'range_prior':
-            return self._assign_events_range_prior(note_events)
-        if method == 'ordered_continuity':
-            return self._assign_events_ordered_continuity(note_events)
-        if method == 'range_masked_continuity':
-            return self._assign_events_range_masked_continuity(note_events)
-
-        raise ValueError(f'Unsupported choral.voice_assignment_method: {method}')
-
-    def _build_voice_rolls(self, stem: str, start_time: float):
-        voice_frame_roll = np.zeros((self.frames_num, self.num_voices, self.classes_num), dtype=np.float32)
-        voice_onset_roll = np.zeros_like(voice_frame_roll)
-        voice_offset_roll = np.zeros_like(voice_frame_roll)
-        voice_presence = np.zeros((self.num_voices,), dtype=np.float32)
-
-        segment_end = start_time + self.cfg.feature.segment_seconds
-        events = self._bars_to_voice_events(self._load_note_bars(stem))
-
-        for voice_idx, midi_note, onset_time, offset_time in events:
-            if offset_time <= start_time or onset_time >= segment_end:
-                continue
-
-            note_idx = midi_note - self.begin_note
-            local_onset = max(onset_time, start_time)
-            local_offset = min(offset_time, segment_end)
-
-            onset_frame = int(np.clip(np.round((local_onset - start_time) * self.frames_per_second), 0, self.frames_num - 1))
-            offset_frame = int(np.clip(np.round((local_offset - start_time) * self.frames_per_second), 0, self.frames_num - 1))
-            if offset_frame < onset_frame:
-                offset_frame = onset_frame
-
-            voice_frame_roll[onset_frame : offset_frame + 1, voice_idx, note_idx] = 1.0
-            if start_time <= onset_time < segment_end:
-                true_onset_frame = int(np.clip(np.round((onset_time - start_time) * self.frames_per_second), 0, self.frames_num - 1))
-                voice_onset_roll[true_onset_frame, voice_idx, note_idx] = 1.0
-            if getattr(self.target_processor, 'frames_per_second', self.frames_per_second) and start_time <= offset_time < segment_end:
-                true_offset_frame = int(np.clip(np.round((offset_time - start_time) * self.frames_per_second), 0, self.frames_num - 1))
-                voice_offset_roll[true_offset_frame, voice_idx, note_idx] = 1.0
-            voice_presence[voice_idx] = 1.0
-
-        return {
-            'voice_frame_roll': voice_frame_roll,
-            'voice_onset_roll': voice_onset_roll,
-            'voice_offset_roll': voice_offset_roll,
-            'voice_presence': voice_presence,
-        }
 
     def __getitem__(self, meta):
-        data_dict = super().__getitem__(meta)
-        start_time = self._get_start_time(meta)
+        data_dict, actual_start_time = self._load_base_item(meta)
+        stem = self._get_stem(meta)
+        data_dict.update(self._build_union_rolls(stem, actual_start_time))
+        return data_dict
+
+
+class ChoralSATBDataset(ChoralUnionDataset):
+    """Canonical choral union targets plus explicit SATB voice targets."""
+
+    def __init__(
+        self,
+        cfg,
+        dataset_name: str,
+        is_training: bool = True,
+        formal_evaluation: bool = False,
+    ):
+        super().__init__(
+            cfg,
+            dataset_name,
+            is_training=is_training,
+            formal_evaluation=formal_evaluation,
+        )
+        evaluation_assignment = None
+        if not is_training:
+            evaluation_assignment = str(
+                getattr(cfg.choral, 'evaluation_reference_assignment', 'part_name')
+            ).strip().lower().replace('-', '_')
+            if evaluation_assignment != 'part_name':
+                raise ValueError(
+                    'Validation/test targets require '
+                    'choral.evaluation_reference_assignment=part_name'
+                )
+        self.choral_target_builder = ChoralTargetBuilder(
+            cfg,
+            segment_seconds=cfg.feature.segment_seconds,
+            target_assignment=evaluation_assignment,
+        )
+
+    def _build_voice_rolls(
+        self,
+        stem: str,
+        start_time: float,
+        frame_mask_roll=None,
+        onset_mask_roll=None,
+        offset_mask_roll=None,
+    ):
+        return self.choral_target_builder.build(
+            self._load_note_bars(stem),
+            start_time=start_time,
+            frame_mask_roll=frame_mask_roll,
+            onset_mask_roll=onset_mask_roll,
+            offset_mask_roll=offset_mask_roll,
+        )
+
+    def __getitem__(self, meta):
+        data_dict, actual_start_time = self._load_base_item(meta)
         stem = self._get_stem(meta)
 
-        voice_target_dict = self._build_voice_rolls(stem, start_time)
-        frame_mask_roll = data_dict['frame_mask_roll']
-        onset_mask_roll = data_dict['onset_mask_roll']
-        offset_mask_roll = data_dict['offset_mask_roll']
+        # Replace the merged-MIDI global targets before deriving voice masks.
+        # Complete note.pkl intervals make all three target masks observable,
+        # including notes crossing a segment boundary.
+        data_dict.update(self._build_union_rolls(stem, actual_start_time))
 
-        voice_target_dict['voice_frame_mask_roll'] = np.repeat(frame_mask_roll[:, None, :], self.num_voices, axis=1)
-        voice_target_dict['voice_onset_mask_roll'] = np.repeat(onset_mask_roll[:, None, :], self.num_voices, axis=1)
-        voice_target_dict['voice_offset_mask_roll'] = np.repeat(offset_mask_roll[:, None, :], self.num_voices, axis=1)
+        voice_target_dict = self._build_voice_rolls(
+            stem,
+            actual_start_time,
+            frame_mask_roll=data_dict['frame_mask_roll'],
+            onset_mask_roll=data_dict['onset_mask_roll'],
+            offset_mask_roll=data_dict['offset_mask_roll'],
+        )
 
         data_dict.update(voice_target_dict)
         return data_dict
@@ -1033,14 +1033,19 @@ class Augmentor:
 
 
 class Sampler:
+    STATE_VERSION = 2
+
     def __init__(self, cfg, split, is_eval=None):
         assert split in ['train', 'validation', 'test']
         self.cfg = cfg
         self.split = split
-        self.batch_size = cfg.exp.batch_size
+        self.batch_size = int(cfg.exp.batch_size)
+        if self.batch_size <= 0:
+            raise ValueError(f'exp.batch_size must be positive, got {self.batch_size}')
         self.segment_seconds = cfg.feature.segment_seconds
         self.hop_seconds = cfg.feature.hop_seconds
-        self.random_state = np.random.RandomState(cfg.exp.random_seed)
+        self.random_seed = int(cfg.exp.random_seed)
+        self.random_state = np.random.RandomState(self.random_seed)
         self.mini_data = cfg.exp.mini_data
         # For evaluation loaders, `is_eval` tells us which dataset we are actually
         # iterating over (e.g. validate on youchorale while training on
@@ -1048,9 +1053,18 @@ class Sampler:
         # validation because the sampler and dataset point at different HDF5 roots.
         self.dataset_type = is_eval if is_eval is not None else cfg.dataset.train_set
         self.hdf5s_dir = get_dataset_hdf5s_dir(cfg, self.dataset_type)
+        self.choral_note_dir = None
+        if self.dataset_type in {
+            'youchorale',
+            'youchorale_pro',
+            'csd',
+            'cantoria',
+        }:
+            self.choral_note_dir = _get_choral_note_dir(cfg, self.dataset_type)
 
         _, hdf5_paths = traverse_folder(self.hdf5s_dir)
         self.segment_list = []
+        self.hdf5_content_manifest = []
         file_counter = 0
 
         for hdf5_path in hdf5_paths:
@@ -1064,25 +1078,132 @@ class Sampler:
                 else:
                     file_id = [audio_name]
 
-                start_time = 0.0
-                duration = float(hf.attrs['duration'])
-                while start_time + self.segment_seconds < duration:
+                # Waveform samples are the extraction boundary used by the
+                # dataset loader, so they are also authoritative for segment
+                # coverage. Metadata duration can differ after resampling.
+                duration = hf['waveform'].shape[0] / float(cfg.feature.sample_rate)
+                for start_time in segment_start_times(
+                    duration,
+                    self.segment_seconds,
+                    self.hop_seconds,
+                ):
                     self.segment_list.append(file_id + [start_time])
-                    start_time += self.hop_seconds
 
-                file_counter += 1
-                if self.mini_data and file_counter >= 10:
-                    break
+            relative_path = os.path.relpath(hdf5_path, self.hdf5s_dir).replace(
+                os.sep,
+                '/',
+            )
+            manifest_entry = {
+                'path': relative_path,
+                'sha256': _file_sha256(hdf5_path),
+            }
+            if self.choral_note_dir is not None:
+                stem = os.path.splitext(audio_name)[0]
+                note_path = os.path.join(self.choral_note_dir, f'{stem}.pkl')
+                if not os.path.isfile(note_path):
+                    raise FileNotFoundError(
+                        f'Missing SATB note annotation for {stem}: {note_path}. '
+                        'Cannot establish the sampler data identity.'
+                    )
+                manifest_entry['satb_reference'] = {
+                    'path': f'{stem}.pkl',
+                    'sha256': _file_sha256(note_path),
+                }
+            self.hdf5_content_manifest.append(manifest_entry)
+
+            file_counter += 1
+            if self.mini_data and file_counter >= 10:
+                break
 
         logging.info('%s %s segments: %d', 'eval' if is_eval else 'train', split, len(self.segment_list))
-        self.pointer = 0
-        self.segment_indexes = np.arange(len(self.segment_list))
-        if len(self.segment_indexes) > 0:
-            self.random_state.shuffle(self.segment_indexes)
-        else:
+        if not self.segment_list:
             raise RuntimeError(
                 f'No segments found for dataset={self.dataset_type}, split={split}, hdf5s_dir={self.hdf5s_dir}'
             )
+        self.segment_identity = self._compute_segment_identity()
+        self.pointer = 0
+        self.next_batch_index = 0
+        self.segment_indexes = np.arange(len(self.segment_list))
+        self.random_state.shuffle(self.segment_indexes)
+
+    def _compute_segment_identity(self):
+        encoded_segments = json.dumps(
+            {
+                'segments': self.segment_list,
+                'hdf5_content_manifest': self.hdf5_content_manifest,
+            },
+            ensure_ascii=True,
+            allow_nan=False,
+            separators=(',', ':'),
+        ).encode('utf-8')
+        return hashlib.sha256(encoded_segments).hexdigest()
+
+    def _make_state_dict(
+        self,
+        *,
+        pointer,
+        segment_indexes,
+        random_state,
+        next_batch_index,
+    ):
+        return {
+            'sampler_state_version': self.STATE_VERSION,
+            'dataset_type': self.dataset_type,
+            'split': self.split,
+            'batch_size': self.batch_size,
+            'random_seed': self.random_seed,
+            'segment_identity': self.segment_identity,
+            'hdf5_content_manifest': [
+                dict(item) for item in self.hdf5_content_manifest
+            ],
+            'pointer': int(pointer),
+            'segment_indexes': [
+                int(index) for index in np.asarray(segment_indexes, dtype=np.int64)
+            ],
+            'random_state': serialize_numpy_random_state(random_state),
+            'next_batch_index': int(next_batch_index),
+        }
+
+    def state_dict_for_batch(self, batch_index):
+        """Return exact state before a zero-based logical batch, without mutation.
+
+        This reconstructs from the configured seed instead of copying the live
+        pointer, which may already be ahead of the optimizer because a
+        multi-worker DataLoader prefetches batches.
+        """
+
+        if isinstance(batch_index, bool) or not isinstance(batch_index, (int, np.integer)):
+            raise TypeError(f'batch_index must be an integer, got {type(batch_index).__name__}')
+        batch_index = int(batch_index)
+        if batch_index < 0:
+            raise ValueError(f'batch_index must be non-negative, got {batch_index}')
+
+        random_state = np.random.RandomState(self.random_seed)
+        segment_indexes = np.arange(len(self.segment_list))
+        random_state.shuffle(segment_indexes)
+        pointer = 0
+        remaining_examples = batch_index * self.batch_size
+
+        while remaining_examples > 0:
+            examples_until_shuffle = len(segment_indexes) - pointer
+            consumed = min(remaining_examples, examples_until_shuffle)
+            pointer += consumed
+            remaining_examples -= consumed
+            if pointer == len(segment_indexes):
+                pointer = 0
+                random_state.shuffle(segment_indexes)
+
+        return self._make_state_dict(
+            pointer=pointer,
+            segment_indexes=segment_indexes,
+            random_state=random_state,
+            next_batch_index=batch_index,
+        )
+
+    def seek_batch(self, batch_index):
+        """Move this sampler to the state before ``batch_index``."""
+
+        self.load_state_dict(self.state_dict_for_batch(batch_index))
 
     def __iter__(self):
         while True:
@@ -1094,6 +1215,7 @@ class Sampler:
                     self.pointer = 0
                     self.random_state.shuffle(self.segment_indexes)
                 batch_segment_list.append(self.segment_list[index])
+            self.next_batch_index += 1
             yield batch_segment_list
 
     def __len__(self):
@@ -1102,31 +1224,168 @@ class Sampler:
         return int(np.ceil(len(self.segment_list) / self.batch_size))
 
     def state_dict(self):
-        return {'pointer': self.pointer, 'segment_indexes': self.segment_indexes}
+        return self._make_state_dict(
+            pointer=self.pointer,
+            segment_indexes=self.segment_indexes,
+            random_state=self.random_state,
+            next_batch_index=self.next_batch_index,
+        )
 
     def load_state_dict(self, state):
-        self.pointer = state['pointer']
-        self.segment_indexes = state['segment_indexes']
+        required_keys = {
+            'sampler_state_version',
+            'dataset_type',
+            'split',
+            'batch_size',
+            'random_seed',
+            'segment_identity',
+            'hdf5_content_manifest',
+            'pointer',
+            'segment_indexes',
+            'random_state',
+            'next_batch_index',
+        }
+        if not isinstance(state, dict):
+            raise TypeError(f'sampler state must be a dict, got {type(state).__name__}')
+        missing_keys = sorted(required_keys.difference(state))
+        if missing_keys:
+            raise ValueError(
+                'Sampler state is missing exact-resume metadata '
+                f'{missing_keys}. Refusing an inexact legacy restore; reconstruct '
+                'explicitly with seek_batch(batch_index) instead.'
+            )
+        state_version = state['sampler_state_version']
+        if isinstance(state_version, bool) or not isinstance(
+            state_version,
+            (int, np.integer),
+        ):
+            raise ValueError(
+                f'sampler_state_version must be an integer, got {state_version!r}'
+            )
+        state_version = int(state_version)
+        if state_version not in {1, self.STATE_VERSION}:
+            raise ValueError(
+                'Unsupported sampler_state_version '
+                f'{state["sampler_state_version"]!r}; expected 1 or {self.STATE_VERSION}'
+            )
+
+        if state_version == self.STATE_VERSION:
+            if not isinstance(state['segment_indexes'], list):
+                raise ValueError(
+                    'Sampler state v2 segment_indexes must be a primitive list'
+                )
+            if not isinstance(state['random_state'], Mapping):
+                raise ValueError(
+                    'Sampler state v2 random_state must be a versioned mapping'
+                )
+
+        expected_metadata = {
+            'dataset_type': self.dataset_type,
+            'split': self.split,
+            'batch_size': self.batch_size,
+            'random_seed': self.random_seed,
+            'segment_identity': self.segment_identity,
+            'hdf5_content_manifest': self.hdf5_content_manifest,
+        }
+        mismatches = {
+            key: (expected, state[key])
+            for key, expected in expected_metadata.items()
+            if state[key] != expected
+        }
+        if mismatches:
+            mismatch_text = ', '.join(
+                f'{key}: current={current!r}, checkpoint={saved!r}'
+                for key, (current, saved) in sorted(mismatches.items())
+            )
+            raise ValueError(f'Sampler state does not match the current segments/config: {mismatch_text}')
+
+        indexes = np.asarray(state['segment_indexes'])
+        if not np.issubdtype(indexes.dtype, np.integer):
+            raise ValueError('segment_indexes must contain integers')
+        indexes = indexes.astype(np.int64, copy=True)
+        expected_indexes = np.arange(len(self.segment_list), dtype=np.int64)
+        if indexes.shape != expected_indexes.shape or not np.array_equal(
+            np.sort(indexes),
+            expected_indexes,
+        ):
+            raise ValueError('segment_indexes must be a permutation of the current segment list')
+
+        pointer_value = state['pointer']
+        if isinstance(pointer_value, bool) or not isinstance(
+            pointer_value,
+            (int, np.integer),
+        ):
+            raise ValueError(f'pointer must be an integer, got {pointer_value!r}')
+        pointer = int(pointer_value)
+        if pointer < 0 or pointer >= len(indexes):
+            raise ValueError(
+                f'pointer must be in [0, {len(indexes) - 1}], got {pointer}'
+            )
+        next_batch_value = state['next_batch_index']
+        if isinstance(next_batch_value, bool) or not isinstance(
+            next_batch_value,
+            (int, np.integer),
+        ):
+            raise ValueError(
+                f'next_batch_index must be an integer, got {next_batch_value!r}'
+            )
+        next_batch_index = int(next_batch_value)
+        if next_batch_index < 0:
+            raise ValueError(
+                f'next_batch_index must be non-negative, got {next_batch_index}'
+            )
+        expected_pointer = (next_batch_index * self.batch_size) % len(indexes)
+        if pointer != expected_pointer:
+            raise ValueError(
+                'Sampler pointer is inconsistent with next_batch_index: '
+                f'pointer={pointer}, expected={expected_pointer}'
+            )
+
+        restored_random_state = np.random.RandomState()
+        try:
+            restored_random_state.set_state(
+                deserialize_numpy_random_state(state['random_state'])
+            )
+        except (IndexError, OverflowError, TypeError, ValueError) as exc:
+            raise ValueError('Invalid sampler random_state') from exc
+
+        self.pointer = pointer
+        self.segment_indexes = indexes
+        self.random_state = restored_random_state
+        self.next_batch_index = next_batch_index
 
 
 class EvalSampler(Sampler):
     def __init__(self, cfg, split, is_eval=None):
         super().__init__(cfg, split, is_eval=is_eval)
-        self.max_evaluate_iteration = 20
+        # Evaluation must be deterministic and cover each segment at most once.
+        self.segment_indexes = np.arange(len(self.segment_list))
+        limit_key = 'max_train_eval_batches' if split == 'train' else 'max_eval_batches'
+        configured_limit = getattr(cfg.exp, limit_key, None)
+        self.max_evaluate_iteration = (
+            None if configured_limit is None else int(configured_limit)
+        )
+        if self.max_evaluate_iteration is not None and self.max_evaluate_iteration <= 0:
+            raise ValueError('exp.max_eval_batches must be null or a positive integer')
 
     def __iter__(self):
-        pointer = 0
-        iteration = 0
-        while iteration < self.max_evaluate_iteration and len(self.segment_indexes) > 0:
-            batch_segment_list = []
-            for _ in range(self.batch_size):
-                if pointer >= len(self.segment_indexes):
-                    pointer = 0
-                index = self.segment_indexes[pointer]
-                pointer += 1
-                batch_segment_list.append(self.segment_list[index])
-            iteration += 1
-            yield batch_segment_list
+        indexes = self.segment_indexes
+        if self.max_evaluate_iteration is not None:
+            max_examples = self.max_evaluate_iteration * self.batch_size
+            if len(indexes) > max_examples:
+                # Even coverage avoids selecting only the alphabetically first
+                # few recordings when a lightweight validation proxy is used.
+                positions = np.linspace(0, len(indexes) - 1, max_examples, dtype=np.int64)
+                indexes = indexes[positions]
+        for start in range(0, len(indexes), self.batch_size):
+            batch_indexes = indexes[start : start + self.batch_size]
+            yield [self.segment_list[index] for index in batch_indexes]
+
+    def __len__(self):
+        batches = int(np.ceil(len(self.segment_indexes) / self.batch_size))
+        if self.max_evaluate_iteration is None:
+            return batches
+        return min(batches, self.max_evaluate_iteration)
 
 
 

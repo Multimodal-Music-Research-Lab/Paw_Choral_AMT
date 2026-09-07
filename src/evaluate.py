@@ -17,6 +17,19 @@ def _mae(target, output, mask=None):
     return float(np.sum(np.abs(target - output) * mask) / denom)
 
 
+def _masked_average_precision(target, output, mask=None):
+    if mask is None:
+        mask = np.ones_like(output)
+    valid = np.asarray(mask).flatten() > 0
+    if not np.any(valid):
+        return None
+    target = np.asarray(target).flatten()[valid]
+    output = np.asarray(output).flatten()[valid]
+    if not np.any(target > 0):
+        return None
+    return float(metrics.average_precision_score(target, output))
+
+
 class SegmentEvaluator(object):
     def __init__(self, model, cfg):
         self.model = model
@@ -29,13 +42,34 @@ class SegmentEvaluator(object):
 
         if 'frame_output' in output_dict:
             frame_mask = output_dict.get('frame_mask_roll', np.ones_like(output_dict['frame_output']))
-            valid = frame_mask.flatten() > 0
-            if np.any(valid):
-                statistics['frame_ap'] = metrics.average_precision_score(
-                    output_dict['frame_roll'].flatten()[valid],
-                    output_dict['frame_output'].flatten()[valid],
-                    average='macro',
+            frame_ap = _masked_average_precision(
+                output_dict['frame_roll'], output_dict['frame_output'], frame_mask
+            )
+            statistics['frame_ap'] = float('nan') if frame_ap is None else frame_ap
+
+        if 'voice_frame_output' in output_dict and 'voice_frame_roll' in output_dict:
+            voice_mask = output_dict.get(
+                'voice_frame_mask_roll',
+                np.ones_like(output_dict['voice_frame_output']),
+            )
+            voice_aps = []
+            for voice_idx, voice_name in enumerate(getattr(self.cfg.choral, 'voice_names', ['S', 'A', 'T', 'B'])):
+                voice_ap = _masked_average_precision(
+                    output_dict['voice_frame_roll'][:, :, voice_idx, :],
+                    output_dict['voice_frame_output'][:, :, voice_idx, :],
+                    voice_mask[:, :, voice_idx, :],
                 )
+                statistics[f'{voice_name}_frame_ap'] = (
+                    float('nan') if voice_ap is None else voice_ap
+                )
+                if voice_ap is not None:
+                    voice_aps.append(voice_ap)
+            expected_voice_count = output_dict['voice_frame_output'].shape[2]
+            statistics['mean_voice_frame_ap'] = (
+                float(np.mean(voice_aps))
+                if len(voice_aps) == expected_voice_count
+                else float('nan')
+            )
 
         if 'onset_output' in output_dict:
             onset_mask = output_dict.get('onset_mask_roll', np.ones_like(output_dict['onset_output']))
@@ -74,6 +108,4 @@ class SegmentEvaluator(object):
                     None if pedal_mask is None else pedal_mask.flatten(),
                 )
 
-        for key in list(statistics.keys()):
-            statistics[key] = np.around(statistics[key], decimals=4)
         return statistics
