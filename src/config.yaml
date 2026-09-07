@@ -26,6 +26,8 @@ choral:
   voice_interaction_layers: 1
   voice_interaction_dropout: 0.1
   append_assignment_to_name: true
+  # Broad compatibility defaults. Formal YouChorale P2/P3 commands override
+  # these with the frozen train-only p01/p99 values documented in README.md.
   voice_assignment_range_mins: [60, 55, 48, 40]
   voice_assignment_range_maxs: [88, 79, 72, 67]
   voice_assignment_range_margin: 2.0

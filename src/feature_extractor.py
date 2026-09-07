@@ -222,7 +222,7 @@ class LogMelExtractor(nn.Module):
     Usage profiles:
         - ISMIR2024 (Narang): sr=44100, n_fft=1024, fps=86, mel_bins=128
         - BeatThis ISMIR2024: sr=22050, n_fft=1024, fps=86, mel_bins=128
-        - Upstream HPT (Kong et al. 2021): sr=16000, n_fft=2048, fps=100, mel_bins=229
+        - Piano-transcription frontend (Kong et al. 2021): sr=16000, n_fft=2048, fps=100, mel_bins=229
     Notes:
         - "slaney" scale suits perceptual tasks (dynamics, timbre)
         - "htk" scale suits pitch/transcription tasks

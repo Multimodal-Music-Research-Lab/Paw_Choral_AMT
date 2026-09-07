@@ -22,6 +22,8 @@ the manuscript's tables have been rerun.
 - [x] Decoder tests for frame-zero onsets, explicit offsets, and held notes.
 - [x] Public paths, declared dependencies, upstream attribution, and release scan.
 - [x] Data-free PawCT forward/union/loss-backward smoke test.
+- [x] Versioned real-data audit of SATB label coverage, RP/OC target retention,
+  onset-group structure, and train-only pitch statistics.
 
 ## Missing before a reproducibility claim
 
@@ -34,7 +36,8 @@ the manuscript's tables have been rerun.
 - [ ] A single command that regenerates Tables 1 and 2 within a tolerance.
 - [ ] VA/retention metric code tied to the exact numerator and denominator.
 - [ ] Direct audio-to-four-track SATB MIDI CLI.
-- [ ] PagCT parity, data-integrity, and real-data integration tests.
+- [ ] PagCT capacity parity, probability-integrity integration, and corrected
+  end-to-end real-data model tests.
 - [ ] Multi-seed or composition-level bootstrap uncertainty.
 
 ## Located historical evidence

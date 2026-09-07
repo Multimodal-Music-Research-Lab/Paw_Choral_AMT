@@ -14,20 +14,27 @@ The paper-reported ablation has a useful but incomplete signal:
 - PawCT-OC reaches the best reported mean note F1, 0.225, but the gain over
   PawCT is only 0.008 and has no confidence interval or multi-seed estimate.
 
-The code/data audit found four confounds that must be fixed before interpreting
-those differences:
+The code/data audit found five confounds that must be fixed before interpreting
+those differences. The descriptive counts below come from the
+[versioned YouChorale target audit](../repro/audits/youchorale_targets_20260907_abe2438/README.md),
+not from a model-performance run:
 
-1. Historical/legacy RP relabels about 0.41% of known training notes, so it is
-   too weak as a hard target transformation to support a large note-level
-   effect.
-2. Historical/legacy OC relabels about 14.71% of known training notes.
+1. Modern anchored RP and OC each change exactly 0 of 299,638 training labels,
+   because every in-range training note has a canonical SATB/divisi-derived
+   label. Their effect on YouChorale must therefore come from a soft output
+   prior, not hard relabeling.
+2. Historical/legacy RP relabels 1,217 of 299,638 known training notes
+   (0.4062%), so it is too weak as a hard target transformation to support a
+   large note-level effect.
+3. Historical/legacy OC relabels 44,067 of 299,638 known training notes
+   (14.7067%).
    YouChorale includes S1/S2, A1/A2, and other divisi labels, so forcing a
    one-to-one SATB assignment can overwrite valid part labels. Modern anchored
    RP/OC does not relabel these trusted notes.
-3. Stored RP/OC target rolls were used as frame-level evaluation references,
+4. Stored RP/OC target rolls were used as frame-level evaluation references,
    whereas note metrics used original part names. Frame and note scores were
    therefore not measuring the same voice definition.
-4. The current onset/offset heads are trained against one-frame binary targets,
+5. The current onset/offset heads are trained against one-frame binary targets,
    while the documented regression decoder expects smooth regression targets.
 
 These are audit observations, not new experimental results.
@@ -61,8 +68,8 @@ checkpoints, logs, or probability artifacts from an earlier seed.
 | P0 | PagCT | merged | none | part-agnostic reference |
 | P1a | PawCT-no-union | canonical part names | no union, RP, or OC | isolate union contribution |
 | P1b | PawCT | canonical part names | frame/onset union only | main part-aware baseline |
-| P2 | PawCT-RP | canonical labels anchored | range penalty on unsupported outputs | test register prior |
-| P3 | PawCT-RP+OC | canonical labels anchored | P2 plus target-relative pitch-trajectory consistency | isolate trajectory-prior increment |
+| P2 | PawCT-RP | canonical labels anchored | train-only p01/p99 range penalty on unsupported outputs | test register prior |
+| P3 | PawCT-RP+OC | canonical labels anchored | frozen P2 plus target-relative pitch-trajectory consistency | isolate trajectory-prior increment |
 | P4 | PagCT + Post-VA | canonical symbolic labels | post-hoc assignment | two-stage reference; exploratory until feature parity is fixed |
 
 Legacy RP/OC, which relabel every known note, may be retained only as a clearly
@@ -95,11 +102,18 @@ threshold-free checkpoint-selection proxy. It is not the primary endpoint;
 macro SATB note F1 is computed after thresholds are chosen on validation. This
 separation must be stated explicitly and kept identical across rows.
 
-The pilot search is sequential and fixed before test evaluation:
+The pilot search is sequential and fixed before test evaluation. P2 and P3 use
+the train-only p01/p99 MIDI ranges `mins=[60,55,50,41]` and
+`maxs=[79,74,69,62]` for S/A/T/B, with a two-semitone margin. The loss excludes
+trusted annotated positives, so genuine out-of-register notes are not punished.
+The older broad defaults `[60,55,48,40]..[88,79,72,67]` are retained as one
+named diagnostic ablation, not added to the primary grid:
 
 1. P1b ties frame/onset union weights and searches `{0.10, 0.25, 0.50}`.
-2. P2 fixes the P1b winner and searches RP weight `{0.003, 0.01, 0.03}`.
-3. P3 fixes both winners and searches OC weight `{0.003, 0.01, 0.03}` crossed
+2. P2 fixes the P1b winner and the train-derived range, then searches RP weight
+   `{0.003, 0.01, 0.03}`.
+3. P3 fixes the P1b and P2 winners, including the exact RP range/margin, then
+   searches OC weight `{0.003, 0.01, 0.03}` crossed
    with silent-gap decay `{0.5, 2.0, 8.0}` seconds.
 
 For each candidate, select thresholds on validation and rank by 50 ms macro
@@ -155,6 +169,13 @@ Stratify pieces or notes by:
 
 This should reveal where OC helps: its expected benefit is in ambiguous,
 temporally connected passages, not isolated easy notes.
+
+The target audit gives a concrete reason to pre-register these strata:
+greater-than-four-note onset groups account for 14.47% of train, 19.94% of
+validation, and 16.17% of test groups; duplicate-canonical-voice groups account
+for 33.61%, 46.36%, and 38.80%, respectively. These descriptive differences do
+not prove an OC performance effect, but they show that one aggregate mean can
+hide materially different divisi/unison/polyphony conditions.
 
 The corrected OC regularizer compares predicted pitch motion with annotated
 pitch motion between consecutive annotated onset events, including transitions
@@ -241,12 +262,14 @@ reported as a targeted benefit, not a global gain.
 2. PagCT establishes a strong merged-note baseline.
 3. PawCT shares acoustic evidence across four explicit part streams while a
    union objective protects merged transcription.
-4. Naive hard RP/OC relabeling is unsafe with trusted divisi annotations.
-5. Anchored RP keeps trusted notes while suppressing unsupported register
-   mass; the current OC loss adds target-relative onset-event trajectory
-   consistency, including across rests with gap decay. Gap-aware/divisi-safe
-   assignment applies only when a training label is genuinely unknown and must
-   not be claimed as the main loss.
+4. Every audited note already has a canonical label, so hard assignment adds no
+   supervision; the legacy OC rule is additionally unsafe because it overwrites
+   14.71% of trusted training labels.
+5. Anchored RP keeps trusted notes while suppressing unsupported output mass
+   outside a train-derived register; the current OC loss adds target-relative
+   onset-event trajectory consistency, including across rests with gap decay.
+   Gap-aware/divisi-safe assignment applies only when a training label is
+   genuinely unknown and must not be claimed as the main loss.
 6. Overall, difficulty-stratified, label-recovery, and oracle analyses explain
    when the priors help and where remaining errors originate.
 

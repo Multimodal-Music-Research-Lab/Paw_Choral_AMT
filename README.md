@@ -18,6 +18,7 @@ assignment baseline (Post-VA).
 [Code walkthrough](docs/CODE_WALKTHROUGH.md) ·
 [Data contract](docs/DATA.md) ·
 [Reproducibility audit](docs/REPRODUCIBILITY.md) ·
+[YouChorale target audit](repro/audits/youchorale_targets_20260907_abe2438/README.md) ·
 [ICASSP experiment plan](docs/EXPERIMENT_PLAN.md)
 
 ## What is implemented
@@ -176,6 +177,16 @@ versus legacy RP/OC label changes, confusion matrices, split hashes, and
 per-voice pitch percentiles. Estimate any RP range from training-only robust
 percentiles (for example p01–p99), then freeze it before validation/test.
 
+The checked-in audit covers 452 recordings and 353,201 in-range notes. All
+notes have a canonical SATB/divisi-derived label, so anchored RP and OC change
+zero labels; legacy RP changes 0.57% and legacy OC changes 15.37%. This proves
+that RP/OC cannot be evaluated here merely as alternative hard target builders:
+their modern effect must come from soft output regularization. The train-only
+p01/p99 ranges are S `60–79`, A `55–74`, T `50–69`, and B `41–62`; the formal
+P2/P3 pilots freeze these values with a two-semitone margin. Full split-level
+counts, checksums, and interpretation are in the
+[versioned audit](repro/audits/youchorale_targets_20260907_abe2438/README.md).
+
 ## Train
 
 Commands below show the development seed 86. After validation-only pilot
@@ -253,6 +264,9 @@ python src/main_iter.py \
   choral.enable=true \
   choral.target_assignment=range_prior \
   choral.preserve_known_part_labels=true \
+  choral.voice_assignment_range_mins='[60,55,50,41]' \
+  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.0 \
   choral.apply_presence_gate=false \
@@ -260,7 +274,7 @@ python src/main_iter.py \
   choral.union_onset_loss_weight=0.25 \
   choral.union_offset_loss_weight=0.0 \
   feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=rp_rw001_u025_s86 \
+  exp.random_seed=86 exp.name_suffix=rp_trainp01p99_m2_rw001_u025_s86 \
   exp.workspace=./workspaces \
   exp.total_iteration=200000 \
   exp.selection_metric=mean_voice_frame_ap \
@@ -280,6 +294,9 @@ python src/main_iter.py \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
   choral.preserve_known_part_labels=true \
+  choral.voice_assignment_range_mins='[60,55,50,41]' \
+  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.apply_presence_gate=false \
@@ -287,7 +304,7 @@ python src/main_iter.py \
   choral.union_onset_loss_weight=0.25 \
   choral.union_offset_loss_weight=0.0 \
   feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=rpoc_rw001_cw001_u025_s86 \
+  exp.random_seed=86 exp.name_suffix=rpoc_trainp01p99_m2_rw001_cw001_u025_s86 \
   exp.workspace=./workspaces \
   exp.total_iteration=200000 \
   exp.selection_metric=mean_voice_frame_ap \
@@ -300,12 +317,14 @@ snapshot: the older online path shifted the mixture but not the `note.pkl`
 targets. Use only a synchronously generated offline transposition dataset
 until that path has an end-to-end test.
 
-Because the audited YouChorale labels are already canonical, merely selecting
-`target_assignment=range_prior` or `ordered_continuity` changes almost no
-modern targets. The explicit output-prior loss is therefore what distinguishes
-the pilots above; trusted labels remain anchored. The OC row keeps the RP loss
-fixed and adds only the continuity loss, so its comparison with RP isolates the
-incremental OC hypothesis. The corrected OC loss matches predicted pitch motion
+Because all 299,638 audited YouChorale training notes have canonical labels,
+`target_assignment=range_prior` and `ordered_continuity` each change exactly
+zero modern targets. The explicit output-prior loss is therefore what
+distinguishes the pilots above; trusted labels remain anchored. RP suppresses
+unsupported output mass outside the frozen train-only range and never penalizes
+an annotated positive. The OC row keeps the RP range and weight fixed and adds
+only the continuity loss, so its comparison with RP isolates the incremental
+OC hypothesis. The corrected OC loss matches predicted pitch motion
 to annotated pitch motion between consecutive onset events, including events
 separated by rests. Gap decay weakens distant links, while event-level
 normalization prevents long held notes from diluting the transition signal;
@@ -378,7 +397,7 @@ versions of the best checkpoint.
 
 ```bash
 # Use the exact suffix from the selected training run in every later command.
-export PAWCT_RUN_SUFFIX=rpoc_rw001_cw001_u025_s86
+export PAWCT_RUN_SUFFIX=rpoc_trainp01p99_m2_rw001_cw001_u025_s86
 
 # 1. Produce validation probabilities.
 python src/inference.py \
@@ -389,6 +408,9 @@ python src/inference.py \
   model.mode=frame_onset_offset \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
+  choral.voice_assignment_range_mins='[60,55,50,41]' \
+  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
@@ -414,12 +436,13 @@ python src/search_best_thresholds.py \
   --name_suffix "$PAWCT_RUN_SUFFIX" \
   --objective mean_satb_note_f1 \
   --post_processor_type onsets_frames \
+  --config-override 'choral.voice_assignment_range_mins=[60,55,50,41]' \
+  --config-override 'choral.voice_assignment_range_maxs=[79,74,69,62]' \
+  --config-override 'choral.voice_assignment_range_margin=2.0' \
   --output_txt ./workspaces/thresholds/pawct_oc_validation.txt
 
 # Repeat --config-override for any checkpoint-recorded setting without a
-# dedicated flag, for example an RP range sweep:
-#   --config-override 'choral.voice_assignment_range_mins=[62,55,48,38]' \
-#   --config-override 'choral.voice_assignment_range_maxs=[88,81,74,69]'
+# dedicated flag. These three overrides must match the selected checkpoint.
 
 # 3. Copy the selected thresholds and actual_checkpoint_iteration from the
 #    threshold report into a frozen config. Use that immutable numeric
@@ -433,6 +456,9 @@ python src/inference.py \
   model.mode=frame_onset_offset \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
+  choral.voice_assignment_range_mins='[60,55,50,41]' \
+  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
@@ -453,6 +479,9 @@ python src/calculate_choral_scores.py \
   model.mode=frame_onset_offset \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
+  choral.voice_assignment_range_mins='[60,55,50,41]' \
+  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
@@ -503,8 +532,10 @@ python scripts/check_release.py
 The test suite includes data-free PawCT forward/union/loss-backward checks,
 strict checkpoint compatibility, anchored RP/OC target retention, decoder
 boundaries, deterministic validation sampling, threshold-split guards, metric
-helpers, and visualization. Real-data integration, data-integrity, and
-table-regression tests remain release work; they are tracked in
+helpers, and visualization. A versioned real-data label/target audit is
+[checked in](repro/audits/youchorale_targets_20260907_abe2438/README.md);
+end-to-end model retraining, probability-integrity integration, and
+table-regression tests remain release work and are tracked in
 [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
 
 ## Demo
