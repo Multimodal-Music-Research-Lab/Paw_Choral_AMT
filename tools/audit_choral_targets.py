@@ -122,7 +122,40 @@ def _load_split_file(dataset_dir: Path, split: str):
     return None, []
 
 
-def load_selected_recordings(dataset_dir: Path, split: str):
+def _load_packed_recording_ids(packed_hdf5_dir: Path):
+    packed_hdf5_dir = Path(packed_hdf5_dir)
+    if not packed_hdf5_dir.is_dir():
+        raise NotADirectoryError(
+            f'Packed HDF5 directory does not exist: {packed_hdf5_dir}'
+        )
+
+    files_by_id = defaultdict(list)
+    for path in packed_hdf5_dir.rglob('*'):
+        if path.is_file() and path.suffix.lower() in {'.h5', '.hdf5'}:
+            files_by_id[path.stem].append(
+                path.relative_to(packed_hdf5_dir).as_posix()
+            )
+    duplicate_ids = {
+        recording_id: sorted(filenames)
+        for recording_id, filenames in files_by_id.items()
+        if len(filenames) > 1
+    }
+    if duplicate_ids:
+        raise ValueError(
+            'Multiple packed HDF5 files resolve to the same recording ID: '
+            f'{duplicate_ids}'
+        )
+    if not files_by_id:
+        raise ValueError(f'No .h5 or .hdf5 files found in {packed_hdf5_dir}')
+    return sorted(files_by_id)
+
+
+def load_selected_recordings(
+    dataset_dir: Path,
+    split: str,
+    *,
+    packed_hdf5_dir: Path | None = None,
+):
     selected_splits = tuple(SPLIT_FILES) if split == 'all' else (split,)
     split_files = {}
     memberships = defaultdict(list)
@@ -150,12 +183,60 @@ def load_selected_recordings(dataset_dir: Path, split: str):
         for recording_id, split_names in memberships.items()
         if len(split_names) > 1
     }
-    return {
-        'recording_ids': sorted(memberships),
+    manifest_recording_ids = sorted(memberships)
+    result = {
+        'recording_ids': manifest_recording_ids,
         'split_files': dict(sorted(split_files.items())),
         'missing_splits': sorted(missing_splits),
         'duplicate_memberships': dict(sorted(duplicate_memberships.items())),
     }
+    if packed_hdf5_dir is None:
+        return result
+
+    packed_recording_ids = _load_packed_recording_ids(packed_hdf5_dir)
+    manifest_set = set(manifest_recording_ids)
+    packed_set = set(packed_recording_ids)
+    selected_recording_ids = sorted(manifest_set & packed_set)
+    missing_recording_ids = sorted(manifest_set - packed_set)
+    packed_not_in_selected_manifest_ids = sorted(packed_set - manifest_set)
+    if not selected_recording_ids:
+        raise ValueError(
+            f'No packed HDF5 recording matches split={split!r} in {packed_hdf5_dir}'
+        )
+    result['recording_ids'] = selected_recording_ids
+    result['packed_coverage'] = {
+        'schema_version': 1,
+        'match_semantics': 'exact_case_sensitive_filename_stem_existence_only',
+        'manifest_recordings': len(manifest_recording_ids),
+        'manifest_recording_ids_sha256': _recording_id_hash(
+            manifest_recording_ids
+        ),
+        'packed_recordings_total': len(packed_recording_ids),
+        'packed_recording_ids_sha256': _recording_id_hash(
+            packed_recording_ids
+        ),
+        'intersection_recordings': len(selected_recording_ids),
+        'intersection_recording_ids_sha256': _recording_id_hash(
+            selected_recording_ids
+        ),
+        'manifest_coverage_ratio': _safe_ratio(
+            len(selected_recording_ids),
+            len(manifest_recording_ids),
+        ),
+        'packed_selection_ratio': _safe_ratio(
+            len(selected_recording_ids),
+            len(packed_recording_ids),
+        ),
+        'manifest_missing_packed_recordings': len(missing_recording_ids),
+        'manifest_missing_packed_recording_ids': missing_recording_ids,
+        'packed_not_in_selected_manifest_recordings': len(
+            packed_not_in_selected_manifest_ids
+        ),
+        'packed_not_in_selected_manifest_recording_ids_sha256': _recording_id_hash(
+            packed_not_in_selected_manifest_ids
+        ),
+    }
+    return result
 
 
 def _resolve_note_path(note_dir: Path, recording_id: str) -> Path:
@@ -257,6 +338,7 @@ def audit_dataset(
     begin_note: int = 21,
     classes_num: int = 88,
     frames_per_second: float = 100.0,
+    packed_hdf5_dir=None,
 ):
     dataset_dir = Path(dataset_dir)
     if classes_num <= 0:
@@ -269,7 +351,11 @@ def audit_dataset(
     if not note_dir.is_dir():
         raise NotADirectoryError(f'Missing note directory: {note_dir}')
 
-    selection = load_selected_recordings(dataset_dir, split)
+    selection = load_selected_recordings(
+        dataset_dir,
+        split,
+        packed_hdf5_dir=packed_hdf5_dir,
+    )
     recording_ids = selection['recording_ids']
     cfg_by_method = {
         method: _make_builder_cfg(
@@ -359,18 +445,22 @@ def audit_dataset(
 
     canonical_known = sum(canonical_distribution.values())
     in_model_range = int(note_totals['in_model_range'])
+    dataset_result = {
+        'name': dataset_dir.name,
+        'split': split,
+        'split_files': selection['split_files'],
+        'missing_splits_for_all': selection['missing_splits'],
+        'recordings': len(recording_ids),
+        'recording_ids_sha256': _recording_id_hash(recording_ids),
+        'duplicate_split_membership_count': len(selection['duplicate_memberships']),
+        'duplicate_split_memberships': selection['duplicate_memberships'],
+    }
+    if 'packed_coverage' in selection:
+        dataset_result['packed_coverage'] = selection['packed_coverage']
+
     result = {
         'schema_version': 1,
-        'dataset': {
-            'name': dataset_dir.name,
-            'split': split,
-            'split_files': selection['split_files'],
-            'missing_splits_for_all': selection['missing_splits'],
-            'recordings': len(recording_ids),
-            'recording_ids_sha256': _recording_id_hash(recording_ids),
-            'duplicate_split_membership_count': len(selection['duplicate_memberships']),
-            'duplicate_split_memberships': selection['duplicate_memberships'],
-        },
+        'dataset': dataset_result,
         'analysis_config': {
             'begin_note': int(begin_note),
             'classes_num': int(classes_num),
@@ -445,6 +535,15 @@ def parse_args(argv=None):
         default=100.0,
         help='Frame rate used to group near-synchronous onsets (default: 100).',
     )
+    parser.add_argument(
+        '--packed-hdf5-dir',
+        default='',
+        help=(
+            'Optional directory of packed .h5/.hdf5 files. When set, audit '
+            'only split recordings with a matching packed file and report '
+            'manifest coverage; source annotations remain read-only.'
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -456,6 +555,7 @@ def main(argv=None):
         begin_note=args.begin_note,
         classes_num=args.classes_num,
         frames_per_second=args.frames_per_second,
+        packed_hdf5_dir=args.packed_hdf5_dir or None,
     )
     rendered = json.dumps(result, indent=2, sort_keys=True)
     print(rendered)

@@ -1,4 +1,5 @@
 import contextlib
+import hashlib
 import io
 import json
 import pickle
@@ -124,6 +125,131 @@ class AuditChoralTargetsTest(unittest.TestCase):
         self.assertEqual(result['dataset']['split_files'], {'validation': 'valid.json'})
         self.assertEqual(result['dataset']['recordings'], 1)
         self.assertEqual(result['notes']['canonical_distribution']['A'], 1)
+        self.assertNotIn('packed_coverage', result['dataset'])
+
+    def test_packed_hdf5_filter_reports_coverage_and_audits_intersection(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            packed_dir = root / 'packed'
+            (packed_dir / 'nested').mkdir(parents=True)
+            (packed_dir / 'nested' / 'song_a.H5').touch()
+            (packed_dir / 'song_valid.hdf5').touch()
+            (packed_dir / 'not_in_train.h5').touch()
+            # A manifest item excluded by the packed filter is never opened.
+            (dataset_dir / 'note' / 'song_b.pkl').unlink()
+
+            result = audit_choral_targets.audit_dataset(
+                dataset_dir,
+                'train',
+                packed_hdf5_dir=packed_dir,
+            )
+
+        self.assertEqual(result['dataset']['recordings'], 1)
+        self.assertEqual(result['notes']['total'], 7)
+        coverage = result['dataset']['packed_coverage']
+        self.assertEqual(coverage['schema_version'], 1)
+        self.assertEqual(
+            coverage['match_semantics'],
+            'exact_case_sensitive_filename_stem_existence_only',
+        )
+        self.assertEqual(coverage['manifest_recordings'], 2)
+        self.assertEqual(coverage['packed_recordings_total'], 3)
+        self.assertEqual(coverage['intersection_recordings'], 1)
+        self.assertEqual(coverage['manifest_coverage_ratio'], 0.5)
+        self.assertEqual(coverage['packed_selection_ratio'], 1 / 3)
+        self.assertEqual(coverage['manifest_missing_packed_recordings'], 1)
+        self.assertEqual(
+            coverage['manifest_missing_packed_recording_ids'],
+            ['song_b'],
+        )
+        self.assertEqual(
+            coverage['packed_not_in_selected_manifest_recordings'],
+            2,
+        )
+        self.assertEqual(
+            coverage['intersection_recording_ids_sha256'],
+            result['dataset']['recording_ids_sha256'],
+        )
+        self.assertNotEqual(
+            coverage['manifest_recording_ids_sha256'],
+            coverage['intersection_recording_ids_sha256'],
+        )
+        self.assertNotEqual(
+            coverage['packed_recording_ids_sha256'],
+            coverage['intersection_recording_ids_sha256'],
+        )
+
+    def test_packed_hdf5_filter_rejects_duplicate_stems_and_empty_overlap(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            packed_dir = root / 'packed'
+            packed_dir.mkdir()
+            (packed_dir / 'song_a.h5').touch()
+            (packed_dir / 'song_a.hdf5').touch()
+
+            with self.assertRaisesRegex(ValueError, 'same recording ID'):
+                audit_choral_targets.audit_dataset(
+                    dataset_dir,
+                    'train',
+                    packed_hdf5_dir=packed_dir,
+                )
+
+            (packed_dir / 'song_a.h5').unlink()
+            (packed_dir / 'song_a.hdf5').unlink()
+            (packed_dir / 'outside.h5').touch()
+            with self.assertRaisesRegex(ValueError, 'No packed HDF5 recording'):
+                audit_choral_targets.audit_dataset(
+                    dataset_dir,
+                    'train',
+                    packed_hdf5_dir=packed_dir,
+                )
+
+    def test_packed_hdf5_filter_validates_directory_and_cli_forwards_it(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            dataset_dir = self.make_dataset(root)
+            missing_dir = root / 'missing-packed'
+            with self.assertRaises(NotADirectoryError):
+                audit_choral_targets.audit_dataset(
+                    dataset_dir,
+                    'train',
+                    packed_hdf5_dir=missing_dir,
+                )
+
+            packed_dir = root / 'packed'
+            packed_dir.mkdir()
+            with self.assertRaisesRegex(ValueError, 'No .h5 or .hdf5 files'):
+                audit_choral_targets.audit_dataset(
+                    dataset_dir,
+                    'train',
+                    packed_hdf5_dir=packed_dir,
+                )
+
+            (packed_dir / 'song_a.h5').touch()
+            output_path = root / 'packed-audit.json'
+            expected = audit_choral_targets.audit_dataset(
+                dataset_dir,
+                'train',
+                packed_hdf5_dir=packed_dir,
+            )
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                return_code = audit_choral_targets.main([
+                    '--dataset-dir',
+                    str(dataset_dir),
+                    '--split',
+                    'train',
+                    '--packed-hdf5-dir',
+                    str(packed_dir),
+                    '--output-json',
+                    str(output_path),
+                ])
+
+            self.assertEqual(return_code, 0)
+            self.assertEqual(json.loads(stdout.getvalue()), expected)
+            self.assertEqual(json.loads(output_path.read_text()), expected)
 
     def test_assignment_statistics_keep_original_note_denominator(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -181,6 +307,10 @@ class AuditChoralTargetsTest(unittest.TestCase):
             self.assertEqual(
                 output_path.read_text(encoding='utf-8'),
                 f'{json.dumps(first, indent=2, sort_keys=True)}\n',
+            )
+            self.assertEqual(
+                hashlib.sha256(output_path.read_bytes()).hexdigest(),
+                'dfe8e6d70c75ea7a226c2065f7c71206fbd1daf16d8a8d894da41ea208ce1ba5',
             )
 
 

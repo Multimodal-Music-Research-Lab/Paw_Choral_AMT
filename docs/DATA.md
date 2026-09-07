@@ -37,12 +37,15 @@ source directory.
 
 Before reporting results:
 
-1. Resolve every recording to a composition/work identifier.
-2. Verify that no composition, score edition, or derivative recording crosses
+1. Compare each source split manifest with the packed HDF5 stems. Either require
+   complete coverage or publish an explicitly named available-audio subset and
+   its recording-ID hash; never let missing packs silently redefine a split.
+2. Resolve every recording to a composition/work identifier.
+3. Verify that no composition, score edition, or derivative recording crosses
    train/validation/test.
-3. Check for duplicate and near-duplicate audio.
-4. Record the ordered stem list and SHA-256 digest for every split.
-5. Use validation for checkpoint/threshold selection and evaluate test once.
+4. Check for duplicate and near-duplicate audio.
+5. Record the ordered stem list and SHA-256 digest for every split.
+6. Use validation for checkpoint/threshold selection and evaluate test once.
 
 The original research snapshot did not include a machine-verifiable
 composition-disjoint audit. An audit of the public manifests using exact

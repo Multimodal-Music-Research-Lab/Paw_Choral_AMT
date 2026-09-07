@@ -168,6 +168,7 @@ Audit target semantics before choosing RP/OC hyperparameters:
 python tools/audit_choral_targets.py \
   --dataset-dir "$YOUCHORALE_DIR" \
   --split train \
+  --packed-hdf5-dir ./workspaces/hdf5s/youchorale_sr16000 \
   --output-json ./workspaces/audits/youchorale_train_targets.json
 ```
 
@@ -176,6 +177,16 @@ known/unknown labels, divisi and greater-than-four-note onset groups, modern
 versus legacy RP/OC label changes, confusion matrices, split hashes, and
 per-voice pitch percentiles. Estimate any RP range from training-only robust
 percentiles (for example p01–p99), then freeze it before validation/test.
+When `--packed-hdf5-dir` is supplied, the command also reports manifest
+coverage and deliberately audits only the recordings the acoustic model can
+actually load. Omit that flag only when auditing annotation completeness rather
+than a runnable model split. A formal run must either pack every manifest item
+or publish and freeze the exact available-audio subset; it must not silently
+train on whichever HDF5 files happen to exist. Coverage matching is recursive,
+exact, case-sensitive filename-stem existence only; it records ID-set hashes
+but does not claim that HDF5 contents are valid. Files reported as outside one
+selected manifest are normally the other splits when a shared packed directory
+is supplied.
 
 The checked-in audit covers 452 recordings and 353,201 in-range notes. All
 notes have a canonical SATB/divisi-derived label, so anchored RP and OC change
