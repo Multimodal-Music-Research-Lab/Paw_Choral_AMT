@@ -53,6 +53,13 @@ normalized `(composer, title)` metadata finds that 22/29 test works overlap
 train and 23/30 test recordings belong to a train-seen work. The current split
 therefore must not be presented as composition-disjoint.
 
+The located historical HDF5 pack is also incomplete relative to those source
+manifests: it contains 376/392 train, 28/30 validation, and 30/30 test stems.
+For the resulting `available-audio-434` protocol, 21/29 test works overlap the
+runnable train set and 22/30 test recordings belong to a train-seen work. Its
+exact stem hashes and missing IDs are archived in the
+[runnable-pack audit](../repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md).
+
 ## Pitch transposition
 
 The manuscript describes seven fixed transpositions (`-3` through `+3`

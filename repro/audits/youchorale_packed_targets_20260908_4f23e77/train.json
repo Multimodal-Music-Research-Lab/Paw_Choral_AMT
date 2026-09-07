@@ -1,0 +1,288 @@
+{
+  "analysis_config": {
+    "begin_note": 21,
+    "classes_num": 88,
+    "continuity_weight": 0.35,
+    "oc_gap_decay_seconds": 2.0,
+    "oc_overlap_tolerance_seconds": 0.05,
+    "onset_group_frames_per_second": 100.0,
+    "overlap_penalty": 4.0,
+    "part_label_mismatch_penalty": 2.0,
+    "preserve_known_part_labels": true,
+    "range_margin": 2.0,
+    "range_mask_penalty": 8.0,
+    "range_maxs": [
+      88.0,
+      79.0,
+      72.0,
+      67.0
+    ],
+    "range_mins": [
+      60.0,
+      55.0,
+      48.0,
+      40.0
+    ],
+    "voice_order": [
+      "S",
+      "A",
+      "T",
+      "B"
+    ]
+  },
+  "assignments": {
+    "legacy_ordered_continuity": {
+      "assigned_notes": 285674,
+      "change_ratio": 0.1447349076219747,
+      "changed_known_labels": 41347,
+      "confusion": {
+        "A": {
+          "A": 60638,
+          "B": 2540,
+          "S": 3513,
+          "T": 8650
+        },
+        "B": {
+          "A": 541,
+          "B": 60143,
+          "S": 48,
+          "T": 5212
+        },
+        "S": {
+          "A": 8050,
+          "B": 214,
+          "S": 65593,
+          "T": 1285
+        },
+        "T": {
+          "A": 5577,
+          "B": 3586,
+          "S": 2131,
+          "T": 57953
+        }
+      },
+      "known_labels": 285674,
+      "retained_known_labels": 244327,
+      "retention_ratio": 0.8552650923780253
+    },
+    "legacy_range_prior": {
+      "assigned_notes": 285674,
+      "change_ratio": 0.0026638756064605107,
+      "changed_known_labels": 761,
+      "confusion": {
+        "A": {
+          "A": 75083,
+          "B": 258,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 1,
+          "B": 65943,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 30,
+          "S": 74993,
+          "T": 119
+        },
+        "T": {
+          "A": 0,
+          "B": 31,
+          "S": 322,
+          "T": 68894
+        }
+      },
+      "known_labels": 285674,
+      "retained_known_labels": 284913,
+      "retention_ratio": 0.9973361243935395
+    },
+    "ordered_continuity": {
+      "assigned_notes": 285674,
+      "change_ratio": 0.0,
+      "changed_known_labels": 0,
+      "confusion": {
+        "A": {
+          "A": 75341,
+          "B": 0,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 0,
+          "B": 65944,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 0,
+          "S": 75142,
+          "T": 0
+        },
+        "T": {
+          "A": 0,
+          "B": 0,
+          "S": 0,
+          "T": 69247
+        }
+      },
+      "known_labels": 285674,
+      "retained_known_labels": 285674,
+      "retention_ratio": 1.0
+    },
+    "range_prior": {
+      "assigned_notes": 285674,
+      "change_ratio": 0.0,
+      "changed_known_labels": 0,
+      "confusion": {
+        "A": {
+          "A": 75341,
+          "B": 0,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 0,
+          "B": 65944,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 0,
+          "S": 75142,
+          "T": 0
+        },
+        "T": {
+          "A": 0,
+          "B": 0,
+          "S": 0,
+          "T": 69247
+        }
+      },
+      "known_labels": 285674,
+      "retained_known_labels": 285674,
+      "retention_ratio": 1.0
+    }
+  },
+  "dataset": {
+    "duplicate_split_membership_count": 0,
+    "duplicate_split_memberships": {},
+    "missing_splits_for_all": [],
+    "name": "YouChorale",
+    "packed_coverage": {
+      "intersection_recording_ids_sha256": "74a42cb4f7ab6184d90d68b630d2533b9cbb6ae9c3a6c6e6f83d2831ffc3a0e7",
+      "intersection_recordings": 376,
+      "manifest_coverage_ratio": 0.9591836734693877,
+      "manifest_missing_packed_recording_ids": [
+        "-zLh-dKNwBA",
+        "0fusyqOZIYc",
+        "1uYNM7OSH0s",
+        "6xG3xkfUadw",
+        "ARJChq6RzzA",
+        "DgXrmFO9JAg",
+        "LQrlLFjJa94",
+        "PwcacWPOX5s",
+        "VAirgH0D8-Y",
+        "VbRn0oJESXU",
+        "XeQu-te2fgk",
+        "YcCghBsfkqI",
+        "eEkx_q4eqoU",
+        "iqiXsUVjkHc",
+        "tTYmIYyg2jI",
+        "vOKePBBPvCE"
+      ],
+      "manifest_missing_packed_recordings": 16,
+      "manifest_recording_ids_sha256": "5a804cf31dba8b13d362ae2248374eab3b1887c87292cadc166b512226f260c7",
+      "manifest_recordings": 392,
+      "match_semantics": "exact_case_sensitive_filename_stem_existence_only",
+      "packed_not_in_selected_manifest_recording_ids_sha256": "c944ffb657e7b45518f5b9422c4151c0cfdfc98f977be6d716b4c4aa65b3b03a",
+      "packed_not_in_selected_manifest_recordings": 58,
+      "packed_recording_ids_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+      "packed_recordings_total": 434,
+      "packed_selection_ratio": 0.8663594470046083,
+      "schema_version": 1
+    },
+    "recording_ids_sha256": "74a42cb4f7ab6184d90d68b630d2533b9cbb6ae9c3a6c6e6f83d2831ffc3a0e7",
+    "recordings": 376,
+    "split": "train",
+    "split_files": {
+      "train": "train.json"
+    }
+  },
+  "notes": {
+    "canonical_distribution": {
+      "A": 75341,
+      "B": 65944,
+      "S": 75142,
+      "T": 69247
+    },
+    "canonical_known": 285674,
+    "canonical_known_ratio": 1.0,
+    "canonical_pitch_statistics": {
+      "A": {
+        "count": 75341,
+        "max": 78,
+        "median": 65.0,
+        "min": 42,
+        "p01": 55.0,
+        "p05": 58.0,
+        "p95": 71.0,
+        "p99": 74.0
+      },
+      "B": {
+        "count": 65944,
+        "max": 69,
+        "median": 52.0,
+        "min": 34,
+        "p01": 41.0,
+        "p05": 44.0,
+        "p95": 60.0,
+        "p99": 62.0
+      },
+      "S": {
+        "count": 75142,
+        "max": 83,
+        "median": 70.0,
+        "min": 55,
+        "p01": 60.0,
+        "p05": 63.0,
+        "p95": 77.0,
+        "p99": 79.0
+      },
+      "T": {
+        "count": 69247,
+        "max": 79,
+        "median": 59.0,
+        "min": 36,
+        "p01": 50.0,
+        "p05": 53.0,
+        "p95": 65.0,
+        "p99": 70.0
+      }
+    },
+    "canonical_unknown_or_ambiguous": 0,
+    "in_model_range": 285674,
+    "malformed": 0,
+    "outside_model_range": 0,
+    "total": 285674
+  },
+  "onset_groups": {
+    "duplicate_canonical_voice": {
+      "excess_note_count": 53359,
+      "group_count": 30292,
+      "group_ratio": 0.3371584395347543,
+      "participating_note_count": 104589,
+      "participating_note_ratio": 0.36611312195019496
+    },
+    "more_than_four": {
+      "count": 13113,
+      "ratio": 0.14595136067672101
+    },
+    "total": 89845
+  },
+  "schema_version": 1
+}

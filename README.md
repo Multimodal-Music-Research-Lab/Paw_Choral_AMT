@@ -19,6 +19,7 @@ assignment baseline (Post-VA).
 [Data contract](docs/DATA.md) ·
 [Reproducibility audit](docs/REPRODUCIBILITY.md) ·
 [YouChorale target audit](repro/audits/youchorale_targets_20260907_abe2438/README.md) ·
+[Runnable-pack audit](repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md) ·
 [ICASSP experiment plan](docs/EXPERIMENT_PLAN.md)
 
 ## What is implemented
@@ -188,15 +189,38 @@ but does not claim that HDF5 contents are valid. Files reported as outside one
 selected manifest are normally the other splits when a shared packed directory
 is supplied.
 
-The checked-in audit covers 452 recordings and 353,201 in-range notes. All
-notes have a canonical SATB/divisi-derived label, so anchored RP and OC change
-zero labels; legacy RP changes 0.57% and legacy OC changes 15.37%. This proves
-that RP/OC cannot be evaluated here merely as alternative hard target builders:
-their modern effect must come from soft output regularization. The train-only
-p01/p99 ranges are S `60–79`, A `55–74`, T `50–69`, and B `41–62`; the formal
-P2/P3 pilots freeze these values with a two-semitone margin. Full split-level
-counts, checksums, and interpretation are in the
-[versioned audit](repro/audits/youchorale_targets_20260907_abe2438/README.md).
+The annotation-only audit covers the stated 452 recordings and 353,201 in-range
+notes. All notes have a canonical SATB/divisi-derived label, so anchored RP and
+OC change zero labels; legacy RP changes 0.57% and legacy OC changes 15.37%.
+The separate acoustic-pack audit found only 434 matching HDF5 stems: train is
+376/392, validation 28/30, and test 30/30. The 18 missing items also lack local
+audio, so they cannot simply be repacked. Until those recordings are legally
+recovered, new results must be labelled as the frozen `available-audio-434`
+protocol rather than a complete 452-recording run.
+
+On the actual runnable training subset, the train-only p01/p99 ranges are S
+`60–79`, A `55–74`, T `50–70`, and B `41–62`; formal P2/P3 pilots freeze these
+values with a two-semitone margin. Together, the audits establish that RP/OC
+cannot be evaluated merely as alternative hard target builders: their modern
+effect must come from soft output regularization. See the
+[annotation audit](repro/audits/youchorale_targets_20260907_abe2438/README.md)
+and [runnable-pack audit](repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md)
+for split-level counts, ID-set hashes, checksums, and interpretation.
+
+Generate the pre-registered composition-disjoint manifests from the public
+metadata and the exact runnable acoustic pack with:
+
+```bash
+python tools/build_youchorale_composition_split.py \
+  --dataset-dir "$YOUCHORALE_DATASET_DIR" \
+  --packed-hdf5-dir "$YOUCHORALE_HDF5_DIR" \
+  --output-dir ./repro/splits/youchorale_available_audio_434_composition_disjoint_v1
+```
+
+The command groups normalized `(composer, title)` pairs before assigning any
+recording, verifies zero work overlap, records source/packed ID-set hashes, and
+publishes frozen manifests atomically. Re-running against identical artifacts
+is a no-op; conflicting or partial output fails closed.
 
 ## Train
 
@@ -276,7 +300,7 @@ python src/main_iter.py \
   choral.target_assignment=range_prior \
   choral.preserve_known_part_labels=true \
   choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_maxs='[79,74,70,62]' \
   choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.0 \
@@ -306,7 +330,7 @@ python src/main_iter.py \
   choral.target_assignment=ordered_continuity \
   choral.preserve_known_part_labels=true \
   choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_maxs='[79,74,70,62]' \
   choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
@@ -328,7 +352,8 @@ snapshot: the older online path shifted the mixture but not the `note.pkl`
 targets. Use only a synchronously generated offline transposition dataset
 until that path has an end-to-end test.
 
-Because all 299,638 audited YouChorale training notes have canonical labels,
+Because all 285,674 notes in the runnable YouChorale training pack have
+canonical labels,
 `target_assignment=range_prior` and `ordered_continuity` each change exactly
 zero modern targets. The explicit output-prior loss is therefore what
 distinguishes the pilots above; trusted labels remain anchored. RP suppresses
@@ -420,7 +445,7 @@ python src/inference.py \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
   choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_maxs='[79,74,70,62]' \
   choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
@@ -448,7 +473,7 @@ python src/search_best_thresholds.py \
   --objective mean_satb_note_f1 \
   --post_processor_type onsets_frames \
   --config-override 'choral.voice_assignment_range_mins=[60,55,50,41]' \
-  --config-override 'choral.voice_assignment_range_maxs=[79,74,69,62]' \
+  --config-override 'choral.voice_assignment_range_maxs=[79,74,70,62]' \
   --config-override 'choral.voice_assignment_range_margin=2.0' \
   --output_txt ./workspaces/thresholds/pawct_oc_validation.txt
 
@@ -468,7 +493,7 @@ python src/inference.py \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
   choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_maxs='[79,74,70,62]' \
   choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
@@ -491,7 +516,7 @@ python src/calculate_choral_scores.py \
   choral.enable=true \
   choral.target_assignment=ordered_continuity \
   choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,69,62]' \
+  choral.voice_assignment_range_maxs='[79,74,70,62]' \
   choral.voice_assignment_range_margin=2.0 \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \

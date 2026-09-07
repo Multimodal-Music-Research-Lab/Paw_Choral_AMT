@@ -45,6 +45,11 @@ Missing SATB labels now raise an error. Online note shifting is also blocked
 for choral training because the audited implementation shifts audio/global
 targets but does not shift the voice-specific targets.
 
+For the located acoustic pack, manifest-to-HDF5 auditing finds 376/392 train,
+28/30 validation, and 30/30 test recordings. Experiments using that pack must
+freeze the `available-audio-434` ID hashes and use its train-only RP range; they
+are not complete 452-recording runs.
+
 ## 3. Acoustic features
 
 `src/feature_extractor.py` implements the time-frequency front end. The paper

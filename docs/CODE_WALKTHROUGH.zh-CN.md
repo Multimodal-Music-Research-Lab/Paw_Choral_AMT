@@ -18,6 +18,12 @@
 2. `range_prior`（RP）：参考典型 SATB 音域分配歧义音符，也可作为 voice head 的软音域正则。
 3. `ordered_continuity`（OC）：使用随时间间隔衰减的旋律连续性和重叠代价，同时保留 divisi。新版软 OC loss 连接同一声部相邻的标注 onset 事件（即使中间有休止），比较“预测音高运动”和“标注音高运动”；它按事件归一化并衰减过远的连接，不会再被大量持续帧稀释，也不会把正确的旋律跳进拉平。`legacy_*` 模式只用于复现旧的全量重标行为。
 
+真实数据审计还发现，现有声学 HDF5 不是 452 首完整 manifest：train
+为 376/392，validation 为 28/30，test 为 30/30。因此用这批数据训练时
+必须明确写成 `available-audio-434` 协议并冻结 ID hash；RP 应使用实际
+376 首 train 的 p01/p99 音域 S 60–79、A 55–74、T 50–70、B 41–62，
+而不能混用包含缺失音频标注的统计。
+
 ## PawCT 为什么需要 union loss
 
 `src/losses.py::choral_task_bce` 同时监督四个声部和它们的并集。如果只监督声部，模型可能在困难的声部分配中把本来存在的音符整体丢掉；union loss 强制四个 head 合起来仍覆盖全局音符内容。论文报告中，去掉 union loss 后平均 note F1 为 0.190，加回后为 0.217。

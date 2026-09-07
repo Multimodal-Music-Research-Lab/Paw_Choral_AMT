@@ -14,27 +14,32 @@ The paper-reported ablation has a useful but incomplete signal:
 - PawCT-OC reaches the best reported mean note F1, 0.225, but the gain over
   PawCT is only 0.008 and has no confidence interval or multi-seed estimate.
 
-The code/data audit found five confounds that must be fixed before interpreting
+The code/data audit found six confounds that must be fixed before interpreting
 those differences. The descriptive counts below come from the
-[versioned YouChorale target audit](../repro/audits/youchorale_targets_20260907_abe2438/README.md),
+[runnable-pack target audit](../repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md),
 not from a model-performance run:
 
-1. Modern anchored RP and OC each change exactly 0 of 299,638 training labels,
-   because every in-range training note has a canonical SATB/divisi-derived
-   label. Their effect on YouChorale must therefore come from a soft output
-   prior, not hard relabeling.
-2. Historical/legacy RP relabels 1,217 of 299,638 known training notes
-   (0.4062%), so it is too weak as a hard target transformation to support a
+1. The manuscript describes 452 recordings, but the located acoustic pack has
+   434: 376/392 train, 28/30 validation, and 30/30 test. The missing 18 items
+   have annotations but no local supported audio. A new result must either
+   recover/repack them or explicitly use the frozen `available-audio-434`
+   protocol; silent subset selection is invalid.
+2. Modern anchored RP and OC each change exactly 0 of 285,674 runnable training
+   labels because every in-range training note has a canonical
+   SATB/divisi-derived label. Their effect on YouChorale must therefore come
+   from a soft output prior, not hard relabeling.
+3. Historical/legacy RP relabels 761 of 285,674 runnable training notes
+   (0.2664%), so it is too weak as a hard target transformation to support a
    large note-level effect.
-3. Historical/legacy OC relabels 44,067 of 299,638 known training notes
-   (14.7067%).
+4. Historical/legacy OC relabels 41,347 of 285,674 runnable training notes
+   (14.4735%).
    YouChorale includes S1/S2, A1/A2, and other divisi labels, so forcing a
    one-to-one SATB assignment can overwrite valid part labels. Modern anchored
    RP/OC does not relabel these trusted notes.
-4. Stored RP/OC target rolls were used as frame-level evaluation references,
+5. Stored RP/OC target rolls were used as frame-level evaluation references,
    whereas note metrics used original part names. Frame and note scores were
    therefore not measuring the same voice definition.
-5. The current onset/offset heads are trained against one-frame binary targets,
+6. The current onset/offset heads are trained against one-frame binary targets,
    while the documented regression decoder expects smooth regression targets.
 
 These are audit observations, not new experimental results.
@@ -57,6 +62,12 @@ All PawCT ablations use the same data, augmentation, maximum update budget,
 stopping rule, checkpoint-selection proxy, decoder family, and seed set.
 Cross-family baselines use the same split, seeds, and validation/test freeze,
 but retain a model-appropriate checkpoint-selection metric.
+
+Until the missing audio is restored, every current pilot uses the frozen
+`available-audio-434` intersections and their committed ID hashes. If a
+complete 452-recording pack is later built, it becomes a separately named
+protocol and every compared row must be retrained; rows from the two protocols
+cannot be combined in one ablation table.
 
 Every `row × hyperparameter setting × seed` must use a unique run suffix, and
 the same suffix must be propagated through training, inference, threshold
@@ -104,7 +115,9 @@ separation must be stated explicitly and kept identical across rows.
 
 The pilot search is sequential and fixed before test evaluation. P2 and P3 use
 the train-only p01/p99 MIDI ranges `mins=[60,55,50,41]` and
-`maxs=[79,74,69,62]` for S/A/T/B, with a two-semitone margin. The loss excludes
+`maxs=[79,74,70,62]` for S/A/T/B, with a two-semitone margin. These values come
+from the 376-recording runnable training subset, not from missing-audio
+annotations. The loss excludes
 trusted annotated positives, so genuine out-of-register notes are not punished.
 The older broad defaults `[60,55,48,40]..[88,79,72,67]` are retained as one
 named diagnostic ablation, not added to the primary grid:
@@ -170,10 +183,10 @@ Stratify pieces or notes by:
 This should reveal where OC helps: its expected benefit is in ambiguous,
 temporally connected passages, not isolated easy notes.
 
-The target audit gives a concrete reason to pre-register these strata:
-greater-than-four-note onset groups account for 14.47% of train, 19.94% of
+The runnable-pack audit gives a concrete reason to pre-register these strata:
+greater-than-four-note onset groups account for 14.60% of train, 17.81% of
 validation, and 16.17% of test groups; duplicate-canonical-voice groups account
-for 33.61%, 46.36%, and 38.80%, respectively. These descriptive differences do
+for 33.72%, 43.99%, and 38.80%, respectively. These descriptive differences do
 not prove an OC performance effect, but they show that one aggregate mean can
 hide materially different divisi/unison/polyphony conditions.
 
@@ -216,12 +229,21 @@ recording split for comparison with prior work, but add a composition-disjoint
 split as the stronger generalization result. Publish the exact manifests and
 grouping rule, and report both rows without conflating them.
 
+For the current `available-audio-434` subset, train contains 229 works,
+validation 27, and test 29. Twenty-one of 29 test works occur in the runnable
+train set, and 22/30 test recordings come from a train-seen work. These figures
+must be recomputed from the frozen manifest if missing audio is restored.
+
 For the disjoint protocol, normalize `(composer, title)` with Unicode NFKC,
 case-folding, punctuation removal, and collapsed whitespace; keep every
 recording of a normalized work in one group. Sort groups by
 `SHA256("pawct-icassp2027-v1" + group_key)`, then assign the first 80% of groups
 to train, the next 10% to validation, and the remainder to test (integer cuts
-use floor). Commit the generated group map and manifests before training.
+use floor). Generate the report, group map, and manifests with
+`tools/build_youchorale_composition_split.py`; the tool records the Unicode
+database version and sequence-hash encoding, verifies zero generated work
+overlap, and refuses to overwrite a different or partial frozen output.
+Commit the generated group map and manifests before training.
 Retrain every row on this train split, make every model/threshold choice on its
 validation split, and do not inspect its test metrics until the run registry is
 frozen. Until those artifacts exist, do not label any result
@@ -264,7 +286,7 @@ reported as a targeted benefit, not a global gain.
    union objective protects merged transcription.
 4. Every audited note already has a canonical label, so hard assignment adds no
    supervision; the legacy OC rule is additionally unsafe because it overwrites
-   14.71% of trusted training labels.
+   14.47% of trusted runnable training labels.
 5. Anchored RP keeps trusted notes while suppressing unsupported output mass
    outside a train-derived register; the current OC loss adds target-relative
    onset-event trajectory consistency, including across rests with gap decay.

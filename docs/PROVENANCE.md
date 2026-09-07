@@ -43,3 +43,20 @@ d9f8962562fa24ea8b50b865fb8c53166537054117287afcbdda995dbdf0edf9  train.json
 Packaging verification after importing the reports: 242 tests passed with two
 documented dependency warnings, Python compilation succeeded, and the release
 scan passed.
+
+## Runnable HDF5 subset audit (2026-09-08)
+
+Source commit `4f23e775ee2a18c0eed16505756973081d20d3ee` was transferred
+in a bundle with SHA-256
+`087cbd6747c124688cc2721a13f52f592b7069a82725a34fde455f9bfd761fa3`.
+The same CPU-only/read-only procedure intersected the source manifests with the
+recursive exact filename stems in the historical acoustic HDF5 directory.
+
+The pack contains 434 of 452 manifest stems: 376/392 train, 28/30 validation,
+and 30/30 test. Its sorted recording-stem set hashes to
+`bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c`.
+See the
+[`available-audio-434` audit](../repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md)
+for target statistics, exact missing stems, scope limits, and report hashes.
+Filename existence was checked; this audit does not claim a byte-level HDF5
+content validation.

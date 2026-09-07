@@ -54,10 +54,10 @@ duplicate-canonical-voice onset groups than train. That shift motivates
 difficulty-stratified and composition-level analysis rather than relying only
 on a single global mean.
 
-## Train-only RP range
+## Annotation-manifest RP range
 
-The primary YouChorale RP pilot freezes the following train-only p01/p99 MIDI
-pitch ranges before validation and test:
+Across all 392 annotated train-manifest items, the train-only p01/p99 MIDI pitch
+ranges are:
 
 | Voice | p01 | p99 | Observed min | Median | Observed max |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -70,7 +70,11 @@ With the configured two-semitone margin, the loss suppresses unsupported
 probability mass only outside the robust range plus margin; it never penalizes
 a trusted annotated positive. The previous broad ranges
 `[60,55,48,40]..[88,79,72,67]` remain a named diagnostic ablation rather than
-the primary setting.
+the primary setting. This annotation-only range must not be applied blindly to
+an incomplete acoustic pack: the
+[runnable-pack audit](../youchorale_packed_targets_20260908_4f23e77/README.md)
+finds that the current 376-recording training pack has tenor p99 = 70 and is the
+authoritative range source for experiments using that pack.
 
 ## File integrity
 

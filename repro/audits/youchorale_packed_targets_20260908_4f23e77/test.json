@@ -1,0 +1,271 @@
+{
+  "analysis_config": {
+    "begin_note": 21,
+    "classes_num": 88,
+    "continuity_weight": 0.35,
+    "oc_gap_decay_seconds": 2.0,
+    "oc_overlap_tolerance_seconds": 0.05,
+    "onset_group_frames_per_second": 100.0,
+    "overlap_penalty": 4.0,
+    "part_label_mismatch_penalty": 2.0,
+    "preserve_known_part_labels": true,
+    "range_margin": 2.0,
+    "range_mask_penalty": 8.0,
+    "range_maxs": [
+      88.0,
+      79.0,
+      72.0,
+      67.0
+    ],
+    "range_mins": [
+      60.0,
+      55.0,
+      48.0,
+      40.0
+    ],
+    "voice_order": [
+      "S",
+      "A",
+      "T",
+      "B"
+    ]
+  },
+  "assignments": {
+    "legacy_ordered_continuity": {
+      "assigned_notes": 28324,
+      "change_ratio": 0.1906510379889846,
+      "changed_known_labels": 5400,
+      "confusion": {
+        "A": {
+          "A": 5922,
+          "B": 439,
+          "S": 541,
+          "T": 944
+        },
+        "B": {
+          "A": 121,
+          "B": 5373,
+          "S": 28,
+          "T": 483
+        },
+        "S": {
+          "A": 1156,
+          "B": 82,
+          "S": 6257,
+          "T": 354
+        },
+        "T": {
+          "A": 468,
+          "B": 484,
+          "S": 300,
+          "T": 5372
+        }
+      },
+      "known_labels": 28324,
+      "retained_known_labels": 22924,
+      "retention_ratio": 0.8093489620110154
+    },
+    "legacy_range_prior": {
+      "assigned_notes": 28324,
+      "change_ratio": 0.017123287671232876,
+      "changed_known_labels": 485,
+      "confusion": {
+        "A": {
+          "A": 7656,
+          "B": 190,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 0,
+          "B": 6005,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 125,
+          "S": 7598,
+          "T": 126
+        },
+        "T": {
+          "A": 0,
+          "B": 42,
+          "S": 2,
+          "T": 6580
+        }
+      },
+      "known_labels": 28324,
+      "retained_known_labels": 27839,
+      "retention_ratio": 0.9828767123287672
+    },
+    "ordered_continuity": {
+      "assigned_notes": 28324,
+      "change_ratio": 0.0,
+      "changed_known_labels": 0,
+      "confusion": {
+        "A": {
+          "A": 7846,
+          "B": 0,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 0,
+          "B": 6005,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 0,
+          "S": 7849,
+          "T": 0
+        },
+        "T": {
+          "A": 0,
+          "B": 0,
+          "S": 0,
+          "T": 6624
+        }
+      },
+      "known_labels": 28324,
+      "retained_known_labels": 28324,
+      "retention_ratio": 1.0
+    },
+    "range_prior": {
+      "assigned_notes": 28324,
+      "change_ratio": 0.0,
+      "changed_known_labels": 0,
+      "confusion": {
+        "A": {
+          "A": 7846,
+          "B": 0,
+          "S": 0,
+          "T": 0
+        },
+        "B": {
+          "A": 0,
+          "B": 6005,
+          "S": 0,
+          "T": 0
+        },
+        "S": {
+          "A": 0,
+          "B": 0,
+          "S": 7849,
+          "T": 0
+        },
+        "T": {
+          "A": 0,
+          "B": 0,
+          "S": 0,
+          "T": 6624
+        }
+      },
+      "known_labels": 28324,
+      "retained_known_labels": 28324,
+      "retention_ratio": 1.0
+    }
+  },
+  "dataset": {
+    "duplicate_split_membership_count": 0,
+    "duplicate_split_memberships": {},
+    "missing_splits_for_all": [],
+    "name": "YouChorale",
+    "packed_coverage": {
+      "intersection_recording_ids_sha256": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+      "intersection_recordings": 30,
+      "manifest_coverage_ratio": 1.0,
+      "manifest_missing_packed_recording_ids": [],
+      "manifest_missing_packed_recordings": 0,
+      "manifest_recording_ids_sha256": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+      "manifest_recordings": 30,
+      "match_semantics": "exact_case_sensitive_filename_stem_existence_only",
+      "packed_not_in_selected_manifest_recording_ids_sha256": "57877d7cf8c4381858833d31db8276be1a202b2490132ee6e43be5976d1da6c4",
+      "packed_not_in_selected_manifest_recordings": 404,
+      "packed_recording_ids_sha256": "bedaf5f3a1b8d007217d7c448d4ed34bd968baf4eafc813864fa675b2dea333c",
+      "packed_recordings_total": 434,
+      "packed_selection_ratio": 0.06912442396313365,
+      "schema_version": 1
+    },
+    "recording_ids_sha256": "2e5d0ce829706ad7efaaad41a0dd3df6d3f11d852c51916cd7d4ae211c9d174c",
+    "recordings": 30,
+    "split": "test",
+    "split_files": {
+      "test": "test.json"
+    }
+  },
+  "notes": {
+    "canonical_distribution": {
+      "A": 7846,
+      "B": 6005,
+      "S": 7849,
+      "T": 6624
+    },
+    "canonical_known": 28324,
+    "canonical_known_ratio": 1.0,
+    "canonical_pitch_statistics": {
+      "A": {
+        "count": 7846,
+        "max": 77,
+        "median": 65.0,
+        "min": 46,
+        "p01": 52.0,
+        "p05": 57.0,
+        "p95": 71.0,
+        "p99": 74.0
+      },
+      "B": {
+        "count": 6005,
+        "max": 67,
+        "median": 53.0,
+        "min": 36,
+        "p01": 41.0,
+        "p05": 44.0,
+        "p95": 61.0,
+        "p99": 64.0
+      },
+      "S": {
+        "count": 7849,
+        "max": 82,
+        "median": 70.0,
+        "min": 51,
+        "p01": 55.0,
+        "p05": 59.0,
+        "p95": 77.0,
+        "p99": 79.0
+      },
+      "T": {
+        "count": 6624,
+        "max": 74,
+        "median": 59.0,
+        "min": 40,
+        "p01": 48.0,
+        "p05": 52.0,
+        "p95": 65.0,
+        "p99": 68.0
+      }
+    },
+    "canonical_unknown_or_ambiguous": 0,
+    "in_model_range": 28324,
+    "malformed": 0,
+    "outside_model_range": 0,
+    "total": 28324
+  },
+  "onset_groups": {
+    "duplicate_canonical_voice": {
+      "excess_note_count": 6522,
+      "group_count": 3381,
+      "group_ratio": 0.3880408584873178,
+      "participating_note_count": 12330,
+      "participating_note_ratio": 0.4353198700748482
+    },
+    "more_than_four": {
+      "count": 1409,
+      "ratio": 0.1617123837943303
+    },
+    "total": 8713
+  },
+  "schema_version": 1
+}

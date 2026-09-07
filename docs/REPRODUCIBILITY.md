@@ -24,6 +24,8 @@ the manuscript's tables have been rerun.
 - [x] Data-free PawCT forward/union/loss-backward smoke test.
 - [x] Versioned real-data audit of SATB label coverage, RP/OC target retention,
   onset-group structure, and train-only pitch statistics.
+- [x] Versioned source-manifest versus packed-HDF5 stem audit, including exact
+  runnable split hashes and missing-item disclosure.
 
 ## Missing before a reproducibility claim
 
@@ -60,6 +62,12 @@ number. For example, one PawCT-OC evaluation summary averaged approximately
 0.219 note F1 while the manuscript reports 0.225. This may be a checkpoint,
 threshold, or evaluator-version difference and must be traced rather than
 rounded away.
+
+The located acoustic pack contains 434 matching HDF5 stems although the
+manuscript describes 452 recordings. Its train/validation/test intersections
+are 376/28/30 rather than 392/30/30. Corrected results must either restore the
+missing audio or explicitly name and hash the `available-audio-434` protocol;
+they cannot silently inherit the complete-dataset wording.
 
 ## Scientific alignment issues
 
