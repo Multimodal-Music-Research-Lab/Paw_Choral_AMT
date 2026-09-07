@@ -196,6 +196,30 @@ class ChoralPriorLossTest(unittest.TestCase):
 
         self.assertTrue(torch.isfinite(loss))
 
+    def test_continuity_prior_tiny_decay_is_finite_for_zero_gap_and_gradients(self):
+        target = torch.zeros((1, 2, 1, 88))
+        target[0, 0, 0, 20] = 1.0
+        target[0, 1, 0, 32] = 1.0
+        activity = torch.zeros_like(target)
+        activity[0, 0, 0, 20] = 1.0
+        activity[0, 1, 0, 32] = 1.0
+        flattened = torch.zeros_like(target, requires_grad=True)
+        with torch.no_grad():
+            flattened[0, :, 0, 20] = 1.0
+
+        loss = voice_continuity_prior_loss(
+            flattened,
+            target,
+            activity_target=activity,
+            frames_per_second=100.0,
+            gap_decay_seconds=1e-300,
+        )
+        loss.backward()
+
+        self.assertTrue(torch.isfinite(loss))
+        self.assertAlmostEqual(float(loss), 0.5, places=6)
+        self.assertTrue(torch.isfinite(flattened.grad).all())
+
     def test_continuity_prior_rejects_nonfinite_time_parameters(self):
         values = torch.zeros((1, 2, 1, 4))
         for kwargs in (
@@ -252,6 +276,29 @@ class ChoralPriorLossTest(unittest.TestCase):
         with_oc = choral_task_bce(model, output_dict, target_dict)
 
         self.assertGreater(float(with_oc), float(without_oc) + 0.1)
+
+    def test_choral_task_requires_frame_activity_for_v3_continuity(self):
+        cfg = SimpleNamespace(
+            model=SimpleNamespace(arch='pawct', mode='frame_onset'),
+            feature=SimpleNamespace(frames_per_second=100.0),
+            choral=SimpleNamespace(
+                voice_onset_loss_weight=1.0,
+                voice_onset_positive_weight=1.0,
+                continuity_prior_loss_weight=0.01,
+                oc_gap_decay_seconds=2.0,
+            ),
+        )
+        values = torch.zeros((1, 2, 1, 4))
+
+        with self.assertRaisesRegex(ValueError, 'frame activity targets'):
+            choral_task_bce(
+                SimpleNamespace(cfg=cfg),
+                {'voice_onset_output': values},
+                {
+                    'voice_onset_roll': values,
+                    'voice_onset_mask_roll': torch.ones_like(values),
+                },
+            )
 
 
 if __name__ == "__main__":

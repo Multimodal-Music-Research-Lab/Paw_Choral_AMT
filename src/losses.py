@@ -230,74 +230,104 @@ def voice_continuity_prior_loss(
         activity_fully_supervised = fully_supervised
         activity_active = event_active
 
-    frame_indices = torch.arange(
+    time_indices = torch.arange(
         output.shape[1],
         device=output.device,
         dtype=torch.long,
+    ).view(1, -1, 1).expand(
+        output.shape[0],
+        -1,
+        output.shape[2],
     )
 
-    for batch_idx in range(output.shape[0]):
-        for voice_idx in range(output.shape[2]):
-            event_frames = torch.nonzero(
-                event_active[batch_idx, :, voice_idx],
-                as_tuple=False,
-            ).flatten()
-            if event_frames.numel() < 2:
-                continue
+    # The shifted cumulative maximum identifies the previous onset for every
+    # current event without a CUDA-synchronising nonzero/Python loop.
+    event_locations = torch.where(
+        event_active,
+        time_indices,
+        torch.full_like(time_indices, -1),
+    )
+    latest_event = torch.cummax(event_locations, dim=1).values
+    previous_event = torch.cat((
+        torch.full_like(latest_event[:, :1, :], -1),
+        latest_event[:, :-1, :],
+    ), dim=1)
+    previous_event_safe = torch.clamp(previous_event, min=0)
 
-            previous_frames = event_frames[:-1]
-            current_frames = event_frames[1:]
+    previous_output_center = torch.gather(
+        output_center,
+        dim=1,
+        index=previous_event_safe,
+    )
+    previous_target_center = torch.gather(
+        target_center,
+        dim=1,
+        index=previous_event_safe,
+    )
+    output_delta = (output_center - previous_output_center) / 12.0
+    target_delta = (target_center - previous_target_center) / 12.0
+    pair_loss = torch.nn.functional.smooth_l1_loss(
+        output_delta,
+        target_delta,
+        reduction='none',
+    )
 
-            interval_valid = activity_fully_supervised[batch_idx, :, voice_idx]
-            invalid_prefix = torch.cat((
-                torch.zeros(1, device=output.device, dtype=torch.long),
-                torch.cumsum((~interval_valid).to(torch.long), dim=0),
-            ))
-            pair_valid = (
-                invalid_prefix[current_frames + 1]
-                - invalid_prefix[previous_frames]
-            ) == 0
-            pair_valid_float = pair_valid.to(torch.float32)
+    # Exclude a pair if any frame in [previous onset, current onset] lacks a
+    # complete pitch mask. This prevents masked activity from masquerading as
+    # a rest and prevents a changing pitch support from shifting the centre.
+    invalid_prefix = torch.cat((
+        torch.zeros(
+            output.shape[0],
+            1,
+            output.shape[2],
+            device=output.device,
+            dtype=torch.long,
+        ),
+        torch.cumsum((~activity_fully_supervised).to(torch.long), dim=1),
+    ), dim=1)
+    invalid_before_previous = torch.gather(
+        invalid_prefix,
+        dim=1,
+        index=previous_event_safe,
+    )
+    invalid_through_current = invalid_prefix[:, 1:, :]
+    pair_valid = (
+        event_active
+        & (previous_event >= 0)
+        & ((invalid_through_current - invalid_before_previous) == 0)
+    )
+    pair_valid_float = pair_valid.to(torch.float32)
 
-            output_delta = (
-                output_center[batch_idx, current_frames, voice_idx]
-                - output_center[batch_idx, previous_frames, voice_idx]
-            ) / 12.0
-            target_delta = (
-                target_center[batch_idx, current_frames, voice_idx]
-                - target_center[batch_idx, previous_frames, voice_idx]
-            ) / 12.0
-            pair_loss = torch.nn.functional.smooth_l1_loss(
-                output_delta,
-                target_delta,
-                reduction='none',
-            )
-            if gap_decay_seconds == 0.0:
-                pair_weight = torch.ones_like(pair_loss, dtype=torch.float32)
-            else:
-                active_frames = activity_active[batch_idx, :, voice_idx]
-                last_active_frame = torch.cummax(
-                    torch.where(
-                        active_frames,
-                        frame_indices,
-                        torch.full_like(frame_indices, -1),
-                    ),
-                    dim=0,
-                ).values
-                last_before_onset = last_active_frame[current_frames - 1]
-                last_before_onset = torch.maximum(
-                    last_before_onset,
-                    previous_frames,
-                )
-                rest_frames = torch.clamp(
-                    current_frames - last_before_onset - 1,
-                    min=0,
-                )
-                gap_seconds = rest_frames.to(torch.float32) / frames_per_second
-                pair_weight = torch.exp(-gap_seconds / gap_decay_seconds)
-            pair_weight = pair_weight * pair_valid_float
-            weighted_loss = weighted_loss + torch.sum(pair_loss * pair_weight)
-            pair_count = pair_count + torch.sum(pair_valid_float)
+    if gap_decay_seconds == 0.0:
+        pair_weight = torch.ones_like(pair_loss, dtype=torch.float32)
+    else:
+        activity_locations = torch.where(
+            activity_active,
+            time_indices,
+            torch.full_like(time_indices, -1),
+        )
+        latest_activity = torch.cummax(activity_locations, dim=1).values
+        last_active_before_onset = torch.cat((
+            torch.full_like(latest_activity[:, :1, :], -1),
+            latest_activity[:, :-1, :],
+        ), dim=1)
+        last_active_before_onset = torch.maximum(
+            last_active_before_onset,
+            previous_event,
+        )
+        rest_frames = torch.clamp(
+            time_indices - last_active_before_onset - 1,
+            min=0,
+        )
+        gap_seconds = rest_frames.to(torch.float32) / frames_per_second
+        # Python floats below float32.tiny cast to zero. Clamp before the
+        # tensor division so a zero-length rest remains 0 rather than 0/0.
+        decay = max(gap_decay_seconds, torch.finfo(torch.float32).tiny)
+        pair_weight = torch.exp(-gap_seconds / decay)
+
+    pair_weight = pair_weight * pair_valid_float
+    weighted_loss = weighted_loss + torch.sum(pair_loss * pair_weight)
+    pair_count = pair_count + torch.sum(pair_valid_float)
 
     return weighted_loss / torch.clamp(pair_count, min=1.0)
 
@@ -369,11 +399,18 @@ def choral_task_bce(model, output_dict, target_dict):
 
     continuity_weight = float(getattr(cfg.choral, 'continuity_prior_loss_weight', 0.0))
     if continuity_weight > 0.0:
-        if 'voice_onset_output' not in output_dict or 'voice_onset_roll' not in target_dict:
+        required_continuity_keys = {
+            'voice_onset_roll',
+            'voice_frame_roll',
+            'voice_frame_mask_roll',
+        }
+        missing_continuity_keys = sorted(required_continuity_keys - target_dict.keys())
+        if 'voice_onset_output' not in output_dict or missing_continuity_keys:
             raise ValueError(
                 'continuity_prior_loss_weight > 0 requires PawCT voice onset '
-                'outputs and targets; use model.mode=frame_onset or '
-                'frame_onset_offset'
+                'outputs plus onset/frame activity targets and frame masks; '
+                'use model.mode=frame_onset or frame_onset_offset. Missing: '
+                f'{missing_continuity_keys}'
             )
         losses.append(
             continuity_weight
@@ -381,8 +418,8 @@ def choral_task_bce(model, output_dict, target_dict):
                 output_dict['voice_onset_output'],
                 target_dict['voice_onset_roll'],
                 target_dict.get('voice_onset_mask_roll'),
-                activity_target=target_dict.get('voice_frame_roll'),
-                activity_mask=target_dict.get('voice_frame_mask_roll'),
+                activity_target=target_dict['voice_frame_roll'],
+                activity_mask=target_dict['voice_frame_mask_roll'],
                 frames_per_second=float(cfg.feature.frames_per_second),
                 gap_decay_seconds=float(
                     getattr(cfg.choral, 'oc_gap_decay_seconds', 2.0)
