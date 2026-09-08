@@ -14,7 +14,13 @@ MIDI pitch, onset time, and offset time.
 
 Formal scoring fails closed unless the top-level object is a materialized
 `list`, every note has a recognized SATB/divisi label, integer in-range MIDI
-pitch, finite positive duration, and times inside the packed recording. If two
+pitch, and finite positive duration. Recording-boundary handling is explicit:
+the default `strict` policy rejects any out-of-bounds time. The frozen
+`clip_offsets_drop_unobservable_onsets_v1` policy clips the offset of a note
+whose onset is audible but release is right-censored by the waveform, and
+drops a note whose onset itself lies outside the recording. It never changes
+the source pickle. Use the same policy for inference, threshold selection, and
+scoring, and record it in probability provenance. If two
 divisi notes in the same canonical voice share a pitch and quantize to the same
 onset frame, the binary voice head cannot represent them separately; both
 training targets and references therefore merge them using the earliest onset
@@ -24,6 +30,15 @@ frame, retains later attack frames as rearticulation boundaries, and spans each
 overlapping activity component to its true final release. This one projector is
 used for PagCT targets, PawCT union targets, inference references, and union
 scoring; metric onset tolerance never changes it.
+
+An exhaustive audit of the runnable `available-audio-434` pack found 336,928
+source notes: 55 offsets after the packed waveform and 15 attacks after it.
+All 15 unobservable attacks and 50 of the 55 right-censored releases are in the
+training split. Validation has one affected recording (`yMc5qPZf_gc`) with five
+audible final attacks whose releases extend 0.292317225 s beyond the waveform;
+test has no boundary violations. Thus the versioned policy changes no test
+reference, retains all validation attacks, and makes the already implicit
+training boundary behavior explicit.
 
 Because pickle loading can execute code, never use annotations from an
 untrusted source. A future dataset release should replace or accompany these

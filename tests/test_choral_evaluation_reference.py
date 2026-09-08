@@ -64,7 +64,9 @@ class ChoralEvaluationReferenceTest(unittest.TestCase):
         }
         calculator._load_probability_file = lambda *_args, **_kwargs: total_dict
         calculator._validate_probability_provenance = lambda *_args, **_kwargs: None
-        calculator._validate_formal_reference = lambda *_args, **_kwargs: None
+        calculator._prepare_formal_reference = (
+            lambda note_bars, *_args, **_kwargs: (note_bars, {})
+        )
 
         def decode_stub(_total_dict, voice_idx, _post_processor, thresholds=None):
             del thresholds

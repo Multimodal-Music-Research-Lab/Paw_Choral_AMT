@@ -23,7 +23,10 @@ from checkpointing import (
     checkpoint_model_input_identity,
     checkpoint_target_semantics,
 )
-from choral_targets import resolve_target_assignment
+from choral_targets import (
+    resolve_reference_duration_policy,
+    resolve_target_assignment,
+)
 from split_manifests import (
     configured_split_manifest_identity,
     select_split_hdf5_paths,
@@ -510,6 +513,9 @@ class ProbabilityArtifactValidator:
             "model_name": self.model_name,
             "evaluation_split": self.eval_split,
             "evaluation_reference_assignment": "part_name",
+            "evaluation_reference_duration_policy": (
+                resolve_reference_duration_policy(self.cfg)
+            ),
         }
         for key, expected_value in expected_fields.items():
             if provenance.get(key) != expected_value:

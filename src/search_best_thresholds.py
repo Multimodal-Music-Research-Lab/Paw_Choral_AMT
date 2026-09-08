@@ -78,6 +78,15 @@ def parse_args():
     parser.add_argument("--choral_enable", action="store_true", help="Use choral SATB evaluation instead of single-stream evaluation")
     parser.add_argument("--choral_per_voice", action="store_true", help="Search independent thresholds for S/A/T/B and combine them")
     parser.add_argument(
+        "--reference-duration-policy",
+        choices=("strict", "clip_offsets_drop_unobservable_onsets_v1"),
+        default=None,
+        help=(
+            "Explicit policy for source notes crossing the packed waveform boundary. "
+            "Use the same frozen value as inference."
+        ),
+    )
+    parser.add_argument(
         "--range-prior-loss-weight",
         "--range_prior_loss_weight",
         dest="range_prior_loss_weight",
@@ -308,6 +317,11 @@ def build_overrides(args, extra_overrides=None):
         overrides.append(f"dataset.youchorale_pro_dir={args.youchorale_pro_dir}")
     if args.choral_enable:
         overrides.append("choral.enable=true")
+        if getattr(args, "reference_duration_policy", None) is not None:
+            overrides.append(
+                "choral.evaluation_reference_duration_policy="
+                f"{args.reference_duration_policy}"
+            )
         target_assignment = getattr(args, "target_assignment", None)
         legacy_assignment = getattr(args, "voice_assignment_method", None)
         if target_assignment is not None and legacy_assignment is not None:

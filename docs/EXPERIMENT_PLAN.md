@@ -88,6 +88,12 @@ named diagnostic row. They should not be the primary proposed methods.
 
 All corrected rows use the same frame-quantized canonical union projector over
 the source `note.pkl` intervals. Scoring tolerance never changes this reference.
+For `available-audio-434`, freeze
+`choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1`
+before decoding: retain attacks inside the waveform, clip right-censored
+releases to the waveform end, and exclude attacks outside observable audio.
+Apply it identically to every P0--P4 candidate. The policy is provenance-bound
+and is not a tunable hyperparameter.
 Because this repairs merged-MIDI overwrite, long-note backtracking, and boundary
 mask errors, historical checkpoints and their reported `0.225` OC value cannot
 be mixed with corrected rows; every main contrast needs a clean retraining run.

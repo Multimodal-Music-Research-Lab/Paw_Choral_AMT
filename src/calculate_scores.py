@@ -36,7 +36,10 @@ from utilities import (
     note_to_freq,
 )
 from canonical_union import build_canonical_union_rolls, canonical_union_events
-from choral_targets import require_complete_satb_reference
+from choral_targets import (
+    prepare_formal_satb_reference,
+    resolve_reference_duration_policy,
+)
 from probability_artifacts import ProbabilityArtifactValidator
 
 
@@ -84,12 +87,13 @@ def _canonical_choral_reference(cfg, hdf5_path, note_path, total_dict):
         duration = hdf5_file['waveform'].shape[0] / float(cfg.feature.sample_rate)
     with open(note_path, 'rb') as note_file:
         note_bars = pickle.load(note_file)
-    require_complete_satb_reference(
+    note_bars, _duration_adjustment = prepare_formal_satb_reference(
         note_bars,
         note_path,
         begin_note=int(cfg.feature.begin_note),
         classes_num=int(cfg.feature.classes_num),
         recording_duration=duration,
+        duration_policy=resolve_reference_duration_policy(cfg),
     )
 
     union_events = canonical_union_events(

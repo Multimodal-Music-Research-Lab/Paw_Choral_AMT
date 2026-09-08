@@ -17,6 +17,10 @@ choral:
   voice_assignment_method: null     # deprecated CLI/checkpoint compatibility alias
   preserve_known_part_labels: true
   evaluation_reference_assignment: "part_name"  # immutable paper/evaluation reference
+  # strict rejects annotations beyond the packed waveform. The versioned
+  # censoring policy must be selected explicitly for available-audio-434,
+  # whose source MIDI has a small number of right-truncated final notes.
+  evaluation_reference_duration_policy: "strict"
   oc_gap_decay_seconds: 2.0
   oc_overlap_tolerance_seconds: 0.05
   assignment_module: "heads"   # model-side assignment: heads | va2_cnn | va2_convlstm

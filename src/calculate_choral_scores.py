@@ -16,7 +16,8 @@ from calculate_scores import build_post_processor
 from choral_targets import (
     canonical_voice_code,
     merge_quantized_voice_events,
-    require_complete_satb_reference,
+    prepare_formal_satb_reference,
+    resolve_reference_duration_policy,
 )
 from probability_artifacts import (
     ProbabilityArtifactValidator,
@@ -636,18 +637,19 @@ class ChoralScoreCalculator:
         self._validate_probability_provenance(total_dict, prob_path, note_path)
         return total_dict
 
-    def _validate_formal_reference(self, note_bars, note_path, prob_path):
+    def _prepare_formal_reference(self, note_bars, note_path, prob_path):
         hdf5_path = self.artifact_validator.hdf5_path_for_probability(prob_path)
         recording_duration = _packed_recording_duration(
             hdf5_path,
             self.cfg.feature.sample_rate,
         )
-        require_complete_satb_reference(
+        return prepare_formal_satb_reference(
             note_bars,
             note_path,
             begin_note=int(self.cfg.feature.begin_note),
             classes_num=int(self.cfg.feature.classes_num),
             recording_duration=recording_duration,
+            duration_policy=resolve_reference_duration_policy(self.cfg),
         )
 
     def calculate_voice_score_per_song(
@@ -669,7 +671,11 @@ class ChoralScoreCalculator:
         if note_bars is None:
             note_bars = _load_note_bars(note_path)
         if not reference_validated:
-            self._validate_formal_reference(note_bars, note_path, prob_path)
+            note_bars, _duration_adjustment = self._prepare_formal_reference(
+                note_bars,
+                note_path,
+                prob_path,
+            )
         ref_voice_events = _reference_events_by_voice(
             note_bars,
             float(self.cfg.feature.frames_per_second),
@@ -780,7 +786,11 @@ class ChoralScoreCalculator:
         estimated_by_voice = {}
         total_dict = self._load_probability_file(prob_path, note_path)
         note_bars = _load_note_bars(note_path)
-        self._validate_formal_reference(note_bars, note_path, prob_path)
+        note_bars, _duration_adjustment = self._prepare_formal_reference(
+            note_bars,
+            note_path,
+            prob_path,
+        )
         for voice_name in VOICE_NAMES:
             song_stats = self.calculate_voice_score_per_song(
                 prob_path,
@@ -853,7 +863,7 @@ class ChoralScoreCalculator:
             note_path = os.path.join(self.note_dir, f"{stem}.pkl")
             self._load_probability_file(prob_path, note_path)
             note_bars = _load_note_bars(note_path)
-            self._validate_formal_reference(note_bars, note_path, prob_path)
+            self._prepare_formal_reference(note_bars, note_path, prob_path)
 
     def presence_arrays(self, threshold=0.5):
         ref_list = []
@@ -876,7 +886,11 @@ class ChoralScoreCalculator:
                 continue
 
             note_bars = _load_note_bars(note_path)
-            self._validate_formal_reference(note_bars, note_path, prob_path)
+            note_bars, _duration_adjustment = self._prepare_formal_reference(
+                note_bars,
+                note_path,
+                prob_path,
+            )
             ref_presence = _reference_presence_vector(
                 note_bars,
                 float(self.cfg.feature.frames_per_second),

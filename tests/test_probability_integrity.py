@@ -56,6 +56,7 @@ def make_cfg(workspace="/tmp/unused", require_probability_provenance=True):
         model=SimpleNamespace(arch="pawct", mode="frame_onset_offset", name="auto"),
         choral=SimpleNamespace(
             enable=True,
+            evaluation_reference_duration_policy="strict",
             target_assignment="ordered_continuity",
             voice_assignment_method=None,
             num_voices=4,
@@ -89,6 +90,7 @@ def make_provenance(
         "model_name": "pawct_frame_onset_offset_oc",
         "evaluation_split": "validation",
         "evaluation_reference_assignment": "part_name",
+        "evaluation_reference_duration_policy": "strict",
         "inference_run_id": run_id,
         "checkpoint_identity": {
             "filename": "best.pth",
@@ -356,6 +358,7 @@ class ProbabilityProvenanceTest(unittest.TestCase):
             ("model_name", "wrong_model"),
             ("evaluation_split", "test"),
             ("evaluation_reference_assignment", "ordered_continuity"),
+            ("evaluation_reference_duration_policy", "invented"),
         ):
             validator = bare_validator()
             provenance = make_provenance(self.hdf5_path, "song_a")

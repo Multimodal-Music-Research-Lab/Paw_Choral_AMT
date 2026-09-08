@@ -521,6 +521,7 @@ python src/inference.py \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
+  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
   post.post_processor_type=onsets_frames \
   exp.name_suffix="$PAWCT_RUN_SUFFIX" \
   exp.workspace=./workspaces \
@@ -536,6 +537,7 @@ python src/search_best_thresholds.py \
   --ckpt_iteration best \
   --choral_enable \
   --choral_per_voice \
+  --reference-duration-policy clip_offsets_drop_unobservable_onsets_v1 \
   --target-assignment ordered_continuity \
   --model_mode frame_onset_offset \
   --range-prior-loss-weight 0.01 \
@@ -569,6 +571,7 @@ python src/inference.py \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
+  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
   post.post_processor_type=onsets_frames \
   exp.name_suffix="$PAWCT_RUN_SUFFIX" \
   exp.workspace=./workspaces \
@@ -592,6 +595,7 @@ python src/calculate_choral_scores.py \
   choral.range_prior_loss_weight=0.01 \
   choral.continuity_prior_loss_weight=0.01 \
   choral.evaluation_reference_assignment=part_name \
+  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
   post.post_processor_type=onsets_frames \
   exp.name_suffix="$PAWCT_RUN_SUFFIX" \
   exp.workspace=./workspaces \

@@ -29,7 +29,8 @@ from checkpointing import (
 from canonical_union import build_canonical_union_rolls, canonical_union_events
 from choral_targets import (
     build_choral_target_dict,
-    require_complete_satb_reference,
+    prepare_formal_satb_reference,
+    resolve_reference_duration_policy,
     resolve_target_assignment,
 )
 from models import build_model
@@ -271,6 +272,7 @@ def build_inference_provenance(cfg, transcriber, evaluation_reference_assignment
             str(cfg.dataset.test_set),
         ),
         'evaluation_reference_assignment': evaluation_reference_assignment,
+        'evaluation_reference_duration_policy': resolve_reference_duration_policy(cfg),
         'inference_run_id': uuid.uuid4().hex,
         'checkpoint_identity': deepcopy(transcriber.checkpoint_identity),
         'checkpoint_model_input_identity': deepcopy(
@@ -634,12 +636,13 @@ def infer(cfg):
                 )
             with open(note_path, 'rb') as f:
                 note_bars = pickle.load(f)
-            require_complete_satb_reference(
+            note_bars, reference_duration_adjustment = prepare_formal_satb_reference(
                 note_bars,
                 note_path,
                 begin_note=int(cfg.feature.begin_note),
                 classes_num=int(cfg.feature.classes_num),
                 recording_duration=segment_seconds,
+                duration_policy=resolve_reference_duration_policy(cfg),
             )
             canonical_targets = build_canonical_union_rolls(
                 note_bars,
@@ -704,6 +707,10 @@ def infer(cfg):
                 sha256_file(note_path) if note_path is not None else None
             ),
         }
+        if note_bars is not None:
+            file_provenance['reference_duration_adjustment'] = (
+                reference_duration_adjustment
+            )
 
         total_dict = build_total_dict(
             output_dict=output_dict,

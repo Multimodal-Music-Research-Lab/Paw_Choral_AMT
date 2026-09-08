@@ -52,6 +52,7 @@ def make_cfg(
             target_assignment=target_assignment,
             voice_assignment_method=None,
             evaluation_reference_assignment=evaluation_reference_assignment,
+            evaluation_reference_duration_policy="strict",
             preserve_known_part_labels=True,
             assignment_module="heads",
             assignment_hidden_channels=64,
@@ -397,6 +398,7 @@ class BuildTotalDictTest(unittest.TestCase):
         )
 
         self.assertEqual(provenance["evaluation_reference_assignment"], "part_name")
+        self.assertEqual(provenance["evaluation_reference_duration_policy"], "strict")
         self.assertEqual(provenance["evaluation_split"], "validation")
         self.assertEqual(provenance["checkpoint_identity"]["sha256"], "a" * 64)
         self.assertEqual(

@@ -15,7 +15,9 @@ if str(SOURCE_DIR) not in sys.path:
 
 from choral_targets import (
     ChoralTargetBuilder,
+    prepare_formal_satb_reference,
     require_complete_satb_reference,
+    resolve_reference_duration_policy,
     resolve_target_assignment,
     unlabelled_note_counts,
 )
@@ -304,6 +306,43 @@ class ChoralTargetAssignmentTest(unittest.TestCase):
         note_iterator = pickle.loads(pickle.dumps(iter([{'S': [note(72)]}])))
         with self.assertRaisesRegex(RuntimeError, 'top_level_schema=list_iterator'):
             require_complete_satb_reference(note_iterator, 'iterator.pkl')
+
+    def test_reference_duration_policy_clips_only_audible_right_censored_notes(self):
+        note_bars = [{
+            'S1': [
+                note(72, onset=0.8, offset=1.2),
+                note(74, onset=1.0, offset=1.4),
+                note(76, onset=1.1, offset=1.5),
+            ],
+            'measure': 1,
+        }]
+
+        prepared, report = prepare_formal_satb_reference(
+            note_bars,
+            'right-censored.pkl',
+            begin_note=21,
+            classes_num=88,
+            recording_duration=1.0,
+            duration_policy='clip_offsets_drop_unobservable_onsets_v1',
+        )
+
+        self.assertEqual(prepared[0]['S1'], [note(72, onset=0.8, offset=1.0)])
+        self.assertEqual(note_bars[0]['S1'][0][4], 1.2)
+        self.assertEqual(report['clipped_offset_count'], 1)
+        self.assertEqual(report['dropped_unobservable_onset_count'], 2)
+        self.assertAlmostEqual(report['maximum_offset_clip_seconds'], 0.2)
+
+    def test_reference_duration_policy_is_explicit_and_strict_by_default(self):
+        cfg = SimpleNamespace(choral=SimpleNamespace())
+        self.assertEqual(resolve_reference_duration_policy(cfg), 'strict')
+        with self.assertRaisesRegex(RuntimeError, 'outside_recording_duration'):
+            prepare_formal_satb_reference(
+                [{'S': [note(72, onset=0.8, offset=1.2)]}],
+                recording_duration=1.0,
+            )
+        cfg.choral.evaluation_reference_duration_policy = 'invented'
+        with self.assertRaisesRegex(ValueError, 'evaluation_reference_duration_policy'):
+            resolve_reference_duration_policy(cfg)
 
 
 if __name__ == '__main__':

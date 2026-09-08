@@ -12,6 +12,7 @@ reassigned every note.
 from __future__ import annotations
 
 import math
+from copy import deepcopy
 import re
 from itertools import combinations
 
@@ -293,6 +294,117 @@ def require_complete_satb_reference(
             + '; '.join(problems)
             + f' in {source}. Define and preregister an explicit data policy first.'
         )
+
+
+REFERENCE_DURATION_POLICIES = frozenset({
+    'strict',
+    'clip_offsets_drop_unobservable_onsets_v1',
+})
+
+
+def resolve_reference_duration_policy(cfg) -> str:
+    """Return the explicit policy for annotations crossing audio boundaries."""
+
+    choral_cfg = getattr(cfg, 'choral', None)
+    policy = str(
+        getattr(choral_cfg, 'evaluation_reference_duration_policy', 'strict')
+    ).strip().lower().replace('-', '_')
+    if policy not in REFERENCE_DURATION_POLICIES:
+        raise ValueError(
+            'choral.evaluation_reference_duration_policy must be one of '
+            f'{sorted(REFERENCE_DURATION_POLICIES)}, got {policy!r}'
+        )
+    return policy
+
+
+def prepare_formal_satb_reference(
+    note_bars,
+    source='<in-memory>',
+    *,
+    begin_note: int | None = None,
+    classes_num: int | None = None,
+    recording_duration: float,
+    duration_policy: str = 'strict',
+):
+    """Validate and apply a declared recording-boundary censoring policy.
+
+    ``strict`` retains the fail-closed historical behavior. The versioned
+    censoring policy clips only right-censored offsets whose attacks are
+    audible, and removes attacks outside the recording because no acoustic
+    system can observe them. Source annotations are never mutated.
+    """
+
+    duration_policy = str(duration_policy).strip().lower().replace('-', '_')
+    if duration_policy not in REFERENCE_DURATION_POLICIES:
+        raise ValueError(
+            f'duration_policy must be one of {sorted(REFERENCE_DURATION_POLICIES)}, '
+            f'got {duration_policy!r}'
+        )
+
+    recording_duration = float(recording_duration)
+    require_complete_satb_reference(
+        note_bars,
+        source,
+        begin_note=begin_note,
+        classes_num=classes_num,
+    )
+    if duration_policy == 'strict':
+        require_complete_satb_reference(
+            note_bars,
+            source,
+            begin_note=begin_note,
+            classes_num=classes_num,
+            recording_duration=recording_duration,
+        )
+        return note_bars, {
+            'policy': duration_policy,
+            'clipped_offset_count': 0,
+            'dropped_unobservable_onset_count': 0,
+            'maximum_offset_clip_seconds': 0.0,
+        }
+
+    prepared = deepcopy(note_bars)
+    clipped_offset_count = 0
+    dropped_unobservable_onset_count = 0
+    maximum_offset_clip_seconds = 0.0
+    for bar in prepared:
+        for part_name, note_list in list(bar.items()):
+            if str(part_name).strip().lower() == 'measure':
+                continue
+            retained_notes = []
+            for note in note_list:
+                onset_time = float(note[3])
+                offset_time = float(note[4])
+                if onset_time < 0.0 or onset_time >= recording_duration:
+                    dropped_unobservable_onset_count += 1
+                    continue
+                if offset_time > recording_duration:
+                    maximum_offset_clip_seconds = max(
+                        maximum_offset_clip_seconds,
+                        offset_time - recording_duration,
+                    )
+                    clipped_offset_count += 1
+                    if isinstance(note, np.ndarray):
+                        note = note.copy()
+                    else:
+                        note = list(note)
+                    note[4] = recording_duration
+                retained_notes.append(note)
+            bar[part_name] = retained_notes
+
+    require_complete_satb_reference(
+        prepared,
+        source,
+        begin_note=begin_note,
+        classes_num=classes_num,
+        recording_duration=recording_duration,
+    )
+    return prepared, {
+        'policy': duration_policy,
+        'clipped_offset_count': clipped_offset_count,
+        'dropped_unobservable_onset_count': dropped_unobservable_onset_count,
+        'maximum_offset_clip_seconds': maximum_offset_clip_seconds,
+    }
 
 
 def resolve_target_assignment(cfg) -> str:
