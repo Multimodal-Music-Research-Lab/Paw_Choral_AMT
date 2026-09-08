@@ -30,6 +30,7 @@ class BuildOverridesTest(unittest.TestCase):
             "onset_tolerance": None,
             "name_suffix": "demo",
             "choral_enable": True,
+            "reference_duration_policy": None,
             "range_prior_loss_weight": None,
             "continuity_prior_loss_weight": None,
             "config_overrides": [],
@@ -85,6 +86,20 @@ class BuildOverridesTest(unittest.TestCase):
             self.make_args(target_assignment="ordered_continuity")
         )
         self.assertIn("choral.target_assignment=ordered_continuity", overrides)
+
+    def test_build_overrides_binds_reference_duration_policy(self):
+        overrides = search_best_thresholds.build_overrides(
+            self.make_args(
+                reference_duration_policy=(
+                    "clip_offsets_drop_unobservable_onsets_v1"
+                )
+            )
+        )
+        self.assertIn(
+            "choral.evaluation_reference_duration_policy="
+            "clip_offsets_drop_unobservable_onsets_v1",
+            overrides,
+        )
 
     def test_build_overrides_preserves_training_prior_weights(self):
         overrides = search_best_thresholds.build_overrides(

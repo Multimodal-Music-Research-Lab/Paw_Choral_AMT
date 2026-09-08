@@ -234,6 +234,43 @@ class ChoralEvaluationReferenceTest(unittest.TestCase):
                     ):
                         calculator.validate_all_probability_files()
 
+    def test_threshold_grid_loads_and_validates_each_probability_once(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            probs_dir = root / "probs"
+            note_dir = root / "note"
+            probs_dir.mkdir()
+            note_dir.mkdir()
+            for stem in ("song_a", "song_b"):
+                (probs_dir / f"{stem}.pkl").touch()
+                with (note_dir / f"{stem}.pkl").open("wb") as note_file:
+                    pickle.dump([{"S": [[72, 0, 0, 0.0, 1.0]]}], note_file)
+
+            calculator = ChoralScoreCalculator.__new__(ChoralScoreCalculator)
+            calculator.probs_dir = str(probs_dir)
+            calculator.note_dir = str(note_dir)
+            calculator.probability_names = ("song_a.pkl", "song_b.pkl")
+            loaded = []
+            calculator._load_probability_file = (
+                lambda prob_path, _note_path: loaded.append(prob_path) or {}
+            )
+            calculator._prepare_formal_reference = (
+                lambda note_bars, *_args: (note_bars, {})
+            )
+
+            def score_stub(*_args, thresholds, **kwargs):
+                self.assertTrue(kwargs["reference_validated"])
+                self.assertTrue(kwargs["probability_validated"])
+                return {"f1": thresholds["onset_threshold"]}
+
+            calculator.calculate_voice_score_per_song = score_stub
+            combos = [(0.05, 0.01, 0.01), (0.05, 0.02, 0.01)]
+            stats = calculator.metrics_for_voice_threshold_grid(combos)
+
+            self.assertEqual(len(loaded), 2)
+            self.assertEqual(stats["S"][0]["f1"], [0.01, 0.01])
+            self.assertEqual(stats["B"][1]["f1"], [0.02, 0.02])
+
 
 if __name__ == "__main__":
     unittest.main()

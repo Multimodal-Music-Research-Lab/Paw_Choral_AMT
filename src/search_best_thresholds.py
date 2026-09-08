@@ -254,6 +254,7 @@ def build_voice_search_result(voice_name: str, thresholds: dict, voice_stats: di
 
 def search_best_choral_per_voice(calculator, combos):
     per_voice_best = {}
+    stats_grid = calculator.metrics_for_voice_threshold_grid(combos)
     for voice_name in VOICE_NAMES:
         voice_results = []
         for idx, (frame_th, onset_th, offset_th) in enumerate(combos, start=1):
@@ -262,7 +263,7 @@ def search_best_choral_per_voice(calculator, combos):
                 "onset_threshold": onset_th,
                 "offset_threshold": offset_th,
             }
-            voice_stats = calculator.metrics_for_voice(voice_name, thresholds=thresholds)
+            voice_stats = stats_grid[voice_name][idx - 1]
             require_metric_values(
                 voice_stats,
                 context=(

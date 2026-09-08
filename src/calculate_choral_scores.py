@@ -661,11 +661,12 @@ class ChoralScoreCalculator:
         total_dict=None,
         note_bars=None,
         reference_validated=False,
+        probability_validated=False,
     ):
         voice_idx = VOICE_TO_INDEX[voice_name]
         if total_dict is None:
             total_dict = self._load_probability_file(prob_path, note_path)
-        else:
+        elif not probability_validated:
             self._validate_probability_provenance(total_dict, prob_path, note_path)
 
         if note_bars is None:
@@ -779,6 +780,58 @@ class ChoralScoreCalculator:
                 stats.setdefault(key, []).append(value)
         return stats
 
+    def metrics_for_voice_threshold_grid(self, threshold_combinations):
+        """Evaluate every voice/threshold combination with one artifact load.
+
+        Probability files for a full recording can be hundreds of megabytes.
+        Thresholds change only deterministic post-processing, so repeatedly
+        unpickling and revalidating an identical tensor payload is unnecessary
+        and can turn a small decoder study into terabytes of I/O.
+        """
+
+        thresholds = [
+            {
+                "frame_threshold": frame_threshold,
+                "onset_threshold": onset_threshold,
+                "offset_threshold": offset_threshold,
+            }
+            for frame_threshold, onset_threshold, offset_threshold in threshold_combinations
+        ]
+        stats_grid = {
+            voice_name: [{} for _ in thresholds]
+            for voice_name in VOICE_NAMES
+        }
+        for name in self.probability_names:
+            stem = os.path.splitext(name)[0]
+            prob_path = os.path.join(self.probs_dir, name)
+            note_path = os.path.join(self.note_dir, f"{stem}.pkl")
+            if not os.path.exists(note_path):
+                raise FileNotFoundError(
+                    f"Missing SATB reference for probability file {prob_path}: "
+                    f"{note_path}"
+                )
+            total_dict = self._load_probability_file(prob_path, note_path)
+            note_bars, _duration_adjustment = self._prepare_formal_reference(
+                _load_note_bars(note_path),
+                note_path,
+                prob_path,
+            )
+            for voice_name in VOICE_NAMES:
+                for index, voice_thresholds in enumerate(thresholds):
+                    song_stats = self.calculate_voice_score_per_song(
+                        prob_path,
+                        note_path,
+                        voice_name,
+                        thresholds=voice_thresholds,
+                        total_dict=total_dict,
+                        note_bars=note_bars,
+                        reference_validated=True,
+                        probability_validated=True,
+                    )
+                    for key, value in song_stats.items():
+                        stats_grid[voice_name][index].setdefault(key, []).append(value)
+        return stats_grid
+
     def calculate_score_per_song(self, prob_path, note_path):
         return_dict = {}
         per_voice_f1 = []
@@ -799,6 +852,7 @@ class ChoralScoreCalculator:
                 total_dict=total_dict,
                 note_bars=note_bars,
                 reference_validated=True,
+                probability_validated=True,
             )
             estimated_by_voice[voice_name] = _decode_voice_events(
                 total_dict,
