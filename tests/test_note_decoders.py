@@ -36,6 +36,33 @@ def _postprocessor_cfg():
 
 
 class NoteDecoderBoundaryTest(unittest.TestCase):
+    def test_onsets_frames_sharp_output_vectorizes_strict_local_maxima(self):
+        processor = OnsetsFramesPostProcessor.__new__(OnsetsFramesPostProcessor)
+        values = np.asarray(
+            [
+                [0.6, 0.3, 0.9],
+                [0.4, 0.8, 0.7],
+                [0.7, 0.8, 0.6],
+                [0.2, 0.9, 0.8],
+            ],
+            dtype=np.float32,
+        )
+        expected = np.asarray(
+            [
+                [1.0, 0.0, 1.0],
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 1.0],
+            ],
+            dtype=np.float32,
+        )
+
+        np.testing.assert_array_equal(processor.sharp_output(values, 0.5), expected)
+        np.testing.assert_array_equal(
+            processor.sharp_output(np.asarray([[0.6, 0.5]], dtype=np.float32), 0.5),
+            np.asarray([[1.0, 0.0]], dtype=np.float32),
+        )
+
     def test_regression_decoder_keeps_onset_at_frame_zero(self):
         frame = np.array([1.0, 1.0, 1.0, 0.0, 0.0], dtype=np.float32)
         onset = np.array([1.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float32)

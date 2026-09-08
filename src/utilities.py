@@ -1092,22 +1092,22 @@ class OnsetsFramesPostProcessor(object):
         return output_dict
 
     def sharp_output(self, x, threshold):
-        frames_num, classes_num = x.shape
+        frames_num, _classes_num = x.shape
         y = np.zeros_like(x)
         if frames_num == 0:
             return y
-        for piano_note in range(classes_num):
-            if frames_num == 1:
-                if x[0, piano_note] > threshold:
-                    y[0, piano_note] = 1
-                continue
-            if x[0, piano_note] > threshold and x[0, piano_note] > x[1, piano_note]:
-                y[0, piano_note] = 1
-            for i in range(1, frames_num - 1):
-                if x[i, piano_note] > threshold and x[i, piano_note] > x[i - 1, piano_note] and x[i, piano_note] > x[i + 1, piano_note]:
-                    y[i, piano_note] = 1
-            if x[-1, piano_note] > threshold and x[-1, piano_note] > x[-2, piano_note]:
-                y[-1, piano_note] = 1
+        if frames_num == 1:
+            y[0] = x[0] > threshold
+            return y
+
+        y[0] = (x[0] > threshold) & (x[0] > x[1])
+        y[-1] = (x[-1] > threshold) & (x[-1] > x[-2])
+        if frames_num > 2:
+            y[1:-1] = (
+                (x[1:-1] > threshold)
+                & (x[1:-1] > x[:-2])
+                & (x[1:-1] > x[2:])
+            )
         return y
 
     def output_dict_to_detected_notes(self, output_dict):
