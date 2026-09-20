@@ -1,361 +1,126 @@
 # PawCT: Part-Aware Choral Transcription
 
-Research code for **“Toward Part-Aware Choral Transcription with Singing
-Voice Assignment.”** PawCT transcribes a mixed choral recording into
-note-level soprano, alto, tenor, and bass (SATB) parts. This repository also
-contains the part-agnostic transcriber (PagCT) and a two-stage symbolic voice
-assignment baseline (Post-VA).
+PawCT transcribes a mixed choral recording into separate note-level soprano,
+alto, tenor, and bass (SATB) parts. The repository also provides **PagCT**, its
+part-agnostic counterpart, and **Post-VA**, a two-stage symbolic voice-assignment
+baseline.
 
-> **Release status — audited research snapshot.** The core methods and the
-> script used for the manuscript's qualitative figure are present. The exact
-> historical training manifests, frozen configurations, checkpoints, and a
-> one-command Table 1/2 reproduction are not yet available. Paper numbers below are
-> reported results, not results regenerated from this commit. See
-> [Reproducibility status](docs/REPRODUCIBILITY.md) before citing numerical
-> claims.
-
-[Online demo](https://hanyu-meng.github.io/ICASSP2027_Paw_Choral_AMT_Demo/) ·
+[Online demo](https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/) ·
 [Code walkthrough](docs/CODE_WALKTHROUGH.md) ·
-[Data contract](docs/DATA.md) ·
-[Reproducibility audit](docs/REPRODUCIBILITY.md) ·
-[YouChorale target audit](repro/audits/youchorale_targets_20260907_abe2438/README.md) ·
-[Runnable-pack audit](repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md) ·
-[Composition-disjoint split](repro/splits/youchorale_available_audio_434_composition_disjoint_v1/README.md) ·
-[ICASSP experiment plan](docs/EXPERIMENT_PLAN.md) ·
-[Submission plan](docs/ICASSP_SUBMISSION_PLAN.md)
+[Data format](docs/DATA.md) ·
+[Experiment protocol](docs/EXPERIMENT_PLAN.md) ·
+[Reproducibility status](docs/REPRODUCIBILITY.md)
 
-## What is implemented
+> **Release status.** This is an audited research snapshot. The model,
+> evaluation, visualization, and release-checking code is included, but the
+> exact historical checkpoints and resolved configurations for every manuscript
+> row are not yet public. Values listed below are manuscript-reported results,
+> not measurements regenerated from this commit.
 
-| System | Input → output | Main implementation |
+## Method at a glance
+
+| System | Input | Output |
 | --- | --- | --- |
-| **PagCT** | mixed audio → merged note events | `src/models.py::PagCT` |
-| **PawCT** | mixed audio → SATB note events | `src/models.py::PawCT` |
-| **PawCT-RP / PawCT-OC** | PawCT with anchored range/continuity priors | `src/choral_targets.py::ChoralTargetBuilder` |
-| **Post-VA** | merged note sequence → SATB labels | `src/train_midi_voice_assignment.py::SymbolicVoiceAssignmentNet` |
+| **PagCT** | mixed choral audio | one merged note track |
+| **PawCT** | mixed choral audio | separate SATB note tracks |
+| **PawCT + RP** | mixed choral audio | PawCT with a pitch-range prior |
+| **PawCT + RP + OC** | mixed choral audio | PawCT with range and ordered-continuity priors |
+| **PagCT + Post-VA** | PagCT notes | SATB labels assigned in a second stage |
 
-PawCT uses one shared CRNN encoder, four voice-specific onset/frame/offset
-heads, an auxiliary segment-level part-presence head, and a max-over-parts union output.
-The training objective combines per-part losses with union and presence losses.
-RP and OC keep trusted S/A/T/B (including divisi such as S1/S2) labels and infer
-only ambiguous labels; optional range and continuity losses regularize the
-voice heads. RP uses negative-label BCE on unsupported out-of-register outputs,
-so confident violations receive a useful corrective gradient while trusted
-positives are excluded. OC links only unambiguous single-pitch onset events;
-multi-pitch/divisi onsets remain fully supervised but break the trajectory
-chain instead of creating a fictitious mean pitch. They are not extra
-inference modules. Explicit `legacy_*` target
-modes reproduce the earlier all-note relabeling for audit purposes only.
+PawCT uses a shared convolutional recurrent encoder with SATB-specific onset,
+offset, and frame heads, plus an auxiliary part-presence head. Union-level
+supervision preserves the note content of the mixture. In the current code,
+trusted part labels remain fixed: RP suppresses unsupported out-of-range output
+mass, while OC regularizes melodic motion between unambiguous consecutive note
+events. Neither prior adds an inference-time module.
+
+Main implementations:
+
+- PagCT and PawCT: [`src/models.py`](src/models.py)
+- Training losses, including RP and OC: [`src/losses.py`](src/losses.py)
+- Target construction: [`src/choral_targets.py`](src/choral_targets.py)
+- Post-VA: [`src/train_midi_voice_assignment.py`](src/train_midi_voice_assignment.py)
 
 ![Ground truth, PawCT, PagCT, and PagCT plus Post-VA piano rolls](docs/assets/exsultate-deo-four-panel.png)
 
-The figure is a precomputed author-generated visualization for the manuscript
-example “Exsultate Deo” (`jd2_r4PK5dc`). It is included to verify code/figure
-provenance; the underlying YouChorale audio and annotations are not
-redistributed.
+## Manuscript-reported results
 
-## Paper-reported results
+| Task | System | Note F1 @ 50 ms |
+| --- | --- | ---: |
+| Part-agnostic | Yu et al. (2024) | 0.237 |
+| Part-agnostic | **PagCT** | **0.382** |
+| Part-aware, macro SATB | PagCT + Post-VA | 0.175 |
+| Part-aware, macro SATB | **PawCT + RP + OC** | **0.225** |
 
-The manuscript reports the following headline numbers on its YouChorale test
-split:
+These are historical manuscript values. The audit identified differences
+between the historical and current target/evaluation protocols, so they must
+not be presented as results reproduced by the current commit. Machine-readable
+transcriptions are stored in [`repro/expected`](repro/expected); the exact
+boundary between reported and reproducible claims is documented in
+[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
 
-| System | Part-agnostic note F1 @ 50 ms |
-| --- | ---: |
-| Yu et al. (2024) | 0.237 |
-| PagCT without transposition augmentation | 0.333 |
-| **PagCT** | **0.382** |
-
-| System | Average SATB frame F1 | Average SATB note F1 @ 50 ms | Note retention ratio |
-| --- | ---: | ---: | ---: |
-| PawCT without union loss | 0.379 | 0.190 | 49.74% |
-| PawCT | 0.458 | 0.217 | 56.81% |
-| PawCT-RP | 0.510 | 0.209 | 54.71% |
-| **PawCT-OC** | 0.503 | **0.225** | **58.90%** |
-| PagCT + Post-VA | 0.489 | 0.175 | 45.81% |
-
-These are historical manuscript values, not corrected results. The audit found
-that the historical RP/OC frame scores used method-specific pseudo-target rolls
-while note scores used original part labels, so frame values across those rows
-are not directly comparable. The evaluator now rebuilds every SATB reference
-from immutable part-name annotations; the table must be regenerated.
-
-We call the manuscript's “VA Rate” a **note retention ratio** here because its
-denominator comes from a separate part-agnostic system; it should not be read
-as a pure voice-classification accuracy. Machine-readable transcriptions of
-the reported tables are in [`repro/expected`](repro/expected).
-
-## Repository layout
+## Repository structure
 
 ```text
-src/          core acoustic, Post-VA, inference, and evaluation code
-tools/        paper-style visualization utilities
-experiments/  symbolic editor and VA2 prototypes not reported in the paper
-tests/        existing unit tests plus release checks
-repro/        reported values and the reproduction contract
-docs/         static project/demo page and technical documentation
-checkpoints/  artifact manifest only; model files are not committed
+src/          models, training, inference, decoding, and evaluation
+tools/        audits and manuscript-style visualizations
+tests/        unit and release tests
+repro/        reported values, frozen splits, and audit records
+docs/         technical documentation and the GitHub Pages demo
+experiments/  exploratory models not reported in the manuscript
+checkpoints/  artifact manifest; model weights are not committed
 ```
 
-The modules intentionally remain flat to preserve the audited research code's
-import behavior. Run commands from the repository root with `src`, `tools`, and
-`experiments` on `PYTHONPATH`.
+## Setup
 
-## Installation
-
-Python 3.11 was used in the audited lab environment. Create an isolated
-environment, install the PyTorch build appropriate for your CUDA runtime, and
-then install the remaining pinned dependencies:
+Python 3.11 was used in the audited environment. Install the PyTorch build
+appropriate for your platform first, then install the remaining dependencies:
 
 ```bash
 conda create -n pawct python=3.11 -y
 conda activate pawct
 
-# Choose the correct command for your platform at pytorch.org first.
+# Select the appropriate PyTorch command from https://pytorch.org/get-started/locally/
 pip install torch==2.10.0 torchaudio==2.10.0
 pip install -r requirements-dev.txt
 
 export PYTHONPATH="$PWD/src:$PWD/tools:$PWD/experiments${PYTHONPATH:+:$PYTHONPATH}"
 ```
 
-The original lab environment used PyTorch 2.10.0 with CUDA 12.8 on an RTX
-5090. A CPU install is sufficient for syntax/unit checks but not representative
-of training throughput.
+The audited lab environment used PyTorch 2.10.0 with CUDA 12.8. CPU execution
+is sufficient for tests, but not representative of training speed.
 
-## Data
+## Data preparation
 
-Data are intentionally excluded. Point Hydra at a local, legally obtained
-dataset directory:
-
-```bash
-export YOUCHORALE_DIR=/absolute/path/to/YouChorale
-```
-
-The expected YouChorale layout is:
+YouChorale data is not redistributed. Set a local path to a legally obtained
+copy with the following structure:
 
 ```text
-$YOUCHORALE_DIR/
+YouChorale/
 ├── train.json
 ├── valid.json
 ├── test.json
-├── audio/
-│   └── <recording-id>.(wav|mp3|flac|m4a)
-├── midi/
-│   └── <recording-id>.(mid|midi)
-└── note/
-    └── <recording-id>.pkl
+├── audio/<recording-id>.(wav|mp3|flac|m4a)
+├── midi/<recording-id>.(mid|midi)
+└── note/<recording-id>.pkl
 ```
 
-The packer uses the literal `audio/` and `midi/` directory names and pairs
-files by recording ID. SATB label pickles are required for corrected choral
-PagCT and PawCT runs: missing labels now fail fast instead of being silently
-treated as empty targets. See
-[docs/DATA.md](docs/DATA.md) for the annotation schema, split requirements,
-and redistribution policy.
-
-## Prepare HDF5 features
-
-Packing writes to `exp.workspace/hdf5s/...`; this generated directory is
-ignored by Git.
-
 ```bash
+export YOUCHORALE_DIR=/absolute/path/to/YouChorale
+
 python src/data_generator.py pack_youchorale_dataset_to_hdf5 \
   dataset.youchorale_dir="$YOUCHORALE_DIR" \
   exp.workspace=./workspaces \
   feature.sample_rate=16000
 ```
 
-Before training, audit composition overlap and label the protocol accurately.
-The official YouChorale recording split is not composition-disjoint; retain it
-for prior-work comparison and create a separately named grouped split for the
-generalization experiment. Each protocol needs its own training, validation
-selection, locked test pass, and committed manifests; see the exact proposed
-rule in [the experiment plan](docs/EXPERIMENT_PLAN.md).
+See [`docs/DATA.md`](docs/DATA.md) for annotation semantics, audio-boundary
+handling, split requirements, and redistribution restrictions.
 
-Audit target semantics before choosing RP/OC hyperparameters:
+## Training
 
-```bash
-python tools/audit_choral_targets.py \
-  --dataset-dir "$YOUCHORALE_DIR" \
-  --split train \
-  --packed-hdf5-dir ./workspaces/hdf5s/youchorale_sr16000 \
-  --output-json ./workspaces/audits/youchorale_train_targets.json
-```
-
-The report is CPU-only and read-only with respect to the dataset. It records
-known/unknown labels, divisi and greater-than-four-note onset groups, modern
-versus legacy RP/OC label changes, confusion matrices, split hashes, and
-per-voice pitch percentiles. Estimate any RP range from training-only robust
-percentiles (for example p01–p99), then freeze it before validation/test.
-When `--packed-hdf5-dir` is supplied, the command also reports manifest
-coverage and deliberately audits only the recordings the acoustic model can
-actually load. Omit that flag only when auditing annotation completeness rather
-than a runnable model split. A formal run must either pack every manifest item
-or publish and freeze the exact available-audio subset; it must not silently
-train on whichever HDF5 files happen to exist. Coverage matching is recursive,
-exact, case-sensitive filename-stem existence only; it records ID-set hashes
-but does not claim that HDF5 contents are valid. Files reported as outside one
-selected manifest are normally the other splits when a shared packed directory
-is supplied.
-
-The annotation-only audit covers the stated 452 recordings and 353,201 in-range
-notes. All notes have a canonical SATB/divisi-derived label, so anchored RP and
-OC change zero labels; legacy RP changes 0.57% and legacy OC changes 15.37%.
-The separate acoustic-pack audit found only 434 matching HDF5 stems: train is
-376/392, validation 28/30, and test 30/30. The 18 missing items also lack local
-audio, so they cannot simply be repacked. Until those recordings are legally
-recovered, new results must be labelled as the frozen `available-audio-434`
-protocol rather than a complete 452-recording run.
-
-On the actual runnable training subset, the train-only p01/p99 ranges are S
-`60–79`, A `55–74`, T `50–70`, and B `41–62`; formal P2/P3 pilots freeze these
-values with a two-semitone margin. Together, the audits establish that RP/OC
-cannot be evaluated merely as alternative hard target builders: their modern
-effect must come from soft output regularization. See the
-[annotation audit](repro/audits/youchorale_targets_20260907_abe2438/README.md)
-and [runnable-pack audit](repro/audits/youchorale_packed_targets_20260908_4f23e77/README.md)
-for split-level counts, ID-set hashes, checksums, and interpretation.
-
-Generate the pre-registered composition-disjoint manifests from the public
-metadata and the exact runnable acoustic pack with:
-
-```bash
-python tools/build_youchorale_composition_split.py \
-  --dataset-dir "$YOUCHORALE_DATASET_DIR" \
-  --packed-hdf5-dir "$YOUCHORALE_HDF5_DIR" \
-  --output-dir ./repro/splits/youchorale_available_audio_434_composition_disjoint_v1
-```
-
-The command groups normalized `(composer, title)` pairs before assigning any
-recording, verifies zero work overlap, records source/packed ID-set hashes, and
-publishes frozen manifests atomically. Re-running against identical artifacts
-is a no-op; conflicting or partial output fails closed. The committed v1
-protocol contains 355/40/39 recordings in train/validation/test and 193/24/25
-composition groups, with zero pairwise work overlap.
-
-Select this protocol in every training, inference, and scoring command with:
-
-```bash
-dataset.youchorale_split_dir=./repro/splits/youchorale_available_audio_434_composition_disjoint_v1 \
-exp.name_suffix=composition_disjoint_v1
-```
-
-The split directory is optional; leaving it unset preserves the official HDF5
-split attributes. When it is set, all three manifests are mandatory, must be
-pairwise disjoint, and must cover the packed HDF5 stems exactly. The manifest
-identity is stored in checkpoints and probability provenance, and inference
-rejects a checkpoint trained under another split protocol.
-For `src/search_best_thresholds.py`, pass the equivalent dedicated flags
-`--youchorale-split-dir ./repro/splits/youchorale_available_audio_434_composition_disjoint_v1`
-and `--name_suffix composition_disjoint_v1`.
-
-The composition-disjoint target audit covers 282,493/28,002/26,433 canonical
-notes in train/validation/test and again finds zero modern RP/OC relabeling.
-Its train-only p01/p99 ranges are S `60–79`, A `55–74`, T `50–69`, and B
-`41–62`. Composition-disjoint P2/P3 runs must therefore use tenor maximum 69,
-not the official runnable split's 70. The [versioned audit](repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md)
-records exact hashes and also shows that its test subset has more >4-note onset
-groups than train (18.53% versus 14.86%), motivating the planned difficulty
-breakdown without treating it as performance evidence.
-
-Audit whether RP/OC contain useful assignment information without training a
-transcriber by masking a fixed, nested 10/25/50% of **training** labels:
-
-```bash
-python tools/evaluate_label_masking.py \
-  --dataset-dir "$YOUCHORALE_DATASET_DIR" \
-  --split train \
-  --recording-manifest \
-    repro/splits/youchorale_available_audio_434_composition_disjoint_v1/train.json \
-  --packed-hdf5-dir "$YOUCHORALE_HDF5_DIR" \
-  --output-json /tmp/pawct-label-masking.json
-```
-
-The tool has no test/validation mode and exposes no mask-rate or prior-weight
-search. It estimates each RP range from that rate's still-visible training
-labels, scores only the same held-out source-note IDs for RP and OC, preserves
-divisi notes as distinct events, and includes a fixed cyclic-range negative
-control. This is a semi-supervised prior-validity diagnostic, not an acoustic
-transcription result.
-
-The checked-in real-data run gives RP macro F1 `0.631–0.640` and OC macro F1
-`0.717–0.744` across both training protocols and all three mask rates. OC is
-`+0.083–0.110` above RP, and each aligned method is well above its cyclic-range
-control. These results show that the priors contain assignment information;
-they do not predict an acoustic F1 gain. See the [full mechanism diagnostic](repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md)
-for per-voice confusion matrices, exact masked-event hashes, repeatability, and
-the required interpretation boundary.
-
-## Train
-
-Commands below show the development seed 86. After validation-only pilot
-selection, rerun each frozen main configuration with seeds 17, 42, and 86.
-The fixed pilot grid, constraints, tie-breaks, and statistical estimand are in
-[docs/EXPERIMENT_PLAN.md](docs/EXPERIMENT_PLAN.md).
-
-Full validation computes exact split-level AP through bounded-memory,
-disk-backed accumulators. The default `exp.num_workers=0` also prevents train
-and validation DataLoader pools from duplicating several gigabytes of HDF5 and
-model state per worker. Raise it only after profiling host RAM on the target
-machine; it does not change the model or the evaluation protocol.
-
-### PagCT
-
-```bash
-python src/main_iter.py \
-  dataset.train_set=youchorale \
-  dataset.test_set=youchorale \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pagct \
-  model.mode=frame_onset_offset \
-  choral.enable=false \
-  exp.random_seed=86 exp.name_suffix=pagct_s86 \
-  exp.workspace=./workspaces \
-  exp.total_iteration=200000 \
-  exp.selection_metric=frame_ap \
-  exp.early_stopping_patience_evals=8 \
-  exp.batch_size=8
-```
-
-### PawCT controls
-
-Run the same part-name baseline once without union supervision (P1a) and once
-with the fixed union weight (P1b). The explicit suffixes keep their checkpoint
-directories separate:
-
-```bash
-# P1a: part-aware heads without union supervision.
-python src/main_iter.py \
-  dataset.train_set=youchorale dataset.test_set=youchorale \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct model.mode=frame_onset_offset \
-  choral.enable=true choral.target_assignment=part_name \
-  choral.apply_presence_gate=false \
-  choral.union_frame_loss_weight=0.0 \
-  choral.union_onset_loss_weight=0.0 \
-  choral.union_offset_loss_weight=0.0 \
-  feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=no_union_s86 \
-  exp.workspace=./workspaces exp.total_iteration=200000 \
-  exp.selection_metric=mean_voice_frame_ap \
-  exp.early_stopping_patience_evals=8 exp.batch_size=8
-
-# P1b: core PawCT with union supervision and no RP/OC prior.
-python src/main_iter.py \
-  dataset.train_set=youchorale dataset.test_set=youchorale \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct model.mode=frame_onset_offset \
-  choral.enable=true choral.target_assignment=part_name \
-  choral.apply_presence_gate=false \
-  choral.union_frame_loss_weight=0.25 \
-  choral.union_onset_loss_weight=0.25 \
-  choral.union_offset_loss_weight=0.0 \
-  feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=union_u025_s86 \
-  exp.workspace=./workspaces exp.total_iteration=200000 \
-  exp.selection_metric=mean_voice_frame_ap \
-  exp.early_stopping_patience_evals=8 exp.batch_size=8
-```
-
-### P2: PawCT-RP
+The following is an executable PawCT example, not an exact reproduction of a
+manuscript row:
 
 ```bash
 python src/main_iter.py \
@@ -365,272 +130,39 @@ python src/main_iter.py \
   model.arch=pawct \
   model.mode=frame_onset_offset \
   choral.enable=true \
-  choral.target_assignment=range_prior \
-  choral.preserve_known_part_labels=true \
-  choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,70,62]' \
-  choral.voice_assignment_range_margin=2.0 \
-  choral.range_prior_loss_weight=0.01 \
-  choral.continuity_prior_loss_weight=0.0 \
+  choral.target_assignment=part_name \
   choral.apply_presence_gate=false \
-  choral.union_frame_loss_weight=0.25 \
-  choral.union_onset_loss_weight=0.25 \
-  choral.union_offset_loss_weight=0.0 \
   feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=rp_trainp01p99_m2_rw001_u025_s86 \
   exp.workspace=./workspaces \
-  exp.total_iteration=200000 \
-  exp.selection_metric=mean_voice_frame_ap \
-  exp.early_stopping_patience_evals=8 \
+  exp.random_seed=86 \
   exp.batch_size=8
 ```
 
-### P3: PawCT-RP+OC
+Use `model.arch=pagct` with `choral.enable=false` for part-agnostic training.
+RP and OC are enabled through `choral.range_prior_loss_weight` and
+`choral.continuity_prior_loss_weight`, respectively. Hyperparameters must be
+selected on validation only.
 
-```bash
-python src/main_iter.py \
-  dataset.train_set=youchorale \
-  dataset.test_set=youchorale \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct \
-  model.mode=frame_onset_offset \
-  choral.enable=true \
-  choral.target_assignment=ordered_continuity \
-  choral.preserve_known_part_labels=true \
-  choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,70,62]' \
-  choral.voice_assignment_range_margin=2.0 \
-  choral.range_prior_loss_weight=0.01 \
-  choral.continuity_prior_loss_weight=0.01 \
-  choral.apply_presence_gate=false \
-  choral.union_frame_loss_weight=0.25 \
-  choral.union_onset_loss_weight=0.25 \
-  choral.union_offset_loss_weight=0.0 \
-  feature.max_note_shift=0 \
-  exp.random_seed=86 exp.name_suffix=rpoc_trainp01p99_m2_rw001_cw001_u025_s86 \
-  exp.workspace=./workspaces \
-  exp.total_iteration=200000 \
-  exp.selection_metric=mean_voice_frame_ap \
-  exp.early_stopping_patience_evals=8 \
-  exp.batch_size=8
-```
+The complete, auditable workflow—including frozen split manifests, RP/OC
+settings, inference, validation-only threshold selection, and locked test
+evaluation—is specified in
+[`docs/EXPERIMENT_PLAN.md`](docs/EXPERIMENT_PLAN.md). Do not tune decoding
+thresholds on the test set.
 
-`feature.max_note_shift` must remain zero for choral dataset loaders in this
-snapshot: the older online path shifted the mixture but not the `note.pkl`
-targets. Use only a synchronously generated offline transposition dataset
-until that path has an end-to-end test.
+## Main entry points
 
-Because all 285,674 notes in the runnable YouChorale training pack have
-canonical labels,
-`target_assignment=range_prior` and `ordered_continuity` each change exactly
-zero modern targets. The explicit output-prior loss is therefore what
-distinguishes the pilots above; trusted labels remain anchored. RP uses
-negative-label BCE to suppress unsupported output mass outside the frozen
-train-only range and never penalizes an annotated positive. The OC row keeps
-the RP range and weight fixed and adds
-only the continuity loss, so its comparison with RP isolates the incremental
-OC hypothesis. The corrected OC loss matches predicted pitch motion
-to annotated pitch motion between consecutive unambiguous onset events,
-including events separated by rests. Multi-pitch/divisi frames break the
-trajectory chain instead of being reduced to an artificial centroid. Gap decay
-weakens distant links, while event-level
-normalization prevents long held notes from diluting the transition signal;
-the gap is measured from frame activity, not merely from inter-onset time.
-Unlike the historical zero-motion penalty, it does not punish a correctly
-predicted melodic leap. These `0.01`
-weights are starting points, not validated best hyperparameters. Give every
-`row × hyperparameter setting × seed` a unique `exp.name_suffix`, freeze the
-winner on validation, and only then start a full run. Propagate that suffix
-through inference, threshold search, and scoring so seeds cannot overwrite one
-another. New training saves `best.pth`
-using complete, deterministic validation `mean_voice_frame_ap` and supports
-metric-based early stopping. This threshold-free frame metric is a fixed
-checkpoint-selection proxy, not the paper's primary endpoint; the latter is
-macro SATB note F1 after validation-only decoder selection. Use the same proxy
-for every PawCT row. A short pilot may explicitly
-set `exp.max_eval_batches=20`, but a paper run must leave it `null`. The located historical runs continued
-to 300k steps, whereas the manuscript states 200k with validation-loss early
-stopping; regenerated results must use and record one consistent rule.
+| Task | Command |
+| --- | --- |
+| Train PagCT or PawCT | `python src/main_iter.py ...` |
+| Run inference | `python src/inference.py ...` |
+| Select validation thresholds | `python src/search_best_thresholds.py ...` |
+| Score part-aware outputs | `python src/calculate_choral_scores.py ...` |
+| Train Post-VA | `python src/train_midi_voice_assignment.py ...` |
+| Audit targets | `python tools/audit_choral_targets.py ...` |
 
-The recommended union objective supervises frame and onset only. Taking the
-maximum of four voice-offset heads fires when *any* same-pitch part releases,
-which is not necessarily the end of the audible union; supervising it against
-a canonical union offset would conflict with correct per-part offsets. Keep
-`choral.union_offset_loss_weight=0.0` until an independent union-offset head or
-an overlap-aware supervision mask is evaluated.
-
-For every choral dataset, both PagCT and PawCT now obtain their global targets
-and note-level references from the complete `note/<recording>.pkl` intervals.
-The canonical projector merges only same-pitch attacks that land on the same
-model frame and preserves later attacks as rearticulations. It does not use the
-50/100 ms scoring tolerance. This fixes three coupled historical errors: a
-merged-MIDI pitch key could overwrite cross-voice unisons, finite MIDI-event
-backtracking could miss long notes, and one shared boundary mask could hide
-known frame/onset labels. Existing HDF5 packs can still supply audio, but all
-corrected table rows must be retrained and re-inferred; the manuscript's old
-`0.225` OC value is historical evidence, not a corrected result.
-
-Historical configurations that use `model.arch=hpt` remain supported solely
-for loading and reproducing old checkpoints. New runs should use the explicit
-`pagct` or `pawct` architecture names shown above. Unversioned historical
-PawCT checkpoints require `choral.apply_presence_gate=true`, matching the old
-forward pass, and `exp.allow_unknown_checkpoint_target_assignment=true`
-because their RP/OC training semantics cannot be proven. They also require
-`exp.allow_legacy_checkpoint_model_identity=true` because the old files did
-not record the pitch coordinate or audio-frontend identity. New schema-v2
-checkpoints are loaded with PyTorch's restricted `weights_only=True` path. If a
-trusted pre-v2 file contains historical NumPy/Python pickle objects and the
-restricted loader rejects it, loading additionally requires the independent
-`exp.allow_unsafe_legacy_checkpoint_load=true` opt-in. That switch permits
-arbitrary-code-capable pickle deserialization, never applies to schema-v2
-files, and is not implied by any behavior/key mismatch flag. Such a run is a
-historical diagnostic, not a new formal result. The loader rejects silent
-target or gate changes unless the run explicitly records a weight-reuse
-ablation.
-
-## Validation thresholds, then locked test
-
-Inference and scoring now keep validation and test probabilities in separate
-directories. Threshold search defaults to validation and refuses test tuning
-unless a user explicitly marks it as a non-reportable diagnostic.
-Each new probability file also records the actual checkpoint iteration and
-checkpoint SHA-256, model/input identity, inference-run ID, target semantics,
-and the HDF5/SATB-reference content hashes. Formal choral scoring requires
-every recording in the packed split exactly once and refuses missing, changed,
-stale, mixed-checkpoint, or mismatched-provenance artifacts. This is especially
-important for `best.pth`:
-an interrupted re-inference cannot silently combine outputs from two different
-versions of the best checkpoint.
-
-```bash
-# Use the exact suffix from the selected training run in every later command.
-export PAWCT_RUN_SUFFIX=rpoc_trainp01p99_m2_rw001_cw001_u025_s86
-
-# 1. Produce validation probabilities.
-python src/inference.py \
-  dataset.test_set=youchorale \
-  dataset.eval_split=validation \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct \
-  model.mode=frame_onset_offset \
-  choral.enable=true \
-  choral.target_assignment=ordered_continuity \
-  choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,70,62]' \
-  choral.voice_assignment_range_margin=2.0 \
-  choral.range_prior_loss_weight=0.01 \
-  choral.continuity_prior_loss_weight=0.01 \
-  choral.evaluation_reference_assignment=part_name \
-  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
-  post.post_processor_type=onsets_frames \
-  exp.name_suffix="$PAWCT_RUN_SUFFIX" \
-  exp.workspace=./workspaces \
-  exp.ckpt_iteration=best
-
-# 2. Select thresholds on validation only.
-python src/search_best_thresholds.py \
-  --config_dir src \
-  --workspace ./workspaces \
-  --test_set youchorale \
-  --split validation \
-  --youchorale-dir "$YOUCHORALE_DIR" \
-  --ckpt_iteration best \
-  --choral_enable \
-  --choral_per_voice \
-  --reference-duration-policy clip_offsets_drop_unobservable_onsets_v1 \
-  --target-assignment ordered_continuity \
-  --model_mode frame_onset_offset \
-  --range-prior-loss-weight 0.01 \
-  --continuity-prior-loss-weight 0.01 \
-  --name_suffix "$PAWCT_RUN_SUFFIX" \
-  --objective mean_satb_note_f1 \
-  --post_processor_type onsets_frames \
-  --config-override 'choral.voice_assignment_range_mins=[60,55,50,41]' \
-  --config-override 'choral.voice_assignment_range_maxs=[79,74,70,62]' \
-  --config-override 'choral.voice_assignment_range_margin=2.0' \
-  --output_txt ./workspaces/thresholds/pawct_oc_validation.txt
-
-# Repeat --config-override for any checkpoint-recorded setting without a
-# dedicated flag. These three overrides must match the selected checkpoint.
-
-# 3. Copy the selected thresholds and actual_checkpoint_iteration from the
-#    threshold report into a frozen config. Use that immutable numeric
-#    checkpoint—not the mutable `best` alias—for the one test pass.
-export PAWCT_ITERATION=15000  # replace with actual_checkpoint_iteration
-python src/inference.py \
-  dataset.test_set=youchorale \
-  dataset.eval_split=test \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct \
-  model.mode=frame_onset_offset \
-  choral.enable=true \
-  choral.target_assignment=ordered_continuity \
-  choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,70,62]' \
-  choral.voice_assignment_range_margin=2.0 \
-  choral.range_prior_loss_weight=0.01 \
-  choral.continuity_prior_loss_weight=0.01 \
-  choral.evaluation_reference_assignment=part_name \
-  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
-  post.post_processor_type=onsets_frames \
-  exp.name_suffix="$PAWCT_RUN_SUFFIX" \
-  exp.workspace=./workspaces \
-  exp.ckpt_iteration="$PAWCT_ITERATION" \
-  choral.use_per_voice_thresholds=true \
-  choral.voice_frame_thresholds='[...]' \
-  choral.voice_onset_thresholds='[...]' \
-  choral.voice_offset_thresholds='[...]'
-
-python src/calculate_choral_scores.py \
-  dataset.test_set=youchorale \
-  dataset.eval_split=test \
-  dataset.youchorale_dir="$YOUCHORALE_DIR" \
-  model.arch=pawct \
-  model.mode=frame_onset_offset \
-  choral.enable=true \
-  choral.target_assignment=ordered_continuity \
-  choral.voice_assignment_range_mins='[60,55,50,41]' \
-  choral.voice_assignment_range_maxs='[79,74,70,62]' \
-  choral.voice_assignment_range_margin=2.0 \
-  choral.range_prior_loss_weight=0.01 \
-  choral.continuity_prior_loss_weight=0.01 \
-  choral.evaluation_reference_assignment=part_name \
-  choral.evaluation_reference_duration_policy=clip_offsets_drop_unobservable_onsets_v1 \
-  post.post_processor_type=onsets_frames \
-  exp.name_suffix="$PAWCT_RUN_SUFFIX" \
-  exp.workspace=./workspaces \
-  exp.ckpt_iteration="$PAWCT_ITERATION" \
-  choral.use_per_voice_thresholds=true \
-  choral.voice_frame_thresholds='[...]' \
-  choral.voice_onset_thresholds='[...]' \
-  choral.voice_offset_thresholds='[...]'
-```
-
-Pre-release probability files without provenance can be inspected only as a
-clearly labelled historical diagnostic by adding
-`exp.require_probability_provenance=false`. They are not valid inputs to a new
-paper result, and the complete split manifest is still enforced.
-
-## P4: Post-VA (exploratory until feature parity is fixed)
-
-Train the symbolic note classifier from ground-truth note sequences:
-
-```bash
-python src/train_midi_voice_assignment.py \
-  --dataset-dir "$YOUCHORALE_DIR" \
-  --workspace ./workspaces \
-  --experiment-name post_va \
-  --learning-rate 1e-3 \
-  --epochs 80 \
-  --batch-size 32 \
-  --seed 86
-```
-
-The historical checkpoint located during audit was actually trained with
-AdamW at `1e-3`, for 80 epochs, with range and crossing regularizers. Its paper
-configuration must therefore be reconciled before reporting a reproduced
-Post-VA number. Predicted-MIDI evaluation no longer depends on an adjacent
-YourMT3 checkout; it uses the declared `mido` dependency.
+Each formal run should record its source commit, resolved configuration,
+checkpoint hash, split manifest, probability provenance, and selected
+thresholds. See [`repro/README.md`](repro/README.md) for the artifact contract.
 
 ## Tests
 
@@ -640,27 +172,13 @@ pytest -q
 python scripts/check_release.py
 ```
 
-The test suite includes data-free PawCT forward/union/loss-backward checks,
-strict checkpoint compatibility, anchored RP/OC target retention, decoder
-boundaries, deterministic validation sampling, threshold-split guards, metric
-helpers, external-manifest integrity, frozen-split integrity, prior label
-recovery, and visualization. Versioned real-data [label/target audits](repro/audits/youchorale_targets_20260907_abe2438/README.md),
-[composition-disjoint audit](repro/audits/youchorale_composition_disjoint_targets_20260908_bde12f6/README.md),
-and [prior-recovery diagnostic](repro/analyses/youchorale_prior_recovery_20260908_bde12f6/README.md)
-are checked in;
-end-to-end model retraining, probability-integrity integration, and
-table-regression tests remain release work and are tracked in
-[docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+The suite covers model forward/backward passes, RP/OC behavior, target and
+split integrity, checkpoint compatibility, note decoding, validation/test
+separation, probability provenance, and visualization utilities.
 
 ## Demo
 
-`docs/` is a dependency-free GitHub Pages site. It presents the method,
-reported tables, and an interactive view of the author-generated qualitative
-figure. It deliberately does not offer browser inference or redistribute
-YouChorale audio/MIDI. A future listening demo should use only recordings and
-derived assets with explicit redistribution permission.
-
-To preview locally:
+The dependency-free project page is stored in `docs/`. Preview it locally with:
 
 ```bash
 python -m http.server 8000 --directory docs
@@ -668,45 +186,29 @@ python -m http.server 8000 --directory docs
 
 Then open <http://localhost:8000>.
 
-## Known limitations
+## Current limitations
 
-- Exact historical-paper checkpoints, per-run configurations, and table
-  reproduction scripts are not yet released. The corrected
-  `available-audio-434` composition split is released separately and must not
-  be presented as the historical paper split.
-- PagCT and PawCT are not parameter-matched in this snapshot: the PagCT class
-  has separate full frame/onset/offset acoustic branches, whereas PawCT uses a
-  shared encoder.
-- Regression-style post-processing is present, but the located loss supervises
-  binary onset/offset rolls rather than the generated regression targets.
-- Post-VA has a feature mismatch between ground-truth-note training and some
-  predicted-note evaluation paths, where beat-related features are zero-filled.
-- `ChoralAMTTranscriber.transcribe()` writes the merged union output; a stable
-  public audio-to-four-track SATB MIDI CLI still needs to be extracted from the
-  visualization helpers.
-- Files in `experiments/` (symbolic editors, VA2 variants, and related ideas)
-  are exploratory and were not reported in the manuscript.
+- Exact historical checkpoints and resolved per-row configurations are not yet
+  included.
+- YouChorale audio, annotations, MIDI files, and generated predictions are not
+  redistributed.
+- The stable public transcriber currently exposes the merged output; a polished
+  audio-to-four-track SATB MIDI command remains release work.
+- Post-VA remains exploratory until its training and predicted-note feature
+  paths are fully aligned.
 
-## Security and artifact trust
-
-Only load checkpoints and pickle files from sources you trust. Probability and
-annotation pickle files, plus legacy PyTorch checkpoints loaded with the
-explicit unsafe opt-in above, can execute code while loading. Schema-v2 model
-checkpoints use the restricted weights-only loader and primitive RNG state.
-Generated artifacts are ignored by default; a future checkpoint release must
-include its exact config, source commit, dataset/split manifest, and SHA-256
-checksum.
-
-## Maintainer
-
-Research code and release maintenance: [Hanyu Meng](https://github.com/Hanyu-Meng),
-Multimodal Music Research Lab.
+Further details are tracked in
+[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
 
 ## License and attribution
 
-Source code is released under Apache License 2.0. Portions are adapted from
-ByteDance's
-[High-resolution Piano Transcription](https://github.com/bytedance/piano_transcription)
-codebase; see [NOTICE](NOTICE) and [THIRD_PARTY.md](THIRD_PARTY.md).
-This source-code license does not grant rights to datasets, recordings,
+The source code is released under the Apache License 2.0. Portions are adapted
+from ByteDance's
+[High-resolution Piano Transcription](https://github.com/bytedance/piano_transcription);
+see [`NOTICE`](NOTICE) and [`THIRD_PARTY.md`](THIRD_PARTY.md).
+
+The source-code license does not grant rights to datasets, recordings,
 annotations, checkpoints, or generated media.
+
+Maintainer: [Hanyu Meng](https://github.com/Hanyu-Meng), Multimodal Music
+Research Lab.
