@@ -1,21 +1,49 @@
-# PawCT: Part-Aware Choral Transcription
+<h1 align="center">PawCT &amp; PagCT</h1>
 
-PawCT transcribes a mixed choral recording into separate note-level soprano,
-alto, tenor, and bass (SATB) parts. The repository also provides **PagCT**, its
-part-agnostic counterpart, and **Post-VA**, a two-stage symbolic voice-assignment
+<p align="center">
+  <strong>Toward Part-Aware Choral Transcription with Singing Voice Assignment</strong><br>
+  Hanyu Meng · Zhanhong He · Zixun Guo · Yaolong Ju
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2610.09861"><img src="https://img.shields.io/badge/arXiv-2610.09861-B31B1B?style=for-the-badge&amp;logo=arxiv" alt="Paper on arXiv"></a>
+  <a href="https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/"><img src="https://img.shields.io/badge/Project-Demo-4355A5?style=for-the-badge" alt="Project demo"></a>
+  <a href="https://huggingface.co/Hanyu-Meng/PawCT-PagCT"><img src="https://img.shields.io/badge/Hugging%20Face-Checkpoints-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=201911" alt="Checkpoints on Hugging Face"></a>
+</p>
+
+**PawCT** transcribes mixed choral audio into separate soprano, alto, tenor,
+and bass (SATB) note tracks. **PagCT** produces one merged note track. The
+repository also provides **Post-VA**, a two-stage symbolic voice-assignment
 baseline.
 
-[Online demo](https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/) ·
+[Checkpoints](#checkpoints) ·
+[Setup](#setup) ·
 [Code walkthrough](docs/CODE_WALKTHROUGH.md) ·
 [Data format](docs/DATA.md) ·
-[Experiment protocol](docs/EXPERIMENT_PLAN.md) ·
-[Reproducibility status](docs/REPRODUCIBILITY.md)
+[Experiment protocol](docs/EXPERIMENT_PLAN.md)
 
-> **Release status.** This is an audited research snapshot. The model,
-> evaluation, visualization, and release-checking code is included, but the
-> exact historical checkpoints and resolved configurations for every manuscript
-> row are not yet public. Values listed below are manuscript-reported results,
-> not measurements regenerated from this commit.
+![Piano-roll comparison for Exsultate Deo showing the reference, PawCT, PagCT, and PagCT with Post-VA](docs/assets/exsultate-deo-four-panel.png)
+
+## Checkpoints
+
+Download the PyTorch weights and the matching inference configuration. The
+[Hugging Face model card](https://huggingface.co/Hanyu-Meng/PawCT-PagCT#transcribe-audio)
+includes an audio-to-MIDI example for both models and the exact code revision
+used to validate checkpoint loading.
+
+| Model | MIDI output | Weights | Inference config | Frame / onset / offset thresholds |
+| --- | --- | --- | --- | --- |
+| **PagCT** | One merged track | [pagct.pth](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/resolve/main/pagct.pth?download=true) | [pagct.json](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/blob/main/pagct.json) | 0.07 / 0.03 / 0.003 |
+| **PawCT base** | Four SATB tracks | [pawct-base.pth](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/resolve/main/pawct-base.pth?download=true) | [pawct-base.json](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/blob/main/pawct-base.json) | 0.05 / 0.01 / 0.01 |
+
+PawCT base uses union supervision. The paper's **PawCT + RP + OC** variant
+adds pitch-range and ordered-continuity priors. Re-scoring archived YouChorale
+test predictions gave note F1 at 50 ms of **0.3790** for PagCT and **0.2248** for
+PawCT base (macro SATB). The archived predictions lack a checkpoint hash, and
+the threshold history includes test-set selection.
+[Evaluation details](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/blob/main/metrics.json) ·
+[Checkpoint provenance](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/blob/main/provenance.json) ·
+[SHA-256 checksums](https://huggingface.co/Hanyu-Meng/PawCT-PagCT/blob/main/SHA256SUMS)
 
 ## Method at a glance
 
@@ -30,18 +58,14 @@ baseline.
 PawCT uses a shared convolutional recurrent encoder with SATB-specific onset,
 offset, and frame heads, plus an auxiliary part-presence head. Union-level
 supervision preserves the note content of the mixture. In the current code,
-trusted part labels remain fixed: RP suppresses unsupported out-of-range output
-mass, while OC regularizes melodic motion between unambiguous consecutive note
-events. Neither prior adds an inference-time module.
+trusted part labels remain fixed. RP suppresses unsupported out-of-range output
+mass, and OC regularizes melodic motion between unambiguous consecutive note
+events. Both priors apply during training.
 
-Main implementations:
-
-- PagCT and PawCT: [`src/models.py`](src/models.py)
-- Training losses, including RP and OC: [`src/losses.py`](src/losses.py)
-- Target construction: [`src/choral_targets.py`](src/choral_targets.py)
-- Post-VA: [`src/train_midi_voice_assignment.py`](src/train_midi_voice_assignment.py)
-
-![Ground truth, PawCT, PagCT, and PagCT plus Post-VA piano rolls](docs/assets/exsultate-deo-four-panel.png)
+- [PagCT and PawCT models](src/models.py)
+- [Training losses, including RP and OC](src/losses.py)
+- [Target construction](src/choral_targets.py)
+- [Post-VA](src/train_midi_voice_assignment.py)
 
 ## Manuscript-reported results
 
@@ -52,12 +76,9 @@ Main implementations:
 | Part-aware, macro SATB | PagCT + Post-VA | 0.175 |
 | Part-aware, macro SATB | **PawCT + RP + OC** | **0.225** |
 
-These are historical manuscript values. The audit identified differences
-between the historical and current target/evaluation protocols, so they must
-not be presented as results reproduced by the current commit. Machine-readable
-transcriptions are stored in [`repro/expected`](repro/expected); the exact
-boundary between reported and reproducible claims is documented in
-[`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
+These values come from the paper. The [reproducibility audit](docs/REPRODUCIBILITY.md)
+documents how the original and current target and evaluation protocols differ.
+Machine-readable paper results are available in [`repro/expected`](repro/expected).
 
 ## Repository structure
 
@@ -66,15 +87,15 @@ src/          models, training, inference, decoding, and evaluation
 tools/        audits and manuscript-style visualizations
 tests/        unit and release tests
 repro/        reported values, frozen splits, and audit records
-docs/         technical documentation and the GitHub Pages demo
+docs/         technical documentation and a local demo preview
 experiments/  exploratory models not reported in the manuscript
-checkpoints/  artifact manifest; model weights are not committed
+checkpoints/  artifact requirements for weight releases
 ```
 
 ## Setup
 
 Python 3.11 was used in the audited environment. Install the PyTorch build
-appropriate for your platform first, then install the remaining dependencies:
+appropriate for your platform first, then install the remaining dependencies.
 
 ```bash
 conda create -n pawct python=3.11 -y
@@ -93,7 +114,7 @@ is sufficient for tests, but not representative of training speed.
 ## Data preparation
 
 YouChorale data is not redistributed. Set a local path to a legally obtained
-copy with the following structure:
+copy with the following structure.
 
 ```text
 YouChorale/
@@ -119,8 +140,7 @@ handling, split requirements, and redistribution restrictions.
 
 ## Training
 
-The following is an executable PawCT example, not an exact reproduction of a
-manuscript row:
+This example trains PawCT with the current target and evaluation protocol.
 
 ```bash
 python src/main_iter.py \
@@ -178,7 +198,9 @@ separation, probability provenance, and visualization utilities.
 
 ## Demo
 
-The dependency-free project page is stored in `docs/`. Preview it locally with:
+Listen to examples and compare piano rolls on the
+[project demo](https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/). This
+repository also includes a dependency-free preview in `docs/`.
 
 ```bash
 python -m http.server 8000 --directory docs
@@ -188,27 +210,40 @@ Then open <http://localhost:8000>.
 
 ## Current limitations
 
-- Exact historical checkpoints and resolved per-row configurations are not yet
-  included.
+- Some manuscript rows still lack a public historical checkpoint and resolved
+  configuration.
 - YouChorale audio, annotations, MIDI files, and generated predictions are not
   redistributed.
-- The stable public transcriber currently exposes the merged output; a polished
-  audio-to-four-track SATB MIDI command remains release work.
+- The main inference command writes merged MIDI. The
+  [model card](https://huggingface.co/Hanyu-Meng/PawCT-PagCT#transcribe-audio)
+  shows how to export separate SATB tracks in Python.
 - Post-VA remains exploratory until its training and predicted-note feature
   paths are fully aligned.
 
 Further details are tracked in
 [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md).
 
+## Citation
+
+```bibtex
+@article{meng2026toward,
+  title = {Toward Part-Aware Choral Transcription with Singing Voice Assignment},
+  author = {Meng, Hanyu and He, Zhanhong and Guo, Zixun and Ju, Yaolong},
+  journal = {arXiv preprint arXiv:2610.09861},
+  year = {2026}
+}
+```
+
 ## License and attribution
 
-The source code is released under the Apache License 2.0. Portions are adapted
+The source code uses the [Apache License 2.0](LICENSE). Portions are adapted
 from ByteDance's
-[High-resolution Piano Transcription](https://github.com/bytedance/piano_transcription);
-see [`NOTICE`](NOTICE) and [`THIRD_PARTY.md`](THIRD_PARTY.md).
+[High-resolution Piano Transcription](https://github.com/bytedance/piano_transcription).
+See [NOTICE](NOTICE) and [THIRD_PARTY.md](THIRD_PARTY.md) for attributions.
 
-The source-code license does not grant rights to datasets, recordings,
-annotations, checkpoints, or generated media.
+The [Hugging Face weight release](https://huggingface.co/Hanyu-Meng/PawCT-PagCT)
+is listed under MIT. See [Data preparation](#data-preparation) for YouChorale
+access and redistribution details.
 
-Maintainer: [Hanyu Meng](https://github.com/Hanyu-Meng), Multimodal Music
-Research Lab.
+[Hanyu Meng](https://github.com/Hanyu-Meng) maintains this repository for the
+Multimodal Music Research Lab.

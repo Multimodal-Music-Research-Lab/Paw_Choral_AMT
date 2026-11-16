@@ -1,7 +1,11 @@
 # Checkpoints
 
-No model weights are included in this audited snapshot. Before publishing a
-checkpoint, confirm redistribution authority and include:
+[Download PagCT and PawCT base from Hugging Face](https://huggingface.co/Hanyu-Meng/PawCT-PagCT).
+See the [checkpoint table](../README.md#checkpoints) for direct downloads,
+inference configurations, and decoding thresholds.
+
+Before publishing a checkpoint, confirm redistribution authority and include
+all of the following.
 
 - the exact resolved configuration and source commit;
 - dataset and split-manifest hashes;
