@@ -1,14 +1,26 @@
-<h1 align="center">PawCT &amp; PagCT</h1>
+<h1 align="center">PawCT: Choral Audio → Separate SATB MIDI Tracks</h1>
+
+<p align="center">
+  Transcribe mixed choral audio into separate soprano, alto, tenor, and bass (SATB) MIDI note tracks.
+</p>
+
+<p align="center">
+  <a href="https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/">
+    <img src="docs/assets/exsultate-deo-four-panel.png" alt="Open the audio demo: piano-roll comparison for Exsultate Deo showing the reference, PawCT, PagCT, and PagCT with Post-VA" width="100%">
+  </a><br>
+  <em>Click the preview to listen to the recording and compare transcriptions.</em>
+</p>
+
+<p align="center">
+  <a href="https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/"><img src="https://img.shields.io/badge/Listen-Audio%20Demo-4355A5?style=for-the-badge" alt="Listen to the audio demo"></a>
+  <a href="https://huggingface.co/Hanyu-Meng/PawCT-PagCT"><img src="https://img.shields.io/badge/Hugging%20Face-Checkpoints-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=201911" alt="Checkpoints on Hugging Face"></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick%20Start-Audio%20to%20MIDI-238636?style=for-the-badge" alt="Quick start: transcribe your audio"></a>
+  <a href="https://arxiv.org/abs/2610.09861"><img src="https://img.shields.io/badge/arXiv-2610.09861-B31B1B?style=for-the-badge&amp;logo=arxiv" alt="Paper on arXiv"></a>
+</p>
 
 <p align="center">
   <strong>Toward Part-Aware Choral Transcription with Singing Voice Assignment</strong><br>
   Hanyu Meng · Zhanhong He · Zixun Guo · Yaolong Ju
-</p>
-
-<p align="center">
-  <a href="https://arxiv.org/abs/2610.09861"><img src="https://img.shields.io/badge/arXiv-2610.09861-B31B1B?style=for-the-badge&amp;logo=arxiv" alt="Paper on arXiv"></a>
-  <a href="https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/"><img src="https://img.shields.io/badge/Project-Demo-4355A5?style=for-the-badge" alt="Project demo"></a>
-  <a href="https://huggingface.co/Hanyu-Meng/PawCT-PagCT"><img src="https://img.shields.io/badge/Hugging%20Face-Checkpoints-FFD21E?style=for-the-badge&amp;logo=huggingface&amp;logoColor=201911" alt="Checkpoints on Hugging Face"></a>
 </p>
 
 **PawCT** transcribes mixed choral audio into separate soprano, alto, tenor,
@@ -16,13 +28,32 @@ and bass (SATB) note tracks. **PagCT** produces one merged note track. The
 repository also provides **Post-VA**, a two-stage symbolic voice-assignment
 baseline.
 
+[Audio demo](https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/) ·
+[Quick start](#quick-start) ·
 [Checkpoints](#checkpoints) ·
 [Setup](#setup) ·
 [Code walkthrough](docs/CODE_WALKTHROUGH.md) ·
 [Data format](docs/DATA.md) ·
 [Experiment protocol](docs/EXPERIMENT_PLAN.md)
 
-![Piano-roll comparison for Exsultate Deo showing the reference, PawCT, PagCT, and PagCT with Post-VA](docs/assets/exsultate-deo-four-panel.png)
+## Quick start
+
+**Just want to hear the results?** Open the
+[audio demo](https://hanyu-meng.github.io/Paw_Choral_AMT_Demo/) to listen to
+the recording and compare transcriptions without installing anything.
+
+**Want to transcribe your own choral audio?**
+
+1. Follow [Setup](#setup) to install the documented Python dependencies.
+2. Download a [checkpoint and its matching inference configuration](#checkpoints):
+   `pawct-base` for four SATB tracks, or `pagct` for one merged track.
+3. Follow the [audio-to-MIDI Python example](https://huggingface.co/Hanyu-Meng/PawCT-PagCT#transcribe-audio)
+   using the code revision specified in the model card, then point it to your
+   choral audio file.
+
+For separate SATB MIDI export, use the model-card Python example; the current
+command-line inference entry point writes merged MIDI. Outputs are predicted
+notes, not isolated vocal audio stems.
 
 ## Checkpoints
 
